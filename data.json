@@ -1,0 +1,2241 @@
+{
+  "buildings": {
+    "headquarters": {
+      "name": "Headquarters",
+      "minLevel": 1,
+      "maxLevel": 30,
+      "levelCosts": {
+        "1": {
+          "wood": 500,
+          "clay": 550,
+          "iron": 450,
+          "provisions": 1,
+          "buildTime": 30
+        },
+        "2": {
+          "wood": 700,
+          "clay": 750,
+          "iron": 650,
+          "provisions": 1,
+          "buildTime": 120
+        },
+        "3": {
+          "wood": 1000,
+          "clay": 1300,
+          "iron": 900,
+          "provisions": 1,
+          "buildTime": 180
+        },
+        "4": {
+          "wood": 1400,
+          "clay": 1500,
+          "iron": 1300,
+          "provisions": 1,
+          "buildTime": 300
+        },
+        "5": {
+          "wood": 1900,
+          "clay": 2000,
+          "iron": 1800,
+          "provisions": 1,
+          "buildTime": 420
+        },
+        "6": {
+          "wood": 2300,
+          "clay": 2500,
+          "iron": 2100,
+          "provisions": 2,
+          "buildTime": 540
+        },
+        "7": {
+          "wood": 2800,
+          "clay": 3000,
+          "iron": 2600,
+          "provisions": 2,
+          "buildTime": 720
+        },
+        "8": {
+          "wood": 3800,
+          "clay": 4000,
+          "iron": 3600,
+          "provisions": 2,
+          "buildTime": 900
+        },
+        "9": {
+          "wood": 4800,
+          "clay": 5000,
+          "iron": 4600,
+          "provisions": 3,
+          "buildTime": 1080
+        },
+        "10": {
+          "wood": 5600,
+          "clay": 6000,
+          "iron": 5200,
+          "provisions": 3,
+          "buildTime": 1260
+        },
+        "11": {
+          "wood": 7600,
+          "clay": 8000,
+          "iron": 7200,
+          "provisions": 3,
+          "buildTime": 1500
+        },
+        "12": {
+          "wood": 9000,
+          "clay": 10000,
+          "iron": 8000,
+          "provisions": 4,
+          "buildTime": 1800
+        },
+        "13": {
+          "wood": 14000,
+          "clay": 15000,
+          "iron": 13000,
+          "provisions": 5,
+          "buildTime": 2100
+        },
+        "14": {
+          "wood": 19000,
+          "clay": 20000,
+          "iron": 18000,
+          "provisions": 5,
+          "buildTime": 2700
+        },
+        "15": {
+          "wood": 23000,
+          "clay": 25000,
+          "iron": 20000,
+          "provisions": 7,
+          "buildTime": 3600
+        },
+        "16": {
+          "wood": 27000,
+          "clay": 30000,
+          "iron": 22000,
+          "provisions": 8,
+          "buildTime": 5400
+        },
+        "17": {
+          "wood": 31000,
+          "clay": 35000,
+          "iron": 24000,
+          "provisions": 9,
+          "buildTime": 7200
+        },
+        "18": {
+          "wood": 35000,
+          "clay": 40000,
+          "iron": 26000,
+          "provisions": 10,
+          "buildTime": 10800
+        },
+        "19": {
+          "wood": 38000,
+          "clay": 45000,
+          "iron": 28000,
+          "provisions": 12,
+          "buildTime": 14400
+        },
+        "20": {
+          "wood": 40000,
+          "clay": 50000,
+          "iron": 30000,
+          "provisions": 15,
+          "buildTime": 18000
+        },
+        "21": {
+          "wood": 42000,
+          "clay": 55000,
+          "iron": 32000,
+          "provisions": 17,
+          "buildTime": 21600
+        },
+        "22": {
+          "wood": 44000,
+          "clay": 60000,
+          "iron": 34000,
+          "provisions": 19,
+          "buildTime": 25200
+        },
+        "23": {
+          "wood": 46000,
+          "clay": 65000,
+          "iron": 36000,
+          "provisions": 23,
+          "buildTime": 28800
+        },
+        "24": {
+          "wood": 48000,
+          "clay": 70000,
+          "iron": 38000,
+          "provisions": 27,
+          "buildTime": 32400
+        },
+        "25": {
+          "wood": 50000,
+          "clay": 75000,
+          "iron": 40000,
+          "provisions": 31,
+          "buildTime": 36000
+        },
+        "26": {
+          "wood": 53000,
+          "clay": 80000,
+          "iron": 42000,
+          "provisions": 37,
+          "buildTime": 39600
+        },
+        "27": {
+          "wood": 56000,
+          "clay": 85000,
+          "iron": 44000,
+          "provisions": 43,
+          "buildTime": 43200
+        },
+        "28": {
+          "wood": 59000,
+          "clay": 90000,
+          "iron": 46000,
+          "provisions": 51,
+          "buildTime": 46800
+        },
+        "29": {
+          "wood": 62000,
+          "clay": 95000,
+          "iron": 48000,
+          "provisions": 59,
+          "buildTime": 50400
+        },
+        "30": {
+          "wood": 65000,
+          "clay": 100000,
+          "iron": 50000,
+          "provisions": 69,
+          "buildTime": 54000
+        }
+      }
+    },
+    "barracks": {
+      "name": "Barracks",
+      "minLevel": 0,
+      "maxLevel": 25,
+      "levelCosts": {
+        "1": {
+          "wood": 400,
+          "clay": 500,
+          "iron": 600,
+          "provisions": 7,
+          "buildTime": 60
+        },
+        "2": {
+          "wood": 480,
+          "clay": 600,
+          "iron": 720,
+          "provisions": 1,
+          "buildTime": 150
+        },
+        "3": {
+          "wood": 580,
+          "clay": 720,
+          "iron": 860,
+          "provisions": 2,
+          "buildTime": 240
+        },
+        "4": {
+          "wood": 700,
+          "clay": 860,
+          "iron": 1030,
+          "provisions": 2,
+          "buildTime": 330
+        },
+        "5": {
+          "wood": 840,
+          "clay": 1030,
+          "iron": 1240,
+          "provisions": 3,
+          "buildTime": 420
+        },
+        "6": {
+          "wood": 1800,
+          "clay": 2000,
+          "iron": 2200,
+          "provisions": 2,
+          "buildTime": 510
+        },
+        "7": {
+          "wood": 2200,
+          "clay": 2400,
+          "iron": 2600,
+          "provisions": 4,
+          "buildTime": 600
+        },
+        "8": {
+          "wood": 2600,
+          "clay": 2900,
+          "iron": 3100,
+          "provisions": 4,
+          "buildTime": 720
+        },
+        "9": {
+          "wood": 3100,
+          "clay": 3500,
+          "iron": 3700,
+          "provisions": 5,
+          "buildTime": 840
+        },
+        "10": {
+          "wood": 3700,
+          "clay": 4200,
+          "iron": 4400,
+          "provisions": 6,
+          "buildTime": 960
+        },
+        "11": {
+          "wood": 6000,
+          "clay": 7000,
+          "iron": 8000,
+          "provisions": 7,
+          "buildTime": 1080
+        },
+        "12": {
+          "wood": 7200,
+          "clay": 8400,
+          "iron": 9600,
+          "provisions": 9,
+          "buildTime": 1200
+        },
+        "13": {
+          "wood": 8600,
+          "clay": 10100,
+          "iron": 11500,
+          "provisions": 10,
+          "buildTime": 1500
+        },
+        "14": {
+          "wood": 10300,
+          "clay": 12100,
+          "iron": 13800,
+          "provisions": 13,
+          "buildTime": 1800
+        },
+        "15": {
+          "wood": 12400,
+          "clay": 14500,
+          "iron": 16600,
+          "provisions": 15,
+          "buildTime": 2700
+        },
+        "16": {
+          "wood": 21000,
+          "clay": 23000,
+          "iron": 25000,
+          "provisions": 18,
+          "buildTime": 3600
+        },
+        "17": {
+          "wood": 22000,
+          "clay": 25000,
+          "iron": 26000,
+          "provisions": 21,
+          "buildTime": 7200
+        },
+        "18": {
+          "wood": 23000,
+          "clay": 28000,
+          "iron": 27000,
+          "provisions": 26,
+          "buildTime": 10800
+        },
+        "19": {
+          "wood": 24000,
+          "clay": 31000,
+          "iron": 28000,
+          "provisions": 31,
+          "buildTime": 14400
+        },
+        "20": {
+          "wood": 25000,
+          "clay": 34000,
+          "iron": 29000,
+          "provisions": 38,
+          "buildTime": 18000
+        },
+        "21": {
+          "wood": 26000,
+          "clay": 37000,
+          "iron": 30000,
+          "provisions": 44,
+          "buildTime": 21600
+        },
+        "22": {
+          "wood": 27000,
+          "clay": 41000,
+          "iron": 32000,
+          "provisions": 54,
+          "buildTime": 25200
+        },
+        "23": {
+          "wood": 28000,
+          "clay": 45000,
+          "iron": 34000,
+          "provisions": 64,
+          "buildTime": 28800
+        },
+        "24": {
+          "wood": 29000,
+          "clay": 50000,
+          "iron": 36000,
+          "provisions": 78,
+          "buildTime": 32400
+        },
+        "25": {
+          "wood": 30000,
+          "clay": 55000,
+          "iron": 38000,
+          "provisions": 92,
+          "buildTime": 36000
+        }
+      }
+    },
+    "tavern": {
+      "name": "Tavern",
+      "minLevel": 0,
+      "maxLevel": 15,
+      "levelCosts": {
+        "1": {
+          "wood": 150,
+          "clay": 100,
+          "iron": 110,
+          "provisions": 2,
+          "buildTime": 300
+        },
+        "2": {
+          "wood": 200,
+          "clay": 130,
+          "iron": 140,
+          "provisions": 3,
+          "buildTime": 600
+        },
+        "3": {
+          "wood": 250,
+          "clay": 170,
+          "iron": 180,
+          "provisions": 3,
+          "buildTime": 1200
+        },
+        "4": {
+          "wood": 330,
+          "clay": 230,
+          "iron": 230,
+          "provisions": 4,
+          "buildTime": 2400
+        },
+        "5": {
+          "wood": 430,
+          "clay": 300,
+          "iron": 300,
+          "provisions": 6,
+          "buildTime": 3600
+        },
+        "6": {
+          "wood": 560,
+          "clay": 400,
+          "iron": 380,
+          "provisions": 7,
+          "buildTime": 6000
+        },
+        "7": {
+          "wood": 720,
+          "clay": 530,
+          "iron": 480,
+          "provisions": 9,
+          "buildTime": 8400
+        },
+        "8": {
+          "wood": 940,
+          "clay": 700,
+          "iron": 620,
+          "provisions": 11,
+          "buildTime": 12600
+        },
+        "9": {
+          "wood": 1200,
+          "clay": 900,
+          "iron": 790,
+          "provisions": 15,
+          "buildTime": 18000
+        },
+        "10": {
+          "wood": 1600,
+          "clay": 1200,
+          "iron": 1000,
+          "provisions": 18,
+          "buildTime": 25200
+        },
+        "11": {
+          "wood": 2100,
+          "clay": 1600,
+          "iron": 1300,
+          "provisions": 23,
+          "buildTime": 32400
+        },
+        "12": {
+          "wood": 2700,
+          "clay": 2100,
+          "iron": 1700,
+          "provisions": 30,
+          "buildTime": 39600
+        },
+        "13": {
+          "wood": 3500,
+          "clay": 2800,
+          "iron": 2100,
+          "provisions": 37,
+          "buildTime": 50400
+        },
+        "14": {
+          "wood": 4500,
+          "clay": 3700,
+          "iron": 2700,
+          "provisions": 48,
+          "buildTime": 64800
+        },
+        "15": {
+          "wood": 5900,
+          "clay": 4900,
+          "iron": 3500,
+          "provisions": 60,
+          "buildTime": 86400
+        }
+      }
+    },
+    "hospital": {
+      "name": "Hospital",
+      "minLevel": 0,
+      "maxLevel": 10,
+      "levelCosts": {
+        "1": {
+          "wood": 50,
+          "clay": 80,
+          "iron": 30,
+          "provisions": 2,
+          "buildTime": 180
+        },
+        "2": {
+          "wood": 100,
+          "clay": 160,
+          "iron": 60,
+          "provisions": 3,
+          "buildTime": 300
+        },
+        "3": {
+          "wood": 200,
+          "clay": 320,
+          "iron": 120,
+          "provisions": 3,
+          "buildTime": 600
+        },
+        "4": {
+          "wood": 400,
+          "clay": 640,
+          "iron": 240,
+          "provisions": 4,
+          "buildTime": 900
+        },
+        "5": {
+          "wood": 1000,
+          "clay": 1600,
+          "iron": 600,
+          "provisions": 5,
+          "buildTime": 1800
+        },
+        "6": {
+          "wood": 2000,
+          "clay": 3200,
+          "iron": 1200,
+          "provisions": 7,
+          "buildTime": 3600
+        },
+        "7": {
+          "wood": 4000,
+          "clay": 6400,
+          "iron": 2400,
+          "provisions": 8,
+          "buildTime": 7200
+        },
+        "8": {
+          "wood": 8000,
+          "clay": 12000,
+          "iron": 4800,
+          "provisions": 11,
+          "buildTime": 14400
+        },
+        "9": {
+          "wood": 16000,
+          "clay": 24000,
+          "iron": 9600,
+          "provisions": 14,
+          "buildTime": 43200
+        },
+        "10": {
+          "wood": 32000,
+          "clay": 48000,
+          "iron": 19200,
+          "provisions": 17,
+          "buildTime": 86400
+        }
+      }
+    },
+    "hallOfOrders": {
+      "name": "Hall of Orders",
+      "minLevel": 0,
+      "maxLevel": 10,
+      "levelCosts": {
+        "1": {
+          "wood": 35000,
+          "clay": 50000,
+          "iron": 30000,
+          "provisions": 11,
+          "buildTime": 3600
+        },
+        "2": {
+          "wood": 42000,
+          "clay": 58500,
+          "iron": 36900,
+          "provisions": 14,
+          "buildTime": 7200
+        },
+        "3": {
+          "wood": 50400,
+          "clay": 68445,
+          "iron": 45387,
+          "provisions": 17,
+          "buildTime": 10800
+        },
+        "4": {
+          "wood": 60480,
+          "clay": 80081,
+          "iron": 55826,
+          "provisions": 21,
+          "buildTime": 18000
+        },
+        "5": {
+          "wood": 72576,
+          "clay": 93694,
+          "iron": 68666,
+          "provisions": 28,
+          "buildTime": 28800
+        },
+        "6": {
+          "wood": 87091,
+          "clay": 109622,
+          "iron": 84459,
+          "provisions": 35,
+          "buildTime": 43200
+        },
+        "7": {
+          "wood": 104509,
+          "clay": 128258,
+          "iron": 103885,
+          "provisions": 45,
+          "buildTime": 57600
+        },
+        "8": {
+          "wood": 125411,
+          "clay": 150062,
+          "iron": 127778,
+          "provisions": 56,
+          "buildTime": 75600
+        },
+        "9": {
+          "wood": 150494,
+          "clay": 175573,
+          "iron": 157167,
+          "provisions": 72,
+          "buildTime": 100800
+        },
+        "10": {
+          "wood": 180592,
+          "clay": 205420,
+          "iron": 193316,
+          "provisions": 92,
+          "buildTime": 129600
+        }
+      }
+    },
+    "chapel": {
+      "name": "Chapel",
+      "minLevel": 0,
+      "maxLevel": 1,
+      "levelCosts": {
+        "1": {
+          "wood": 160,
+          "clay": 200,
+          "iron": 50,
+          "provisions": 0,
+          "buildTime": 30
+        }
+      }
+    },
+    "church": {
+      "name": "Church",
+      "minLevel": 0,
+      "maxLevel": 3,
+      "levelCosts": {
+        "1": {
+          "wood": 16000,
+          "clay": 20000,
+          "iron": 5000,
+          "provisions": 5000,
+          "buildTime": 21600
+        },
+        "2": {
+          "wood": 20000,
+          "clay": 25000,
+          "iron": 7000,
+          "provisions": 2750,
+          "buildTime": 54000
+        },
+        "3": {
+          "wood": 25000,
+          "clay": 32000,
+          "iron": 8000,
+          "provisions": 4263,
+          "buildTime": 86400
+        }
+      }
+    },
+    "academy": {
+      "name": "Academy",
+      "minLevel": 0,
+      "maxLevel": 1,
+      "levelCosts": {
+        "1": {
+          "wood": 60000,
+          "clay": 75000,
+          "iron": 60000,
+          "provisions": 80,
+          "buildTime": 36000
+        }
+      }
+    },
+    "rallyPoint": {
+      "name": "Rally Point",
+      "minLevel": 0,
+      "maxLevel": 5,
+      "levelCosts": {
+        "1": {
+          "wood": 50,
+          "clay": 100,
+          "iron": 50,
+          "provisions": 1,
+          "buildTime": 30
+        },
+        "2": {
+          "wood": 100,
+          "clay": 150,
+          "iron": 150,
+          "provisions": 1,
+          "buildTime": 300
+        },
+        "3": {
+          "wood": 2500,
+          "clay": 2500,
+          "iron": 3000,
+          "provisions": 3,
+          "buildTime": 28800
+        },
+        "4": {
+          "wood": 6000,
+          "clay": 9000,
+          "iron": 11000,
+          "provisions": 7,
+          "buildTime": 57600
+        },
+        "5": {
+          "wood": 13000,
+          "clay": 18000,
+          "iron": 25000,
+          "provisions": 16,
+          "buildTime": 86400
+        }
+      }
+    },
+    "statue": {
+      "name": "Statue",
+      "minLevel": 0,
+      "maxLevel": 5,
+      "levelCosts": {
+        "1": {
+          "wood": 100,
+          "clay": 100,
+          "iron": 200,
+          "provisions": 0,
+          "buildTime": 120
+        },
+        "2": {
+          "wood": 500,
+          "clay": 500,
+          "iron": 1000,
+          "provisions": 0,
+          "buildTime": 600
+        },
+        "3": {
+          "wood": 2000,
+          "clay": 2000,
+          "iron": 4000,
+          "provisions": 0,
+          "buildTime": 3600
+        },
+        "4": {
+          "wood": 5000,
+          "clay": 5000,
+          "iron": 10000,
+          "provisions": 0,
+          "buildTime": 14400
+        },
+        "5": {
+          "wood": 10000,
+          "clay": 10000,
+          "iron": 20000,
+          "provisions": 0,
+          "buildTime": 28800
+        }
+      }
+    },
+    "market": {
+      "name": "Market",
+      "minLevel": 0,
+      "maxLevel": 25,
+      "levelCosts": {
+        "1": {
+          "wood": 100,
+          "clay": 100,
+          "iron": 100,
+          "provisions": 20,
+          "buildTime": 300
+        },
+        "2": {
+          "wood": 130,
+          "clay": 130,
+          "iron": 130,
+          "provisions": 3,
+          "buildTime": 900
+        },
+        "3": {
+          "wood": 160,
+          "clay": 160,
+          "iron": 160,
+          "provisions": 4,
+          "buildTime": 1500
+        },
+        "4": {
+          "wood": 200,
+          "clay": 210,
+          "iron": 200,
+          "provisions": 5,
+          "buildTime": 2100
+        },
+        "5": {
+          "wood": 250,
+          "clay": 260,
+          "iron": 250,
+          "provisions": 5,
+          "buildTime": 3000
+        },
+        "6": {
+          "wood": 320,
+          "clay": 340,
+          "iron": 320,
+          "provisions": 7,
+          "buildTime": 4200
+        },
+        "7": {
+          "wood": 400,
+          "clay": 430,
+          "iron": 400,
+          "provisions": 7,
+          "buildTime": 5400
+        },
+        "8": {
+          "wood": 500,
+          "clay": 550,
+          "iron": 500,
+          "provisions": 9,
+          "buildTime": 6600
+        },
+        "9": {
+          "wood": 640,
+          "clay": 700,
+          "iron": 640,
+          "provisions": 10,
+          "buildTime": 7800
+        },
+        "10": {
+          "wood": 800,
+          "clay": 890,
+          "iron": 800,
+          "provisions": 12,
+          "buildTime": 9000
+        },
+        "11": {
+          "wood": 1000,
+          "clay": 1100,
+          "iron": 1000,
+          "provisions": 14,
+          "buildTime": 10800
+        },
+        "12": {
+          "wood": 1300,
+          "clay": 1400,
+          "iron": 1300,
+          "provisions": 16,
+          "buildTime": 12600
+        },
+        "13": {
+          "wood": 1600,
+          "clay": 1800,
+          "iron": 1600,
+          "provisions": 20,
+          "buildTime": 14400
+        },
+        "14": {
+          "wood": 2000,
+          "clay": 2400,
+          "iron": 2000,
+          "provisions": 22,
+          "buildTime": 16200
+        },
+        "15": {
+          "wood": 2500,
+          "clay": 3000,
+          "iron": 2500,
+          "provisions": 26,
+          "buildTime": 18000
+        },
+        "16": {
+          "wood": 3200,
+          "clay": 3800,
+          "iron": 3200,
+          "provisions": 31,
+          "buildTime": 21000
+        },
+        "17": {
+          "wood": 4000,
+          "clay": 4900,
+          "iron": 4000,
+          "provisions": 36,
+          "buildTime": 24000
+        },
+        "18": {
+          "wood": 5100,
+          "clay": 6200,
+          "iron": 5100,
+          "provisions": 42,
+          "buildTime": 28800
+        },
+        "19": {
+          "wood": 6400,
+          "clay": 7900,
+          "iron": 6400,
+          "provisions": 49,
+          "buildTime": 34200
+        },
+        "20": {
+          "wood": 8100,
+          "clay": 10100,
+          "iron": 8100,
+          "provisions": 57,
+          "buildTime": 39600
+        },
+        "21": {
+          "wood": 10200,
+          "clay": 12900,
+          "iron": 10200,
+          "provisions": 67,
+          "buildTime": 45000
+        },
+        "22": {
+          "wood": 12800,
+          "clay": 16400,
+          "iron": 12800,
+          "provisions": 79,
+          "buildTime": 54000
+        },
+        "23": {
+          "wood": 16100,
+          "clay": 21000,
+          "iron": 16100,
+          "provisions": 92,
+          "buildTime": 66600
+        },
+        "24": {
+          "wood": 20300,
+          "clay": 26700,
+          "iron": 20300,
+          "provisions": 107,
+          "buildTime": 81000
+        },
+        "25": {
+          "wood": 25600,
+          "clay": 34100,
+          "iron": 25600,
+          "provisions": 126,
+          "buildTime": 100800
+        }
+      }
+    },
+    "timberCamp": {
+      "name": "Timber Camp",
+      "minLevel": 0,
+      "maxLevel": 30,
+      "levelCosts": {
+        "1": {
+          "wood": 40,
+          "clay": 50,
+          "iron": 30,
+          "provisions": 1,
+          "buildTime": 30
+        },
+        "2": {
+          "wood": 50,
+          "clay": 60,
+          "iron": 40,
+          "provisions": 1,
+          "buildTime": 60
+        },
+        "3": {
+          "wood": 60,
+          "clay": 80,
+          "iron": 50,
+          "provisions": 1,
+          "buildTime": 90
+        },
+        "4": {
+          "wood": 80,
+          "clay": 100,
+          "iron": 60,
+          "provisions": 1,
+          "buildTime": 120
+        },
+        "5": {
+          "wood": 100,
+          "clay": 120,
+          "iron": 70,
+          "provisions": 1,
+          "buildTime": 150
+        },
+        "6": {
+          "wood": 100,
+          "clay": 200,
+          "iron": 100,
+          "provisions": 1,
+          "buildTime": 210
+        },
+        "7": {
+          "wood": 200,
+          "clay": 200,
+          "iron": 100,
+          "provisions": 2,
+          "buildTime": 300
+        },
+        "8": {
+          "wood": 200,
+          "clay": 200,
+          "iron": 100,
+          "provisions": 2,
+          "buildTime": 600
+        },
+        "9": {
+          "wood": 200,
+          "clay": 300,
+          "iron": 200,
+          "provisions": 2,
+          "buildTime": 1200
+        },
+        "10": {
+          "wood": 300,
+          "clay": 400,
+          "iron": 200,
+          "provisions": 2,
+          "buildTime": 1800
+        },
+        "11": {
+          "wood": 400,
+          "clay": 500,
+          "iron": 300,
+          "provisions": 3,
+          "buildTime": 2400
+        },
+        "12": {
+          "wood": 500,
+          "clay": 600,
+          "iron": 300,
+          "provisions": 3,
+          "buildTime": 3000
+        },
+        "13": {
+          "wood": 600,
+          "clay": 700,
+          "iron": 400,
+          "provisions": 4,
+          "buildTime": 3600
+        },
+        "14": {
+          "wood": 700,
+          "clay": 900,
+          "iron": 500,
+          "provisions": 5,
+          "buildTime": 4500
+        },
+        "15": {
+          "wood": 900,
+          "clay": 1000,
+          "iron": 700,
+          "provisions": 5,
+          "buildTime": 5400
+        },
+        "16": {
+          "wood": 1000,
+          "clay": 1000,
+          "iron": 800,
+          "provisions": 5,
+          "buildTime": 6300
+        },
+        "17": {
+          "wood": 1000,
+          "clay": 2000,
+          "iron": 1000,
+          "provisions": 7,
+          "buildTime": 7200
+        },
+        "18": {
+          "wood": 2000,
+          "clay": 2000,
+          "iron": 1000,
+          "provisions": 8,
+          "buildTime": 9000
+        },
+        "19": {
+          "wood": 2000,
+          "clay": 3000,
+          "iron": 2000,
+          "provisions": 9,
+          "buildTime": 10800
+        },
+        "20": {
+          "wood": 3000,
+          "clay": 3000,
+          "iron": 2000,
+          "provisions": 10,
+          "buildTime": 14400
+        },
+        "21": {
+          "wood": 3000,
+          "clay": 4000,
+          "iron": 2000,
+          "provisions": 12,
+          "buildTime": 18000
+        },
+        "22": {
+          "wood": 4000,
+          "clay": 5000,
+          "iron": 3000,
+          "provisions": 14,
+          "buildTime": 21600
+        },
+        "23": {
+          "wood": 5000,
+          "clay": 6000,
+          "iron": 4000,
+          "provisions": 16,
+          "buildTime": 25200
+        },
+        "24": {
+          "wood": 6000,
+          "clay": 8000,
+          "iron": 5000,
+          "provisions": 19,
+          "buildTime": 28800
+        },
+        "25": {
+          "wood": 8000,
+          "clay": 10000,
+          "iron": 6000,
+          "provisions": 21,
+          "buildTime": 32400
+        },
+        "26": {
+          "wood": 10000,
+          "clay": 12000,
+          "iron": 7000,
+          "provisions": 24,
+          "buildTime": 36000
+        },
+        "27": {
+          "wood": 12000,
+          "clay": 16000,
+          "iron": 9000,
+          "provisions": 29,
+          "buildTime": 43200
+        },
+        "28": {
+          "wood": 16000,
+          "clay": 19000,
+          "iron": 12000,
+          "provisions": 33,
+          "buildTime": 50400
+        },
+        "29": {
+          "wood": 19000,
+          "clay": 24000,
+          "iron": 15000,
+          "provisions": 38,
+          "buildTime": 57600
+        },
+        "30": {
+          "wood": 24000,
+          "clay": 30000,
+          "iron": 18000,
+          "provisions": 43,
+          "buildTime": 64800
+        }
+      }
+    },
+    "clayPit": {
+      "name": "Clay Pit",
+      "minLevel": 0,
+      "maxLevel": 30,
+      "levelCosts": {
+        "1": {
+          "wood": 50,
+          "clay": 40,
+          "iron": 30,
+          "provisions": 1,
+          "buildTime": 30
+        },
+        "2": {
+          "wood": 60,
+          "clay": 50,
+          "iron": 40,
+          "provisions": 1,
+          "buildTime": 60
+        },
+        "3": {
+          "wood": 80,
+          "clay": 60,
+          "iron": 50,
+          "provisions": 2,
+          "buildTime": 90
+        },
+        "4": {
+          "wood": 100,
+          "clay": 80,
+          "iron": 60,
+          "provisions": 2,
+          "buildTime": 120
+        },
+        "5": {
+          "wood": 100,
+          "clay": 100,
+          "iron": 70,
+          "provisions": 2,
+          "buildTime": 150
+        },
+        "6": {
+          "wood": 200,
+          "clay": 100,
+          "iron": 90,
+          "provisions": 2,
+          "buildTime": 210
+        },
+        "7": {
+          "wood": 200,
+          "clay": 200,
+          "iron": 100,
+          "provisions": 3,
+          "buildTime": 300
+        },
+        "8": {
+          "wood": 200,
+          "clay": 200,
+          "iron": 100,
+          "provisions": 3,
+          "buildTime": 600
+        },
+        "9": {
+          "wood": 300,
+          "clay": 200,
+          "iron": 200,
+          "provisions": 4,
+          "buildTime": 1200
+        },
+        "10": {
+          "wood": 400,
+          "clay": 300,
+          "iron": 200,
+          "provisions": 4,
+          "buildTime": 1800
+        },
+        "11": {
+          "wood": 500,
+          "clay": 400,
+          "iron": 300,
+          "provisions": 4,
+          "buildTime": 2400
+        },
+        "12": {
+          "wood": 600,
+          "clay": 500,
+          "iron": 300,
+          "provisions": 5,
+          "buildTime": 3000
+        },
+        "13": {
+          "wood": 700,
+          "clay": 600,
+          "iron": 400,
+          "provisions": 6,
+          "buildTime": 3600
+        },
+        "14": {
+          "wood": 900,
+          "clay": 700,
+          "iron": 500,
+          "provisions": 7,
+          "buildTime": 4500
+        },
+        "15": {
+          "wood": 1000,
+          "clay": 900,
+          "iron": 700,
+          "provisions": 8,
+          "buildTime": 5400
+        },
+        "16": {
+          "wood": 1000,
+          "clay": 1000,
+          "iron": 800,
+          "provisions": 8,
+          "buildTime": 6300
+        },
+        "17": {
+          "wood": 2000,
+          "clay": 1000,
+          "iron": 1000,
+          "provisions": 10,
+          "buildTime": 7200
+        },
+        "18": {
+          "wood": 2000,
+          "clay": 2000,
+          "iron": 1000,
+          "provisions": 12,
+          "buildTime": 9000
+        },
+        "19": {
+          "wood": 3000,
+          "clay": 2000,
+          "iron": 2000,
+          "provisions": 13,
+          "buildTime": 10800
+        },
+        "20": {
+          "wood": 3000,
+          "clay": 3000,
+          "iron": 2000,
+          "provisions": 15,
+          "buildTime": 14400
+        },
+        "21": {
+          "wood": 4000,
+          "clay": 3000,
+          "iron": 2000,
+          "provisions": 16,
+          "buildTime": 18000
+        },
+        "22": {
+          "wood": 5000,
+          "clay": 4000,
+          "iron": 3000,
+          "provisions": 20,
+          "buildTime": 21600
+        },
+        "23": {
+          "wood": 6000,
+          "clay": 5000,
+          "iron": 4000,
+          "provisions": 22,
+          "buildTime": 25200
+        },
+        "24": {
+          "wood": 8000,
+          "clay": 6000,
+          "iron": 5000,
+          "provisions": 25,
+          "buildTime": 28800
+        },
+        "25": {
+          "wood": 10000,
+          "clay": 8000,
+          "iron": 6000,
+          "provisions": 28,
+          "buildTime": 32400
+        },
+        "26": {
+          "wood": 12000,
+          "clay": 10000,
+          "iron": 7000,
+          "provisions": 33,
+          "buildTime": 36000
+        },
+        "27": {
+          "wood": 16000,
+          "clay": 12000,
+          "iron": 9000,
+          "provisions": 37,
+          "buildTime": 43200
+        },
+        "28": {
+          "wood": 19000,
+          "clay": 16000,
+          "iron": 12000,
+          "provisions": 42,
+          "buildTime": 50400
+        },
+        "29": {
+          "wood": 24000,
+          "clay": 19000,
+          "iron": 15000,
+          "provisions": 48,
+          "buildTime": 57600
+        },
+        "30": {
+          "wood": 30000,
+          "clay": 24000,
+          "iron": 18000,
+          "provisions": 55,
+          "buildTime": 64800
+        }
+      }
+    },
+    "ironMine": {
+      "name": "Iron Mine",
+      "minLevel": 0,
+      "maxLevel": 30,
+      "levelCosts": {
+        "1": {
+          "wood": 60,
+          "clay": 50,
+          "iron": 60,
+          "provisions": 1,
+          "buildTime": 30
+        },
+        "2": {
+          "wood": 70,
+          "clay": 60,
+          "iron": 70,
+          "provisions": 2,
+          "buildTime": 60
+        },
+        "3": {
+          "wood": 90,
+          "clay": 80,
+          "iron": 90,
+          "provisions": 2,
+          "buildTime": 90
+        },
+        "4": {
+          "wood": 100,
+          "clay": 100,
+          "iron": 100,
+          "provisions": 2,
+          "buildTime": 120
+        },
+        "5": {
+          "wood": 100,
+          "clay": 100,
+          "iron": 100,
+          "provisions": 3,
+          "buildTime": 150
+        },
+        "6": {
+          "wood": 200,
+          "clay": 200,
+          "iron": 200,
+          "provisions": 3,
+          "buildTime": 210
+        },
+        "7": {
+          "wood": 200,
+          "clay": 200,
+          "iron": 200,
+          "provisions": 4,
+          "buildTime": 300
+        },
+        "8": {
+          "wood": 300,
+          "clay": 200,
+          "iron": 300,
+          "provisions": 4,
+          "buildTime": 600
+        },
+        "9": {
+          "wood": 400,
+          "clay": 300,
+          "iron": 400,
+          "provisions": 5,
+          "buildTime": 1200
+        },
+        "10": {
+          "wood": 400,
+          "clay": 400,
+          "iron": 400,
+          "provisions": 6,
+          "buildTime": 1800
+        },
+        "11": {
+          "wood": 500,
+          "clay": 500,
+          "iron": 500,
+          "provisions": 7,
+          "buildTime": 2400
+        },
+        "12": {
+          "wood": 700,
+          "clay": 600,
+          "iron": 700,
+          "provisions": 8,
+          "buildTime": 3000
+        },
+        "13": {
+          "wood": 800,
+          "clay": 700,
+          "iron": 800,
+          "provisions": 10,
+          "buildTime": 3600
+        },
+        "14": {
+          "wood": 1000,
+          "clay": 900,
+          "iron": 1000,
+          "provisions": 11,
+          "buildTime": 4500
+        },
+        "15": {
+          "wood": 1000,
+          "clay": 1000,
+          "iron": 1000,
+          "provisions": 13,
+          "buildTime": 5400
+        },
+        "16": {
+          "wood": 2000,
+          "clay": 1000,
+          "iron": 2000,
+          "provisions": 15,
+          "buildTime": 6300
+        },
+        "17": {
+          "wood": 2000,
+          "clay": 2000,
+          "iron": 2000,
+          "provisions": 18,
+          "buildTime": 7200
+        },
+        "18": {
+          "wood": 3000,
+          "clay": 2000,
+          "iron": 3000,
+          "provisions": 21,
+          "buildTime": 9000
+        },
+        "19": {
+          "wood": 3000,
+          "clay": 3000,
+          "iron": 3000,
+          "provisions": 25,
+          "buildTime": 10800
+        },
+        "20": {
+          "wood": 4000,
+          "clay": 3000,
+          "iron": 4000,
+          "provisions": 28,
+          "buildTime": 14400
+        },
+        "21": {
+          "wood": 5000,
+          "clay": 4000,
+          "iron": 5000,
+          "provisions": 34,
+          "buildTime": 18000
+        },
+        "22": {
+          "wood": 6000,
+          "clay": 5000,
+          "iron": 6000,
+          "provisions": 39,
+          "buildTime": 21600
+        },
+        "23": {
+          "wood": 8000,
+          "clay": 6000,
+          "iron": 8000,
+          "provisions": 46,
+          "buildTime": 25200
+        },
+        "24": {
+          "wood": 10000,
+          "clay": 8000,
+          "iron": 10000,
+          "provisions": 54,
+          "buildTime": 28800
+        },
+        "25": {
+          "wood": 12000,
+          "clay": 10000,
+          "iron": 12000,
+          "provisions": 63,
+          "buildTime": 32400
+        },
+        "26": {
+          "wood": 15000,
+          "clay": 12000,
+          "iron": 15000,
+          "provisions": 74,
+          "buildTime": 36000
+        },
+        "27": {
+          "wood": 19000,
+          "clay": 16000,
+          "iron": 19000,
+          "provisions": 86,
+          "buildTime": 43200
+        },
+        "28": {
+          "wood": 23000,
+          "clay": 19000,
+          "iron": 23000,
+          "provisions": 100,
+          "buildTime": 50400
+        },
+        "29": {
+          "wood": 29000,
+          "clay": 24000,
+          "iron": 29000,
+          "provisions": 118,
+          "buildTime": 57600
+        },
+        "30": {
+          "wood": 36000,
+          "clay": 30000,
+          "iron": 36000,
+          "provisions": 138,
+          "buildTime": 64800
+        }
+      }
+    },
+    "farm": {
+      "name": "Farm",
+      "minLevel": 1,
+      "maxLevel": 30,
+      "levelCosts": {
+        "1": {
+          "wood": 40,
+          "clay": 50,
+          "iron": 30,
+          "provisions": 0,
+          "buildTime": 60
+        },
+        "2": {
+          "wood": 50,
+          "clay": 70,
+          "iron": 40,
+          "provisions": 0,
+          "buildTime": 90
+        },
+        "3": {
+          "wood": 70,
+          "clay": 90,
+          "iron": 50,
+          "provisions": 0,
+          "buildTime": 120
+        },
+        "4": {
+          "wood": 90,
+          "clay": 110,
+          "iron": 70,
+          "provisions": 0,
+          "buildTime": 300
+        },
+        "5": {
+          "wood": 120,
+          "clay": 150,
+          "iron": 90,
+          "provisions": 0,
+          "buildTime": 450
+        },
+        "6": {
+          "wood": 150,
+          "clay": 190,
+          "iron": 120,
+          "provisions": 0,
+          "buildTime": 600
+        },
+        "7": {
+          "wood": 200,
+          "clay": 250,
+          "iron": 150,
+          "provisions": 0,
+          "buildTime": 1800
+        },
+        "8": {
+          "wood": 260,
+          "clay": 330,
+          "iron": 200,
+          "provisions": 0,
+          "buildTime": 2400
+        },
+        "9": {
+          "wood": 350,
+          "clay": 430,
+          "iron": 260,
+          "provisions": 0,
+          "buildTime": 3000
+        },
+        "10": {
+          "wood": 500,
+          "clay": 600,
+          "iron": 300,
+          "provisions": 0,
+          "buildTime": 3600
+        },
+        "11": {
+          "wood": 600,
+          "clay": 700,
+          "iron": 400,
+          "provisions": 0,
+          "buildTime": 4500
+        },
+        "12": {
+          "wood": 800,
+          "clay": 1000,
+          "iron": 600,
+          "provisions": 0,
+          "buildTime": 5400
+        },
+        "13": {
+          "wood": 1000,
+          "clay": 1300,
+          "iron": 800,
+          "provisions": 0,
+          "buildTime": 6300
+        },
+        "14": {
+          "wood": 1300,
+          "clay": 1700,
+          "iron": 1000,
+          "provisions": 0,
+          "buildTime": 7200
+        },
+        "15": {
+          "wood": 1800,
+          "clay": 2200,
+          "iron": 1300,
+          "provisions": 0,
+          "buildTime": 9000
+        },
+        "16": {
+          "wood": 2300,
+          "clay": 2900,
+          "iron": 1700,
+          "provisions": 0,
+          "buildTime": 10800
+        },
+        "17": {
+          "wood": 3000,
+          "clay": 3800,
+          "iron": 2300,
+          "provisions": 0,
+          "buildTime": 12600
+        },
+        "18": {
+          "wood": 3900,
+          "clay": 4900,
+          "iron": 3000,
+          "provisions": 0,
+          "buildTime": 14400
+        },
+        "19": {
+          "wood": 5200,
+          "clay": 6500,
+          "iron": 3900,
+          "provisions": 0,
+          "buildTime": 18000
+        },
+        "20": {
+          "wood": 6800,
+          "clay": 8500,
+          "iron": 5100,
+          "provisions": 0,
+          "buildTime": 21600
+        },
+        "21": {
+          "wood": 8900,
+          "clay": 11100,
+          "iron": 6600,
+          "provisions": 0,
+          "buildTime": 25200
+        },
+        "22": {
+          "wood": 12000,
+          "clay": 15000,
+          "iron": 9000,
+          "provisions": 0,
+          "buildTime": 28800
+        },
+        "23": {
+          "wood": 15000,
+          "clay": 19000,
+          "iron": 11000,
+          "provisions": 0,
+          "buildTime": 36000
+        },
+        "24": {
+          "wood": 20000,
+          "clay": 25000,
+          "iron": 15000,
+          "provisions": 0,
+          "buildTime": 43200
+        },
+        "25": {
+          "wood": 26000,
+          "clay": 33000,
+          "iron": 20000,
+          "provisions": 0,
+          "buildTime": 50400
+        },
+        "26": {
+          "wood": 34000,
+          "clay": 43000,
+          "iron": 26000,
+          "provisions": 0,
+          "buildTime": 57600
+        },
+        "27": {
+          "wood": 45000,
+          "clay": 56000,
+          "iron": 34000,
+          "provisions": 0,
+          "buildTime": 64800
+        },
+        "28": {
+          "wood": 59000,
+          "clay": 73000,
+          "iron": 44000,
+          "provisions": 0,
+          "buildTime": 79200
+        },
+        "29": {
+          "wood": 77000,
+          "clay": 96000,
+          "iron": 58000,
+          "provisions": 0,
+          "buildTime": 93600
+        },
+        "30": {
+          "wood": 101000,
+          "clay": 126000,
+          "iron": 76000,
+          "provisions": 0,
+          "buildTime": 108000
+        }
+      }
+    },
+    "warehouse": {
+      "name": "Warehouse",
+      "minLevel": 1,
+      "maxLevel": 30,
+      "levelCosts": {
+        "1": {
+          "wood": 200,
+          "clay": 190,
+          "iron": 170,
+          "provisions": 0,
+          "buildTime": 30
+        },
+        "2": {
+          "wood": 240,
+          "clay": 230,
+          "iron": 210,
+          "provisions": 0,
+          "buildTime": 60
+        },
+        "3": {
+          "wood": 290,
+          "clay": 280,
+          "iron": 250,
+          "provisions": 0,
+          "buildTime": 90
+        },
+        "4": {
+          "wood": 350,
+          "clay": 340,
+          "iron": 300,
+          "provisions": 0,
+          "buildTime": 120
+        },
+        "5": {
+          "wood": 430,
+          "clay": 410,
+          "iron": 360,
+          "provisions": 0,
+          "buildTime": 150
+        },
+        "6": {
+          "wood": 520,
+          "clay": 490,
+          "iron": 440,
+          "provisions": 0,
+          "buildTime": 240
+        },
+        "7": {
+          "wood": 630,
+          "clay": 600,
+          "iron": 530,
+          "provisions": 0,
+          "buildTime": 360
+        },
+        "8": {
+          "wood": 760,
+          "clay": 720,
+          "iron": 650,
+          "provisions": 0,
+          "buildTime": 600
+        },
+        "9": {
+          "wood": 920,
+          "clay": 870,
+          "iron": 780,
+          "provisions": 0,
+          "buildTime": 1200
+        },
+        "10": {
+          "wood": 1100,
+          "clay": 1100,
+          "iron": 900,
+          "provisions": 0,
+          "buildTime": 2400
+        },
+        "11": {
+          "wood": 1300,
+          "clay": 1300,
+          "iron": 1100,
+          "provisions": 0,
+          "buildTime": 3600
+        },
+        "12": {
+          "wood": 1600,
+          "clay": 1500,
+          "iron": 1400,
+          "provisions": 0,
+          "buildTime": 5400
+        },
+        "13": {
+          "wood": 2000,
+          "clay": 1900,
+          "iron": 1700,
+          "provisions": 0,
+          "buildTime": 7200
+        },
+        "14": {
+          "wood": 2400,
+          "clay": 2300,
+          "iron": 2000,
+          "provisions": 0,
+          "buildTime": 9000
+        },
+        "15": {
+          "wood": 2900,
+          "clay": 2700,
+          "iron": 2500,
+          "provisions": 0,
+          "buildTime": 10800
+        },
+        "16": {
+          "wood": 3500,
+          "clay": 3300,
+          "iron": 3000,
+          "provisions": 0,
+          "buildTime": 12600
+        },
+        "17": {
+          "wood": 4200,
+          "clay": 4000,
+          "iron": 3600,
+          "provisions": 0,
+          "buildTime": 14400
+        },
+        "18": {
+          "wood": 5100,
+          "clay": 4900,
+          "iron": 4300,
+          "provisions": 0,
+          "buildTime": 18000
+        },
+        "19": {
+          "wood": 6200,
+          "clay": 5900,
+          "iron": 5300,
+          "provisions": 0,
+          "buildTime": 21600
+        },
+        "20": {
+          "wood": 7500,
+          "clay": 7100,
+          "iron": 6400,
+          "provisions": 0,
+          "buildTime": 25200
+        },
+        "21": {
+          "wood": 9100,
+          "clay": 8600,
+          "iron": 7700,
+          "provisions": 0,
+          "buildTime": 28800
+        },
+        "22": {
+          "wood": 11000,
+          "clay": 10000,
+          "iron": 9000,
+          "provisions": 0,
+          "buildTime": 36000
+        },
+        "23": {
+          "wood": 13000,
+          "clay": 13000,
+          "iron": 11000,
+          "provisions": 0,
+          "buildTime": 43200
+        },
+        "24": {
+          "wood": 16000,
+          "clay": 15000,
+          "iron": 14000,
+          "provisions": 0,
+          "buildTime": 50400
+        },
+        "25": {
+          "wood": 19000,
+          "clay": 18000,
+          "iron": 16000,
+          "provisions": 0,
+          "buildTime": 57600
+        },
+        "26": {
+          "wood": 23000,
+          "clay": 22000,
+          "iron": 20000,
+          "provisions": 0,
+          "buildTime": 64800
+        },
+        "27": {
+          "wood": 28000,
+          "clay": 27000,
+          "iron": 24000,
+          "provisions": 0,
+          "buildTime": 72000
+        },
+        "28": {
+          "wood": 34000,
+          "clay": 33000,
+          "iron": 29000,
+          "provisions": 0,
+          "buildTime": 79200
+        },
+        "29": {
+          "wood": 42000,
+          "clay": 40000,
+          "iron": 35000,
+          "provisions": 0,
+          "buildTime": 93600
+        },
+        "30": {
+          "wood": 50000,
+          "clay": 48000,
+          "iron": 43000,
+          "provisions": 0,
+          "buildTime": 108000
+        }
+      }
+    },
+    "wall": {
+      "name": "Wall",
+      "minLevel": 0,
+      "maxLevel": 20,
+      "levelCosts": {
+        "1": {
+          "wood": 50,
+          "clay": 100,
+          "iron": 20,
+          "provisions": 5,
+          "buildTime": 150
+        },
+        "2": {
+          "wood": 60,
+          "clay": 130,
+          "iron": 30,
+          "provisions": 1,
+          "buildTime": 300
+        },
+        "3": {
+          "wood": 80,
+          "clay": 160,
+          "iron": 30,
+          "provisions": 1,
+          "buildTime": 900
+        },
+        "4": {
+          "wood": 100,
+          "clay": 210,
+          "iron": 40,
+          "provisions": 1,
+          "buildTime": 1800
+        },
+        "5": {
+          "wood": 130,
+          "clay": 260,
+          "iron": 50,
+          "provisions": 1,
+          "buildTime": 3000
+        },
+        "6": {
+          "wood": 160,
+          "clay": 340,
+          "iron": 60,
+          "provisions": 2,
+          "buildTime": 4800
+        },
+        "7": {
+          "wood": 200,
+          "clay": 430,
+          "iron": 80,
+          "provisions": 2,
+          "buildTime": 7200
+        },
+        "8": {
+          "wood": 250,
+          "clay": 550,
+          "iron": 100,
+          "provisions": 2,
+          "buildTime": 10800
+        },
+        "9": {
+          "wood": 320,
+          "clay": 700,
+          "iron": 130,
+          "provisions": 3,
+          "buildTime": 14400
+        },
+        "10": {
+          "wood": 400,
+          "clay": 890,
+          "iron": 160,
+          "provisions": 3,
+          "buildTime": 18000
+        },
+        "11": {
+          "wood": 500,
+          "clay": 1100,
+          "iron": 200,
+          "provisions": 3,
+          "buildTime": 21600
+        },
+        "12": {
+          "wood": 640,
+          "clay": 1400,
+          "iron": 250,
+          "provisions": 4,
+          "buildTime": 25200
+        },
+        "13": {
+          "wood": 800,
+          "clay": 1800,
+          "iron": 320,
+          "provisions": 5,
+          "buildTime": 32400
+        },
+        "14": {
+          "wood": 1000,
+          "clay": 2400,
+          "iron": 400,
+          "provisions": 5,
+          "buildTime": 43200
+        },
+        "15": {
+          "wood": 1300,
+          "clay": 3000,
+          "iron": 510,
+          "provisions": 7,
+          "buildTime": 50400
+        },
+        "16": {
+          "wood": 1600,
+          "clay": 3800,
+          "iron": 640,
+          "provisions": 8,
+          "buildTime": 64800
+        },
+        "17": {
+          "wood": 2000,
+          "clay": 4900,
+          "iron": 810,
+          "provisions": 9,
+          "buildTime": 79200
+        },
+        "18": {
+          "wood": 2500,
+          "clay": 6200,
+          "iron": 1000,
+          "provisions": 10,
+          "buildTime": 93600
+        },
+        "19": {
+          "wood": 3200,
+          "clay": 7900,
+          "iron": 1300,
+          "provisions": 12,
+          "buildTime": 111600
+        },
+        "20": {
+          "wood": 4000,
+          "clay": 10100,
+          "iron": 1600,
+          "provisions": 15,
+          "buildTime": 129600
+        }
+      }
+    }
+  },
+  "instantFinish": {
+    "timeRange": [
+      180,
+      3600,
+      10800,
+      86400,
+      604800
+    ],
+    "crownRange": [
+      10,
+      35,
+      80,
+      220,
+      400
+    ],
+    "fixedTime": 300,
+    "fixedCrowns": 3
+  }
+}
