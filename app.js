@@ -65,11 +65,20 @@ function cacheElements() {
   els.durationSeconds = document.getElementById("duration-seconds");
   els.durationTotalSeconds = document.getElementById("duration-total-seconds");
   els.resultCrowns = document.getElementById("result-crowns");
+
+  els.tabWallbreaker = document.getElementById("tab-wallbreaker");
+  els.viewWallbreaker = document.getElementById("view-wallbreaker");
+  els.wbProvisions = document.getElementById("wb-provisions");
+  els.wbTrebuchets = document.getElementById("wb-trebuchets");
+  els.wbError = document.getElementById("wb-error");
+  els.wbResultRams = document.getElementById("wb-result-rams");
+  els.wbResultEscort = document.getElementById("wb-result-escort");
 }
 
 function bindTabButtons() {
   els.tabBuilding.addEventListener("click", () => setActiveTab("building"));
   els.tabCrowns.addEventListener("click", () => setActiveTab("crowns"));
+  els.tabWallbreaker.addEventListener("click", () => setActiveTab("wallbreaker"));
 }
 
 function bindInputs() {
@@ -92,16 +101,19 @@ function bindInputs() {
   els.durationHours.addEventListener("input", recalculateCrowns);
   els.durationMinutes.addEventListener("input", recalculateCrowns);
   els.durationSeconds.addEventListener("input", recalculateCrowns);
+
+  els.wbProvisions.addEventListener("input", recalculateWallbreaker);
+  els.wbTrebuchets.addEventListener("input", recalculateWallbreaker);
 }
 
 function setActiveTab(tab) {
-  const isBuilding = tab === "building";
+  els.viewBuilding.classList.toggle("hidden", tab !== "building");
+  els.viewCrowns.classList.toggle("hidden", tab !== "crowns");
+  els.viewWallbreaker.classList.toggle("hidden", tab !== "wallbreaker");
 
-  els.viewBuilding.classList.toggle("hidden", !isBuilding);
-  els.viewCrowns.classList.toggle("hidden", isBuilding);
-
-  setTabStyle(els.tabBuilding, isBuilding);
-  setTabStyle(els.tabCrowns, !isBuilding);
+  setTabStyle(els.tabBuilding, tab === "building");
+  setTabStyle(els.tabCrowns, tab === "crowns");
+  setTabStyle(els.tabWallbreaker, tab === "wallbreaker");
 }
 
 function setTabStyle(button, isActive) {
@@ -295,6 +307,26 @@ function interpolateCrowns(remainingSeconds, startTime, endTime, startPrice, end
     1;
 
   return Math.max(0, crowns);
+}
+
+function recalculateWallbreaker() {
+  const provisions = toNonNegativeInt(els.wbProvisions.value, 0);
+  const trebuchets = toNonNegativeInt(els.wbTrebuchets.value, 0);
+
+  const trebProvisionCost = 5 * trebuchets;
+  if (trebProvisionCost > provisions) {
+    els.wbError.textContent = "Trebuchets exceed available provisions.";
+    els.wbResultRams.textContent = "0";
+    els.wbResultEscort.textContent = "0";
+    return;
+  }
+
+  els.wbError.textContent = "";
+  const rams = Math.floor((provisions - trebProvisionCost) / 2 / 5) + trebuchets;
+  const escortProvisions = provisions - rams * 5;
+
+  els.wbResultRams.textContent = formatNumber(rams);
+  els.wbResultEscort.textContent = formatNumber(escortProvisions);
 }
 
 function getSelectedBuilding() {
