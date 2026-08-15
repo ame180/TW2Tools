@@ -33,7 +33,7 @@ async function initialize() {
     populateBuildingSelect();
     populateTroopSelect();
     renderSpeedTechCheckboxes();
-    applyTroopInputBounds();
+    applyTroopModifierUi();
 
     state.dataReady = true;
     els.dataStatus.textContent = "Data loaded successfully.";
@@ -91,6 +91,9 @@ function cacheElements() {
   els.troopSpeedTechsLabel = document.getElementById("troop-speed-techs-label");
   els.troopTribeTech = document.getElementById("troop-tribe-tech");
   els.troopTribeTechLabel = document.getElementById("troop-tribe-tech-label");
+  els.troopDomination = document.getElementById("troop-domination");
+  els.troopDominationLabel = document.getElementById("troop-domination-label");
+  els.troopDominationText = document.getElementById("troop-domination-text");
   els.troopHallLevel = document.getElementById("troop-hall-level");
   els.troopModifiers = document.getElementById("troop-modifiers");
   els.troopNote = document.getElementById("troop-note");
@@ -137,6 +140,7 @@ function bindInputs() {
   els.troopSelect.addEventListener("change", recalculateTroops);
   els.troopCount.addEventListener("input", recalculateTroops);
   els.troopTribeTech.addEventListener("input", recalculateTroops);
+  els.troopDomination.addEventListener("change", recalculateTroops);
   els.troopHallLevel.addEventListener("input", recalculateTroops);
 }
 
@@ -382,12 +386,14 @@ function populateTroopSelect() {
   }
 }
 
-function applyTroopInputBounds() {
+function applyTroopModifierUi() {
   const tribeTech = state.recruitModifiers.tribeRecruitTech || {};
   const hallOfOrders = state.recruitModifiers.hallOfOrders || {};
+  const domination = state.recruitModifiers.domination || {};
 
   els.troopTribeTech.max = String(toNumber(tribeTech.maxLevel));
   els.troopHallLevel.max = String(toNumber(hallOfOrders.maxLevel));
+  els.troopDominationText.textContent = domination.label || `${toNumber(domination.percent)}%`;
 }
 
 function renderSpeedTechCheckboxes() {
@@ -455,14 +461,12 @@ function recalculateTroops() {
   setSpeedInputsEnabled(isBarracksUnit);
   els.troopNote.textContent = isBarracksUnit
     ? ""
-    : `Recruit speed techs apply to Barracks units only - ignored for ${troop.name}.`;
+    : `Recruit speed bonuses apply to Barracks units only - ignored for ${troop.name}.`;
 
-  const speedPercent = getRecruitSpeedPercent(troop, tribeLevel);
+  const speedDivisor = getRecruitTimeDivisor(isBarracksUnit, tribeLevel);
   const discountPercent = clamp(hallLevel * toNumber(hallOfOrders.percentPerLevel), 0, 100);
 
-  const recruitTime = Math.round(
-    toNumber(troop.recruitTime) * count * (1 - speedPercent / 100)
-  );
+  const recruitTime = Math.round(toNumber(troop.recruitTime) * count / speedDivisor);
   const priceMultiplier = 1 - discountPercent / 100;
 
   const totals = {
@@ -474,29 +478,35 @@ function recalculateTroops() {
     crowns: recruitTime > 0 ? calculateCrowns(recruitTime, state.instantFinish) : 0
   };
 
+  const effectiveSpeedPercent = Math.round((1 - 1 / speedDivisor) * 100);
   els.troopModifiers.textContent =
-    `Recruit speed -${speedPercent}% | Resource cost -${discountPercent}%`;
+    `Recruit speed /${speedDivisor.toFixed(2)} (-${effectiveSpeedPercent}%) | Resource cost -${discountPercent}%`;
 
   setTroopResults(totals);
 }
 
-function getRecruitSpeedPercent(troop, tribeLevel) {
-  if (troop.recruitBuilding !== "barracks") {
-    return 0;
+function getRecruitTimeDivisor(isBarracksUnit, tribeLevel) {
+  if (!isBarracksUnit) {
+    return 1;
   }
 
-  let percent = 0;
+  let barracksPercent = 0;
 
   for (const tech of state.troopSpeedTechInputs || []) {
     if (tech.checkbox.checked) {
-      percent += tech.percent;
+      barracksPercent += tech.percent;
     }
   }
 
   const tribeTech = state.recruitModifiers.tribeRecruitTech || {};
-  percent += tribeLevel * toNumber(tribeTech.percentPerLevel);
+  const domination = state.recruitModifiers.domination || {};
 
-  return clamp(percent, 0, 100);
+  let playerPercent = tribeLevel * toNumber(tribeTech.percentPerLevel);
+  if (els.troopDomination.checked) {
+    playerPercent += toNumber(domination.percent);
+  }
+
+  return (1 + barracksPercent / 100) * (1 + playerPercent / 100);
 }
 
 function setSpeedInputsEnabled(isEnabled) {
@@ -505,8 +515,10 @@ function setSpeedInputsEnabled(isEnabled) {
   }
 
   els.troopTribeTech.disabled = !isEnabled;
+  els.troopDomination.disabled = !isEnabled;
   els.troopSpeedTechsLabel.classList.toggle("opacity-50", !isEnabled);
   els.troopTribeTechLabel.classList.toggle("opacity-50", !isEnabled);
+  els.troopDominationLabel.classList.toggle("opacity-50", !isEnabled);
 }
 
 function setTroopResults(totals) {

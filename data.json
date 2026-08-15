@@ -2370,6 +2370,10 @@
       "maxLevel": 5,
       "percentPerLevel": 4
     },
+    "domination": {
+      "label": "Domination (10%)",
+      "percent": 10
+    },
     "hallOfOrders": {
       "maxLevel": 10,
       "percentPerLevel": 1

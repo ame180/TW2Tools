@@ -193,7 +193,7 @@
           </label>
         </div>
 
-        <div class="mt-4 grid gap-4 md:grid-cols-3">
+        <div class="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <div id="troop-speed-techs-label" class="text-sm">
             <span class="mb-1 block font-medium">Barracks Speed Techs</span>
             <div id="troop-speed-techs" class="space-y-1"></div>
@@ -203,6 +203,14 @@
             <span class="mb-1 block font-medium">Tribe Recruitment Tech (level)</span>
             <input id="troop-tribe-tech" type="number" min="0" value="0" class="w-full rounded border border-slate-300 px-3 py-2" />
           </label>
+
+          <div id="troop-domination-label" class="text-sm">
+            <span class="mb-1 block font-medium">Global Bonus</span>
+            <label class="flex items-center gap-2">
+              <input id="troop-domination" type="checkbox" />
+              <span id="troop-domination-text"></span>
+            </label>
+          </div>
 
           <label class="text-sm">
             <span class="mb-1 block font-medium">Hall of Orders (level)</span>
