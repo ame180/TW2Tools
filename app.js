@@ -58,6 +58,7 @@ function cacheElements() {
   els.resultIron = document.getElementById("result-iron");
   els.resultFood = document.getElementById("result-food");
   els.resultTime = document.getElementById("result-time");
+  els.resultBuildingCrowns = document.getElementById("result-building-crowns");
 
   els.durationDays = document.getElementById("duration-days");
   els.durationHours = document.getElementById("duration-hours");
@@ -187,13 +188,13 @@ function recalculateBuilding() {
 
   if (targetLevel < currentLevel) {
     els.buildingError.textContent = "Target level must be greater than or equal to current level.";
-    setBuildingResults({ wood: 0, clay: 0, iron: 0, provisions: 0, buildTime: 0 });
+    setBuildingResults({ wood: 0, clay: 0, iron: 0, provisions: 0, buildTime: 0, crowns: 0 });
     return;
   }
 
   els.buildingError.textContent = "";
 
-  const totals = { wood: 0, clay: 0, iron: 0, provisions: 0, buildTime: 0 };
+  const totals = { wood: 0, clay: 0, iron: 0, provisions: 0, buildTime: 0, crowns: 0 };
   const levelCosts = building.levelCosts || {};
 
   for (let level = currentLevel + 1; level <= targetLevel; level += 1) {
@@ -207,6 +208,7 @@ function recalculateBuilding() {
     totals.iron += toNumber(row.iron);
     totals.provisions += toNumber(row.provisions);
     totals.buildTime += toNumber(row.buildTime);
+    totals.crowns += calculateCrowns(toNumber(row.buildTime), state.instantFinish);
   }
 
   setBuildingResults(totals);
@@ -218,6 +220,7 @@ function setBuildingResults(totals) {
   els.resultIron.textContent = formatNumber(totals.iron);
   els.resultFood.textContent = formatNumber(totals.provisions);
   els.resultTime.textContent = formatDuration(totals.buildTime);
+  els.resultBuildingCrowns.textContent = formatNumber(totals.crowns);
 }
 
 function recalculateCrowns() {
