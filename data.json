@@ -2237,5 +2237,142 @@
     ],
     "fixedTime": 300,
     "fixedCrowns": 3
+  },
+  "troops": {
+    "spearman": {
+      "name": "Spearman",
+      "recruitBuilding": "barracks",
+      "wood": 50,
+      "clay": 30,
+      "iron": 20,
+      "provisions": 1,
+      "recruitTime": 90
+    },
+    "swordsman": {
+      "name": "Swordsman",
+      "recruitBuilding": "barracks",
+      "wood": 30,
+      "clay": 30,
+      "iron": 70,
+      "provisions": 1,
+      "recruitTime": 120
+    },
+    "axeman": {
+      "name": "Axeman",
+      "recruitBuilding": "barracks",
+      "wood": 60,
+      "clay": 30,
+      "iron": 40,
+      "provisions": 1,
+      "recruitTime": 150
+    },
+    "archer": {
+      "name": "Archer",
+      "recruitBuilding": "barracks",
+      "wood": 80,
+      "clay": 30,
+      "iron": 60,
+      "provisions": 1,
+      "recruitTime": 180
+    },
+    "lightCavalry": {
+      "name": "Light Cavalry",
+      "recruitBuilding": "barracks",
+      "wood": 125,
+      "clay": 100,
+      "iron": 250,
+      "provisions": 4,
+      "recruitTime": 360
+    },
+    "mountedArcher": {
+      "name": "Mounted Archer",
+      "recruitBuilding": "barracks",
+      "wood": 250,
+      "clay": 200,
+      "iron": 100,
+      "provisions": 5,
+      "recruitTime": 450
+    },
+    "heavyCavalry": {
+      "name": "Heavy Cavalry",
+      "recruitBuilding": "barracks",
+      "wood": 200,
+      "clay": 150,
+      "iron": 600,
+      "provisions": 6,
+      "recruitTime": 600
+    },
+    "ram": {
+      "name": "Ram",
+      "recruitBuilding": "barracks",
+      "wood": 300,
+      "clay": 200,
+      "iron": 200,
+      "provisions": 5,
+      "recruitTime": 480
+    },
+    "catapult": {
+      "name": "Catapult",
+      "recruitBuilding": "barracks",
+      "wood": 320,
+      "clay": 400,
+      "iron": 100,
+      "provisions": 8,
+      "recruitTime": 450
+    },
+    "trebuchet": {
+      "name": "Trebuchet",
+      "recruitBuilding": "hallOfOrders",
+      "wood": 4000,
+      "clay": 2000,
+      "iron": 2000,
+      "provisions": 10,
+      "recruitTime": 1200
+    },
+    "berserker": {
+      "name": "Berserker",
+      "recruitBuilding": "hallOfOrders",
+      "wood": 1200,
+      "clay": 1200,
+      "iron": 2400,
+      "provisions": 6,
+      "recruitTime": 1200
+    },
+    "nobleman": {
+      "name": "Nobleman",
+      "recruitBuilding": "academy",
+      "wood": 40000,
+      "clay": 50000,
+      "iron": 50000,
+      "provisions": 100,
+      "recruitTime": 10800
+    }
+  },
+  "recruitModifiers": {
+    "barracksSpeedTechs": [
+      {
+        "id": "speedTech1",
+        "label": "Barracks Speed I (5%)",
+        "percent": 5
+      },
+      {
+        "id": "speedTech2",
+        "label": "Barracks Speed II (10%)",
+        "percent": 10
+      },
+      {
+        "id": "speedTech3",
+        "label": "Barracks Speed III (15%)",
+        "percent": 15
+      }
+    ],
+    "tribeRecruitTech": {
+      "maxLevel": 5,
+      "percentPerLevel": 4
+    },
+    "hallOfOrders": {
+      "maxLevel": 10,
+      "percentPerLevel": 1
+    }
   }
 }

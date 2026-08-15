@@ -38,6 +38,14 @@
         >
           Wallbreaker Calculator
         </button>
+        <button
+          id="tab-troops"
+          data-tab="troops"
+          type="button"
+          class="rounded border border-slate-300 bg-white px-4 py-2 text-sm font-medium"
+        >
+          Troops Calculator
+        </button>
       </div>
 
       <section id="view-building" class="rounded border border-slate-300 bg-white p-4">
@@ -166,6 +174,71 @@
           <div class="rounded border border-slate-200 bg-slate-50 p-3">
             <p class="text-xs text-slate-500">Escort Provisions</p>
             <p id="wb-result-escort" class="text-lg font-semibold">0</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="view-troops" class="hidden rounded border border-slate-300 bg-white p-4">
+        <h2 class="mb-4 text-lg font-semibold">Troops Calculator</h2>
+
+        <div class="grid gap-4 md:grid-cols-2">
+          <label class="text-sm">
+            <span class="mb-1 block font-medium">Troop</span>
+            <select id="troop-select" class="w-full rounded border border-slate-300 px-3 py-2"></select>
+          </label>
+
+          <label class="text-sm">
+            <span class="mb-1 block font-medium">Count</span>
+            <input id="troop-count" type="number" min="0" value="0" class="w-full rounded border border-slate-300 px-3 py-2" />
+          </label>
+        </div>
+
+        <div class="mt-4 grid gap-4 md:grid-cols-3">
+          <div id="troop-speed-techs-label" class="text-sm">
+            <span class="mb-1 block font-medium">Barracks Speed Techs</span>
+            <div id="troop-speed-techs" class="space-y-1"></div>
+          </div>
+
+          <label id="troop-tribe-tech-label" class="text-sm">
+            <span class="mb-1 block font-medium">Tribe Recruitment Tech (level)</span>
+            <input id="troop-tribe-tech" type="number" min="0" value="0" class="w-full rounded border border-slate-300 px-3 py-2" />
+          </label>
+
+          <label class="text-sm">
+            <span class="mb-1 block font-medium">Hall of Orders (level)</span>
+            <input id="troop-hall-level" type="number" min="0" value="0" class="w-full rounded border border-slate-300 px-3 py-2" />
+            <span class="mt-1 block text-xs text-slate-500">Only set this if your Hall of Orders bonus covers this unit type.</span>
+          </label>
+        </div>
+
+        <p id="troop-modifiers" class="mt-3 text-sm text-slate-600"></p>
+        <p id="troop-note" class="mt-1 text-sm text-slate-600"></p>
+        <p id="troop-error" class="mt-1 text-sm text-red-700"></p>
+
+        <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div class="rounded border border-slate-200 bg-slate-50 p-3">
+            <p class="text-xs text-slate-500">Wood</p>
+            <p id="troop-result-wood" class="text-lg font-semibold">0</p>
+          </div>
+          <div class="rounded border border-slate-200 bg-slate-50 p-3">
+            <p class="text-xs text-slate-500">Clay</p>
+            <p id="troop-result-clay" class="text-lg font-semibold">0</p>
+          </div>
+          <div class="rounded border border-slate-200 bg-slate-50 p-3">
+            <p class="text-xs text-slate-500">Iron</p>
+            <p id="troop-result-iron" class="text-lg font-semibold">0</p>
+          </div>
+          <div class="rounded border border-slate-200 bg-slate-50 p-3">
+            <p class="text-xs text-slate-500">Provisions</p>
+            <p id="troop-result-provisions" class="text-lg font-semibold">0</p>
+          </div>
+          <div class="rounded border border-slate-200 bg-slate-50 p-3">
+            <p class="text-xs text-slate-500">Recruit Time</p>
+            <p id="troop-result-time" class="text-lg font-semibold">00:00:00:00</p>
+          </div>
+          <div class="rounded border border-slate-200 bg-slate-50 p-3">
+            <p class="text-xs text-slate-500">Crown Cost</p>
+            <p id="troop-result-crowns" class="text-lg font-semibold">0</p>
           </div>
         </div>
       </section>

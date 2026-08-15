@@ -1,6 +1,8 @@
 const state = {
   dataReady: false,
   buildings: {},
+  troops: {},
+  recruitModifiers: {},
   premiumModels: {}
 };
 
@@ -23,10 +25,15 @@ async function initialize() {
 
     const rawData = await response.json();
     state.buildings = rawData.buildings || {};
+    state.troops = rawData.troops || {};
+    state.recruitModifiers = rawData.recruitModifiers || {};
 
     state.instantFinish = rawData.instantFinish || {};
 
     populateBuildingSelect();
+    populateTroopSelect();
+    renderSpeedTechCheckboxes();
+    applyTroopInputBounds();
 
     state.dataReady = true;
     els.dataStatus.textContent = "Data loaded successfully.";
@@ -34,6 +41,7 @@ async function initialize() {
     updateBuildingLevelBounds();
     recalculateBuilding();
     recalculateCrowns();
+    recalculateTroops();
   } catch (error) {
     els.dataStatus.textContent = `Error loading data: ${error.message}`;
   }
@@ -74,12 +82,32 @@ function cacheElements() {
   els.wbError = document.getElementById("wb-error");
   els.wbResultRams = document.getElementById("wb-result-rams");
   els.wbResultEscort = document.getElementById("wb-result-escort");
+
+  els.tabTroops = document.getElementById("tab-troops");
+  els.viewTroops = document.getElementById("view-troops");
+  els.troopSelect = document.getElementById("troop-select");
+  els.troopCount = document.getElementById("troop-count");
+  els.troopSpeedTechs = document.getElementById("troop-speed-techs");
+  els.troopSpeedTechsLabel = document.getElementById("troop-speed-techs-label");
+  els.troopTribeTech = document.getElementById("troop-tribe-tech");
+  els.troopTribeTechLabel = document.getElementById("troop-tribe-tech-label");
+  els.troopHallLevel = document.getElementById("troop-hall-level");
+  els.troopModifiers = document.getElementById("troop-modifiers");
+  els.troopNote = document.getElementById("troop-note");
+  els.troopError = document.getElementById("troop-error");
+  els.troopResultWood = document.getElementById("troop-result-wood");
+  els.troopResultClay = document.getElementById("troop-result-clay");
+  els.troopResultIron = document.getElementById("troop-result-iron");
+  els.troopResultProvisions = document.getElementById("troop-result-provisions");
+  els.troopResultTime = document.getElementById("troop-result-time");
+  els.troopResultCrowns = document.getElementById("troop-result-crowns");
 }
 
 function bindTabButtons() {
   els.tabBuilding.addEventListener("click", () => setActiveTab("building"));
   els.tabCrowns.addEventListener("click", () => setActiveTab("crowns"));
   els.tabWallbreaker.addEventListener("click", () => setActiveTab("wallbreaker"));
+  els.tabTroops.addEventListener("click", () => setActiveTab("troops"));
 }
 
 function bindInputs() {
@@ -105,16 +133,23 @@ function bindInputs() {
 
   els.wbProvisions.addEventListener("input", recalculateWallbreaker);
   els.wbTrebuchets.addEventListener("input", recalculateWallbreaker);
+
+  els.troopSelect.addEventListener("change", recalculateTroops);
+  els.troopCount.addEventListener("input", recalculateTroops);
+  els.troopTribeTech.addEventListener("input", recalculateTroops);
+  els.troopHallLevel.addEventListener("input", recalculateTroops);
 }
 
 function setActiveTab(tab) {
   els.viewBuilding.classList.toggle("hidden", tab !== "building");
   els.viewCrowns.classList.toggle("hidden", tab !== "crowns");
   els.viewWallbreaker.classList.toggle("hidden", tab !== "wallbreaker");
+  els.viewTroops.classList.toggle("hidden", tab !== "troops");
 
   setTabStyle(els.tabBuilding, tab === "building");
   setTabStyle(els.tabCrowns, tab === "crowns");
   setTabStyle(els.tabWallbreaker, tab === "wallbreaker");
+  setTabStyle(els.tabTroops, tab === "troops");
 }
 
 function setTabStyle(button, isActive) {
@@ -330,6 +365,157 @@ function recalculateWallbreaker() {
 
   els.wbResultRams.textContent = formatNumber(rams);
   els.wbResultEscort.textContent = formatNumber(escortProvisions);
+}
+
+function populateTroopSelect() {
+  const entries = Object.entries(state.troops).sort(([, a], [, b]) => {
+    return String(a.name || "").localeCompare(String(b.name || ""));
+  });
+
+  els.troopSelect.innerHTML = "";
+
+  for (const [troopId, troop] of entries) {
+    const option = document.createElement("option");
+    option.value = troopId;
+    option.textContent = troop.name || troopId;
+    els.troopSelect.appendChild(option);
+  }
+}
+
+function applyTroopInputBounds() {
+  const tribeTech = state.recruitModifiers.tribeRecruitTech || {};
+  const hallOfOrders = state.recruitModifiers.hallOfOrders || {};
+
+  els.troopTribeTech.max = String(toNumber(tribeTech.maxLevel));
+  els.troopHallLevel.max = String(toNumber(hallOfOrders.maxLevel));
+}
+
+function renderSpeedTechCheckboxes() {
+  const techs = state.recruitModifiers.barracksSpeedTechs || [];
+
+  els.troopSpeedTechs.innerHTML = "";
+  state.troopSpeedTechInputs = [];
+
+  for (const tech of techs) {
+    const label = document.createElement("label");
+    label.className = "flex items-center gap-2";
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.id = `troop-tech-${tech.id}`;
+    checkbox.addEventListener("change", recalculateTroops);
+
+    const text = document.createElement("span");
+    text.textContent = tech.label || `${toNumber(tech.percent)}%`;
+
+    label.appendChild(checkbox);
+    label.appendChild(text);
+    els.troopSpeedTechs.appendChild(label);
+
+    state.troopSpeedTechInputs.push({ checkbox, percent: toNumber(tech.percent) });
+  }
+}
+
+function recalculateTroops() {
+  if (!state.dataReady) {
+    return;
+  }
+
+  const troop = state.troops[els.troopSelect.value];
+  if (!troop) {
+    els.troopError.textContent = "No troop data available.";
+    els.troopModifiers.textContent = "";
+    els.troopNote.textContent = "";
+    setTroopResults({ wood: 0, clay: 0, iron: 0, provisions: 0, recruitTime: 0, crowns: 0 });
+    return;
+  }
+
+  els.troopError.textContent = "";
+
+  const tribeTech = state.recruitModifiers.tribeRecruitTech || {};
+  const hallOfOrders = state.recruitModifiers.hallOfOrders || {};
+
+  const count = toNonNegativeInt(els.troopCount.value, 0);
+  const tribeLevel = clamp(
+    toNonNegativeInt(els.troopTribeTech.value, 0),
+    0,
+    toNumber(tribeTech.maxLevel)
+  );
+  const hallLevel = clamp(
+    toNonNegativeInt(els.troopHallLevel.value, 0),
+    0,
+    toNumber(hallOfOrders.maxLevel)
+  );
+
+  els.troopCount.value = String(count);
+  els.troopTribeTech.value = String(tribeLevel);
+  els.troopHallLevel.value = String(hallLevel);
+
+  const isBarracksUnit = troop.recruitBuilding === "barracks";
+  setSpeedInputsEnabled(isBarracksUnit);
+  els.troopNote.textContent = isBarracksUnit
+    ? ""
+    : `Recruit speed techs apply to Barracks units only - ignored for ${troop.name}.`;
+
+  const speedPercent = getRecruitSpeedPercent(troop, tribeLevel);
+  const discountPercent = clamp(hallLevel * toNumber(hallOfOrders.percentPerLevel), 0, 100);
+
+  const recruitTime = Math.round(
+    toNumber(troop.recruitTime) * count * (1 - speedPercent / 100)
+  );
+  const priceMultiplier = 1 - discountPercent / 100;
+
+  const totals = {
+    wood: Math.round(toNumber(troop.wood) * count * priceMultiplier),
+    clay: Math.round(toNumber(troop.clay) * count * priceMultiplier),
+    iron: Math.round(toNumber(troop.iron) * count * priceMultiplier),
+    provisions: toNumber(troop.provisions) * count,
+    recruitTime: recruitTime,
+    crowns: recruitTime > 0 ? calculateCrowns(recruitTime, state.instantFinish) : 0
+  };
+
+  els.troopModifiers.textContent =
+    `Recruit speed -${speedPercent}% | Resource cost -${discountPercent}%`;
+
+  setTroopResults(totals);
+}
+
+function getRecruitSpeedPercent(troop, tribeLevel) {
+  if (troop.recruitBuilding !== "barracks") {
+    return 0;
+  }
+
+  let percent = 0;
+
+  for (const tech of state.troopSpeedTechInputs || []) {
+    if (tech.checkbox.checked) {
+      percent += tech.percent;
+    }
+  }
+
+  const tribeTech = state.recruitModifiers.tribeRecruitTech || {};
+  percent += tribeLevel * toNumber(tribeTech.percentPerLevel);
+
+  return clamp(percent, 0, 100);
+}
+
+function setSpeedInputsEnabled(isEnabled) {
+  for (const tech of state.troopSpeedTechInputs || []) {
+    tech.checkbox.disabled = !isEnabled;
+  }
+
+  els.troopTribeTech.disabled = !isEnabled;
+  els.troopSpeedTechsLabel.classList.toggle("opacity-50", !isEnabled);
+  els.troopTribeTechLabel.classList.toggle("opacity-50", !isEnabled);
+}
+
+function setTroopResults(totals) {
+  els.troopResultWood.textContent = formatNumber(totals.wood);
+  els.troopResultClay.textContent = formatNumber(totals.clay);
+  els.troopResultIron.textContent = formatNumber(totals.iron);
+  els.troopResultProvisions.textContent = formatNumber(totals.provisions);
+  els.troopResultTime.textContent = formatDuration(totals.recruitTime);
+  els.troopResultCrowns.textContent = formatNumber(totals.crowns);
 }
 
 function getSelectedBuilding() {
