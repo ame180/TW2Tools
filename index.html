@@ -7,48 +7,32 @@
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
   <body class="bg-slate-100 text-slate-900">
-    <main class="mx-auto max-w-4xl px-4 py-8">
-      <header class="mb-6">
-        <h1 class="text-2xl font-bold">TW2 Tools</h1>
-        <p id="data-status" class="mt-2 text-sm text-slate-700">Loading data...</p>
-      </header>
+    <header class="flex items-center gap-3 border-b border-slate-300 bg-white px-4 py-3 md:hidden">
+      <button
+        id="sidebar-toggle"
+        type="button"
+        aria-label="Toggle navigation"
+        class="rounded border border-slate-300 px-3 py-2 text-sm font-medium"
+      >
+        &#9776;
+      </button>
+      <span class="text-lg font-bold">TW2 Tools</span>
+    </header>
 
-      <div class="mb-4 flex gap-2">
-        <button
-          id="tab-building"
-          data-tab="building"
-          type="button"
-          class="rounded border border-slate-300 bg-white px-4 py-2 text-sm font-medium"
-        >
-          Building Calculator
-        </button>
-        <button
-          id="tab-crowns"
-          data-tab="crowns"
-          type="button"
-          class="rounded border border-slate-300 bg-white px-4 py-2 text-sm font-medium"
-        >
-          Crown Calculator
-        </button>
-        <button
-          id="tab-wallbreaker"
-          data-tab="wallbreaker"
-          type="button"
-          class="rounded border border-slate-300 bg-white px-4 py-2 text-sm font-medium"
-        >
-          Wallbreaker Calculator
-        </button>
-        <button
-          id="tab-troops"
-          data-tab="troops"
-          type="button"
-          class="rounded border border-slate-300 bg-white px-4 py-2 text-sm font-medium"
-        >
-          Troops Calculator
-        </button>
-      </div>
+    <div class="md:flex">
+      <aside
+        id="sidebar"
+        class="fixed inset-y-0 left-0 z-20 w-64 -translate-x-full transform border-r border-slate-300 bg-white p-4 transition-transform md:static md:h-auto md:min-h-screen md:translate-x-0 md:transform-none"
+      >
+        <h1 class="mb-4 hidden text-xl font-bold md:block">TW2 Tools</h1>
+        <nav id="sidebar-nav" class="space-y-1"></nav>
+        <p id="data-status" class="mt-6 text-xs text-slate-500">Loading data...</p>
+      </aside>
 
-      <section id="view-building" class="rounded border border-slate-300 bg-white p-4">
+      <div id="sidebar-backdrop" class="fixed inset-0 z-10 hidden bg-slate-900/40 md:hidden"></div>
+
+      <main class="mx-auto w-full max-w-4xl flex-1 px-4 py-6">
+        <section id="view-building" class="rounded border border-slate-300 bg-white p-4">
         <h2 class="mb-4 text-lg font-semibold">Building Calculator</h2>
 
         <div class="grid gap-4 md:grid-cols-3">
@@ -109,9 +93,9 @@
             <p id="result-building-crowns" class="text-lg font-semibold">0</p>
           </div>
         </div>
-      </section>
+        </section>
 
-      <section id="view-crowns" class="hidden rounded border border-slate-300 bg-white p-4">
+        <section id="view-crowns" class="hidden rounded border border-slate-300 bg-white p-4">
         <h2 class="mb-4 text-lg font-semibold">Crown Cost Calculator (Instant Finish)</h2>
 
         <div class="grid gap-4 md:grid-cols-5">
@@ -147,9 +131,9 @@
             <p id="result-crowns" class="text-lg font-semibold">0</p>
           </div>
         </div>
-      </section>
+        </section>
 
-      <section id="view-wallbreaker" class="hidden rounded border border-slate-300 bg-white p-4">
+        <section id="view-wallbreaker" class="hidden rounded border border-slate-300 bg-white p-4">
         <h2 class="mb-4 text-lg font-semibold">Wallbreaker Calculator</h2>
 
         <div class="grid gap-4 md:grid-cols-2">
@@ -176,9 +160,9 @@
             <p id="wb-result-escort" class="text-lg font-semibold">0</p>
           </div>
         </div>
-      </section>
+        </section>
 
-      <section id="view-troops" class="hidden rounded border border-slate-300 bg-white p-4">
+        <section id="view-troops" class="hidden rounded border border-slate-300 bg-white p-4">
         <h2 class="mb-4 text-lg font-semibold">Troops Calculator</h2>
 
         <div class="grid gap-4 md:grid-cols-2">
@@ -249,9 +233,10 @@
             <p id="troop-result-crowns" class="text-lg font-semibold">0</p>
           </div>
         </div>
-      </section>
-    </main>
+        </section>
+      </main>
+    </div>
 
-    <script src="app.js" defer></script>
+    <script type="module" src="js/main.js"></script>
   </body>
 </html>
