@@ -2390,5 +2390,194 @@
       "maxLevel": 10,
       "percentPerLevel": 1
     }
+  },
+  "units": {
+    "spear": {
+      "attack": 10,
+      "def_inf": 25,
+      "def_cav": 45,
+      "def_arc": 10,
+      "food": 1
+    },
+    "sword": {
+      "attack": 25,
+      "def_inf": 55,
+      "def_cav": 5,
+      "def_arc": 30,
+      "food": 1
+    },
+    "axe": {
+      "attack": 45,
+      "def_inf": 10,
+      "def_cav": 5,
+      "def_arc": 10,
+      "food": 1
+    },
+    "archer": {
+      "attack": 25,
+      "def_inf": 10,
+      "def_cav": 30,
+      "def_arc": 60,
+      "food": 1
+    },
+    "light_cavalry": {
+      "attack": 130,
+      "def_inf": 30,
+      "def_cav": 40,
+      "def_arc": 30,
+      "food": 4
+    },
+    "mounted_archer": {
+      "attack": 150,
+      "def_inf": 40,
+      "def_cav": 30,
+      "def_arc": 50,
+      "food": 5
+    },
+    "heavy_cavalry": {
+      "attack": 150,
+      "def_inf": 200,
+      "def_cav": 160,
+      "def_arc": 180,
+      "food": 6
+    },
+    "ram": {
+      "attack": 2,
+      "def_inf": 20,
+      "def_cav": 50,
+      "def_arc": 20,
+      "food": 5
+    },
+    "catapult": {
+      "attack": 100,
+      "def_inf": 100,
+      "def_cav": 50,
+      "def_arc": 100,
+      "food": 8
+    },
+    "berserker": {
+      "attack": 300,
+      "def_inf": 100,
+      "def_cav": 100,
+      "def_arc": 50,
+      "food": 6
+    },
+    "trebuchet": {
+      "attack": 30,
+      "def_inf": 200,
+      "def_cav": 250,
+      "def_arc": 200,
+      "food": 10
+    },
+    "nobleman": {
+      "attack": 30,
+      "def_inf": 100,
+      "def_cav": 50,
+      "def_arc": 100,
+      "food": 100
+    },
+    "knight": {
+      "attack": 150,
+      "def_inf": 250,
+      "def_cav": 400,
+      "def_arc": 150,
+      "food": 1
+    }
+  },
+  "weapons": {
+    "halberd_of_guan_yu": {
+      "name": "Halberd of Guan Yu",
+      "unit": "spear",
+      "attackBonus": [
+        5,
+        10,
+        20
+      ],
+      "defenceBonus": [
+        10,
+        20,
+        30
+      ]
+    },
+    "paracelsus_longsword": {
+      "name": "Paracelsus Longsword",
+      "unit": "sword",
+      "attackBonus": [
+        5,
+        10,
+        20
+      ],
+      "defenceBonus": [
+        10,
+        20,
+        30
+      ]
+    },
+    "thorgards_battle_axe": {
+      "name": "Thorgard's Battle Axe",
+      "unit": "axe",
+      "attackBonus": [
+        10,
+        20,
+        30
+      ],
+      "defenceBonus": [5, 10, 20]
+    },
+    "nimrods_longbow": {
+      "name": "Nimrod's Longbow",
+      "unit": "archer",
+      "attackBonus": [
+        5,
+        10,
+        20
+      ],
+      "defenceBonus": [5, 10, 20]
+    },
+    "mieszkos_lance": {
+      "name": "Mieszko's Lance",
+      "unit": "light_cavalry",
+      "attackBonus": [
+        10,
+        20,
+        30
+      ],
+      "defenceBonus": [5, 10, 20]
+    },
+    "nimrods_composite_bow": {
+      "name": "Nimrod's Composite Bow",
+      "unit": "mounted_archer",
+      "attackBonus": [
+        10,
+        20,
+        30
+      ],
+      "defenceBonus": [5, 10, 20]
+    },
+    "baptistes_banner": {
+      "name": "Baptiste's Banner",
+      "unit": "heavy_cavalry",
+      "attackBonus": [
+        10,
+        20,
+        30
+      ],
+      "defenceBonus": [
+        10,
+        20,
+        30
+      ]
+    },
+    "carols_morning_star": {
+      "name": "Carol's Morning Star",
+      "unit": "ram",
+      "wallBonus": [25, 50, 100],
+      "defenceBonus": [5, 10, 20]
+    },
+    "aletheias_bonfire": {
+      "name": "Aletheia's Bonfire",
+      "unit": "catapult",
+      "attackBonus": [25, 50, 100],
+      "defenceBonus": [5, 10, 20]
+    }
   }
 }
