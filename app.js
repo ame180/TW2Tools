@@ -8,11 +8,14 @@ const state = {
 
 const els = {};
 
+const TAB_KEYS = ["building", "crowns", "wallbreaker", "troops"];
+const DEFAULT_TAB = "building";
+
 document.addEventListener("DOMContentLoaded", () => {
   cacheElements();
   bindTabButtons();
   bindInputs();
-  setActiveTab("building");
+  setActiveTab(getTabFromHash());
   initialize();
 });
 
@@ -111,6 +114,8 @@ function bindTabButtons() {
   els.tabCrowns.addEventListener("click", () => setActiveTab("crowns"));
   els.tabWallbreaker.addEventListener("click", () => setActiveTab("wallbreaker"));
   els.tabTroops.addEventListener("click", () => setActiveTab("troops"));
+
+  window.addEventListener("hashchange", () => setActiveTab(getTabFromHash()));
 }
 
 function bindInputs() {
@@ -154,6 +159,21 @@ function setActiveTab(tab) {
   setTabStyle(els.tabCrowns, tab === "crowns");
   setTabStyle(els.tabWallbreaker, tab === "wallbreaker");
   setTabStyle(els.tabTroops, tab === "troops");
+
+  syncHashToTab(tab);
+}
+
+function getTabFromHash() {
+  const rawHash = decodeURIComponent(String(window.location.hash).replace(/^#/, ""));
+  return TAB_KEYS.includes(rawHash) ? rawHash : DEFAULT_TAB;
+}
+
+function syncHashToTab(tab) {
+  if (window.location.hash === `#${tab}`) {
+    return;
+  }
+
+  window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}#${tab}`);
 }
 
 function setTabStyle(button, isActive) {
