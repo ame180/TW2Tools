@@ -3,8 +3,9 @@ import { crownsTool } from "./tools/crowns.js";
 import { wallbreakerTool } from "./tools/wallbreaker.js";
 import { troopsTool } from "./tools/troops.js";
 import { moraleTool } from "./tools/morale.js";
+import { walktimeTool } from "./tools/walktime.js";
 
-const tools = [buildingTool, crownsTool, wallbreakerTool, troopsTool, moraleTool];
+const tools = [buildingTool, crownsTool, wallbreakerTool, troopsTool, moraleTool, walktimeTool];
 const DEFAULT_TOOL = tools[0].id;
 
 const els = {};

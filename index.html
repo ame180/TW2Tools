@@ -265,6 +265,31 @@
           Approximate: formula reverse-engineered from observed values.
         </p>
         </section>
+
+        <section id="view-walktime" class="hidden rounded border border-slate-300 bg-white p-4">
+        <h2 class="mb-4 text-lg font-semibold">Walk Time Calculator</h2>
+
+        <div class="grid gap-4 md:grid-cols-2">
+          <label class="text-sm">
+            <span class="mb-1 block font-medium">Source Village (X|Y)</span>
+            <input id="walk-source" type="text" placeholder="500|500" class="w-full rounded border border-slate-300 px-3 py-2" />
+          </label>
+
+          <label class="text-sm">
+            <span class="mb-1 block font-medium">Target Village (X|Y)</span>
+            <input id="walk-target" type="text" placeholder="512|498" class="w-full rounded border border-slate-300 px-3 py-2" />
+          </label>
+        </div>
+
+        <p id="walk-distance" class="mt-3 text-sm text-slate-600"></p>
+        <p id="walk-error" class="mt-1 text-sm text-red-700"></p>
+
+        <div id="walk-results" class="mt-4 overflow-x-auto"></div>
+
+        <p class="mt-3 text-xs text-slate-500">
+          Base travel times without officers or speed effects. Army always moves at the speed of its slowest unit.
+        </p>
+        </section>
       </main>
     </div>
 

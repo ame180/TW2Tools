@@ -2246,7 +2246,8 @@
       "clay": 30,
       "iron": 20,
       "provisions": 1,
-      "recruitTime": 90
+      "recruitTime": 90,
+      "speed": 14
     },
     "swordsman": {
       "name": "Swordsman",
@@ -2255,7 +2256,8 @@
       "clay": 30,
       "iron": 70,
       "provisions": 1,
-      "recruitTime": 120
+      "recruitTime": 120,
+      "speed": 18
     },
     "axeman": {
       "name": "Axeman",
@@ -2264,7 +2266,8 @@
       "clay": 30,
       "iron": 40,
       "provisions": 1,
-      "recruitTime": 150
+      "recruitTime": 150,
+      "speed": 14
     },
     "archer": {
       "name": "Archer",
@@ -2273,7 +2276,8 @@
       "clay": 30,
       "iron": 60,
       "provisions": 1,
-      "recruitTime": 180
+      "recruitTime": 180,
+      "speed": 14
     },
     "lightCavalry": {
       "name": "Light Cavalry",
@@ -2282,7 +2286,8 @@
       "clay": 100,
       "iron": 250,
       "provisions": 4,
-      "recruitTime": 360
+      "recruitTime": 360,
+      "speed": 8
     },
     "mountedArcher": {
       "name": "Mounted Archer",
@@ -2291,7 +2296,8 @@
       "clay": 200,
       "iron": 100,
       "provisions": 5,
-      "recruitTime": 450
+      "recruitTime": 450,
+      "speed": 8
     },
     "heavyCavalry": {
       "name": "Heavy Cavalry",
@@ -2300,7 +2306,8 @@
       "clay": 150,
       "iron": 600,
       "provisions": 6,
-      "recruitTime": 600
+      "recruitTime": 600,
+      "speed": 9
     },
     "ram": {
       "name": "Ram",
@@ -2309,7 +2316,8 @@
       "clay": 200,
       "iron": 200,
       "provisions": 5,
-      "recruitTime": 480
+      "recruitTime": 480,
+      "speed": 24
     },
     "catapult": {
       "name": "Catapult",
@@ -2318,7 +2326,8 @@
       "clay": 400,
       "iron": 100,
       "provisions": 8,
-      "recruitTime": 450
+      "recruitTime": 450,
+      "speed": 24
     },
     "trebuchet": {
       "name": "Trebuchet",
@@ -2327,7 +2336,8 @@
       "clay": 2000,
       "iron": 2000,
       "provisions": 10,
-      "recruitTime": 1200
+      "recruitTime": 1200,
+      "speed": 50
     },
     "berserker": {
       "name": "Berserker",
@@ -2336,7 +2346,8 @@
       "clay": 1200,
       "iron": 2400,
       "provisions": 6,
-      "recruitTime": 1200
+      "recruitTime": 1200,
+      "speed": 14
     },
     "nobleman": {
       "name": "Nobleman",
@@ -2345,7 +2356,8 @@
       "clay": 50000,
       "iron": 50000,
       "provisions": 100,
-      "recruitTime": 10800
+      "recruitTime": 10800,
+      "speed": 35
     }
   },
   "recruitModifiers": {
