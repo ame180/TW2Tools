@@ -32,14 +32,10 @@ function init(data) {
     updateLevelBounds();
     recalculate();
   });
-  els.currentLevel.addEventListener("input", () => {
-    updateLevelBounds();
-    recalculate();
-  });
-  els.targetLevel.addEventListener("input", () => {
-    updateLevelBounds();
-    recalculate();
-  });
+  els.currentLevel.addEventListener("input", recalculate);
+  els.targetLevel.addEventListener("input", recalculate);
+  els.currentLevel.addEventListener("change", normalizeLevelInputs);
+  els.targetLevel.addEventListener("change", normalizeLevelInputs);
 
   populateBuildingSelect();
   updateLevelBounds();
@@ -75,6 +71,15 @@ function updateLevelBounds() {
   els.targetLevel.min = String(minLevel);
   els.targetLevel.max = String(maxLevel);
 
+  els.buildingRange.textContent = `Allowed range: level ${minLevel} to ${maxLevel}`;
+
+  normalizeLevelInputs();
+}
+
+function readLevels(building) {
+  const minLevel = toNonNegativeInt(building.minLevel, 1);
+  const maxLevel = toNonNegativeInt(building.maxLevel, 30);
+
   const currentLevel = clamp(
     toNonNegativeInt(els.currentLevel.value, minLevel),
     minLevel,
@@ -86,10 +91,20 @@ function updateLevelBounds() {
     maxLevel
   );
 
+  return { currentLevel, targetLevel };
+}
+
+function normalizeLevelInputs() {
+  const building = getSelectedBuilding();
+  if (!building) {
+    return;
+  }
+
+  const { currentLevel, targetLevel } = readLevels(building);
+
   els.currentLevel.value = String(currentLevel);
   els.targetLevel.value = String(Math.max(currentLevel, targetLevel));
-
-  els.buildingRange.textContent = `Allowed range: level ${minLevel} to ${maxLevel}`;
+  recalculate();
 }
 
 function recalculate() {
@@ -98,8 +113,7 @@ function recalculate() {
     return;
   }
 
-  const currentLevel = toNonNegativeInt(els.currentLevel.value, 1);
-  const targetLevel = toNonNegativeInt(els.targetLevel.value, currentLevel);
+  const { currentLevel, targetLevel } = readLevels(building);
 
   if (targetLevel < currentLevel) {
     els.buildingError.textContent = "Target level must be greater than or equal to current level.";
