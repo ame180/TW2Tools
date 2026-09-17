@@ -40,7 +40,7 @@ async function initialize() {
       tool.init(data);
     }
 
-    els.dataStatus.textContent = "Data loaded successfully.";
+    els.dataStatus.textContent = "";
   } catch (error) {
     els.dataStatus.textContent = `Error loading data: ${error.message}`;
   }
