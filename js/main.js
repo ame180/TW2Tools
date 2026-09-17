@@ -20,6 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   buildSidebarNav();
   bindSidebarToggle();
+  bindSelectOnFocus();
 
   window.addEventListener("hashchange", () => setActiveTool(getToolFromHash()));
   setActiveTool(getToolFromHash());
@@ -75,6 +76,18 @@ function bindSidebarToggle() {
   });
 
   els.sidebarBackdrop.addEventListener("click", closeSidebar);
+}
+
+function bindSelectOnFocus() {
+  document.addEventListener("focusin", (event) => {
+    const input = event.target;
+    if (!(input instanceof HTMLInputElement) || input.type !== "number") {
+      return;
+    }
+
+    // Deferred so the mouseup/touchend that focused the input doesn't clear the selection.
+    setTimeout(() => input.select(), 0);
+  });
 }
 
 function openSidebar() {
