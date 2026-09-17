@@ -44,6 +44,9 @@ function init(data) {
   els.troopTribeTech.addEventListener("input", recalculate);
   els.troopDomination.addEventListener("change", recalculate);
   els.troopHallLevel.addEventListener("input", recalculate);
+  els.troopCount.addEventListener("change", normalizeNumberInputs);
+  els.troopTribeTech.addEventListener("change", normalizeNumberInputs);
+  els.troopHallLevel.addEventListener("change", normalizeNumberInputs);
 
   populateTroopSelect();
   renderSpeedTechCheckboxes();
@@ -114,24 +117,8 @@ function recalculate() {
 
   els.troopError.textContent = "";
 
-  const tribeTech = recruitModifiers.tribeRecruitTech || {};
   const hallOfOrders = recruitModifiers.hallOfOrders || {};
-
-  const count = toNonNegativeInt(els.troopCount.value, 0);
-  const tribeLevel = clamp(
-    toNonNegativeInt(els.troopTribeTech.value, 0),
-    0,
-    toNumber(tribeTech.maxLevel)
-  );
-  const hallLevel = clamp(
-    toNonNegativeInt(els.troopHallLevel.value, 0),
-    0,
-    toNumber(hallOfOrders.maxLevel)
-  );
-
-  els.troopCount.value = String(count);
-  els.troopTribeTech.value = String(tribeLevel);
-  els.troopHallLevel.value = String(hallLevel);
+  const { count, tribeLevel, hallLevel } = readNumberInputs();
 
   const isBarracksUnit = troop.recruitBuilding === "barracks";
   setSpeedInputsEnabled(isBarracksUnit);
@@ -159,6 +146,33 @@ function recalculate() {
     `Recruit speed /${speedDivisor.toFixed(2)} (-${effectiveSpeedPercent}%) | Resource cost -${discountPercent}%`;
 
   setResults(totals);
+}
+
+function readNumberInputs() {
+  const tribeTech = recruitModifiers.tribeRecruitTech || {};
+  const hallOfOrders = recruitModifiers.hallOfOrders || {};
+
+  const count = toNonNegativeInt(els.troopCount.value, 0);
+  const tribeLevel = clamp(
+    toNonNegativeInt(els.troopTribeTech.value, 0),
+    0,
+    toNumber(tribeTech.maxLevel)
+  );
+  const hallLevel = clamp(
+    toNonNegativeInt(els.troopHallLevel.value, 0),
+    0,
+    toNumber(hallOfOrders.maxLevel)
+  );
+
+  return { count, tribeLevel, hallLevel };
+}
+
+function normalizeNumberInputs() {
+  const { count, tribeLevel, hallLevel } = readNumberInputs();
+
+  els.troopCount.value = String(count);
+  els.troopTribeTech.value = String(tribeLevel);
+  els.troopHallLevel.value = String(hallLevel);
 }
 
 function getRecruitTimeDivisor(isBarracksUnit, tribeLevel) {

@@ -25,20 +25,34 @@ function init(data) {
   els.durationHours.addEventListener("input", recalculate);
   els.durationMinutes.addEventListener("input", recalculate);
   els.durationSeconds.addEventListener("input", recalculate);
+  els.durationDays.addEventListener("change", normalizeDurationInputs);
+  els.durationHours.addEventListener("change", normalizeDurationInputs);
+  els.durationMinutes.addEventListener("change", normalizeDurationInputs);
+  els.durationSeconds.addEventListener("change", normalizeDurationInputs);
 
   recalculate();
 }
 
-function recalculate() {
-  const days = toNonNegativeInt(els.durationDays.value, 0);
-  const hours = toNonNegativeInt(els.durationHours.value, 0);
-  const minutes = toNonNegativeInt(els.durationMinutes.value, 0);
-  const seconds = toNonNegativeInt(els.durationSeconds.value, 0);
+function readDuration() {
+  return {
+    days: toNonNegativeInt(els.durationDays.value, 0),
+    hours: toNonNegativeInt(els.durationHours.value, 0),
+    minutes: toNonNegativeInt(els.durationMinutes.value, 0),
+    seconds: toNonNegativeInt(els.durationSeconds.value, 0)
+  };
+}
+
+function normalizeDurationInputs() {
+  const { days, hours, minutes, seconds } = readDuration();
 
   els.durationDays.value = String(days);
   els.durationHours.value = String(hours);
   els.durationMinutes.value = String(minutes);
   els.durationSeconds.value = String(seconds);
+}
+
+function recalculate() {
+  const { days, hours, minutes, seconds } = readDuration();
 
   const totalSeconds = days * 86400 + hours * 3600 + minutes * 60 + seconds;
   els.durationTotalSeconds.textContent = formatNumber(totalSeconds);
