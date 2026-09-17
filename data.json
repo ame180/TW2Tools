@@ -2531,7 +2531,7 @@
         10,
         20
       ],
-      "defenceBonus": [5, 10, 20]
+      "defenceBonus": [10, 20, 30]
     },
     "mieszkos_lance": {
       "name": "Mieszko's Lance",
