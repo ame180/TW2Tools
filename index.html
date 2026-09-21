@@ -290,6 +290,116 @@
           Base travel times without officers or speed effects. Army always moves at the speed of its slowest unit.
         </p>
         </section>
+
+        <section id="view-battle" class="hidden rounded border border-slate-300 bg-white p-4">
+        <h2 class="mb-4 text-lg font-semibold">Battle Calculator</h2>
+
+        <div class="space-y-4">
+          <div>
+            <h3 class="font-semibold">Attacker (<span id="battle-attacker-modifier">100%</span>)</h3>
+            <div class="overflow-x-auto">
+              <table id="battle-attacker-results" class="text-sm"></table>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex flex-wrap items-baseline gap-x-4">
+              <h3 class="font-semibold">Defender (<span id="battle-defender-modifier">100%</span>)</h3>
+              <p id="battle-wall-stages" class="text-sm text-slate-600" hidden></p>
+            </div>
+            <div class="overflow-x-auto">
+              <table id="battle-defender-results" class="text-sm"></table>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6 grid gap-4 md:grid-cols-2">
+          <fieldset class="min-w-0 rounded border border-slate-300 p-3">
+            <legend class="px-1 font-semibold">Attacker</legend>
+            <div id="battle-attacker-units" class="grid grid-cols-1 gap-y-1 text-sm"></div>
+
+            <div class="mt-4 space-y-3 border-t border-slate-200 pt-3 text-sm">
+              <div>
+                <span class="mb-1 block text-xs font-medium text-slate-600">Paladin</span>
+                <div class="flex gap-1">
+                  <select id="battle-attacker-weapon" class="min-w-0 flex-1 rounded border border-slate-300 px-2 py-1"></select>
+                  <select id="battle-attacker-weapon-level" aria-label="Weapon level" class="rounded border border-slate-300 px-2 py-1"></select>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-x-3">
+                <label>
+                  <span class="mb-1 block text-xs font-medium text-slate-600">Faith</span>
+                  <select id="battle-attacker-faith" class="w-full min-w-0 rounded border border-slate-300 px-2 py-1"></select>
+                </label>
+                <label>
+                  <span class="mb-1 block text-xs font-medium text-slate-600">Morale (%)</span>
+                  <input id="battle-morale" type="number" inputmode="numeric" min="25" max="100" value="100" class="w-full rounded border border-slate-300 px-2 py-1" />
+                </label>
+              </div>
+
+              <label class="block">
+                <span class="mb-1 block text-xs font-medium text-slate-600">Luck</span>
+                <span class="flex items-center gap-2">
+                  <input id="battle-luck" type="range" min="-15" max="15" step="1" value="0" class="min-w-0 flex-1" />
+                  <span id="battle-luck-value" class="w-10 text-right tabular-nums">0%</span>
+                </span>
+              </label>
+
+              <div class="grid grid-cols-2 items-end gap-x-3">
+                <label>
+                  <span class="mb-1 block text-xs font-medium text-slate-600">Weapon mastery</span>
+                  <select id="battle-weapon-mastery" class="w-full min-w-0 rounded border border-slate-300 px-2 py-1"></select>
+                </label>
+                <label class="flex items-center gap-2 py-1">
+                  <input id="battle-grandmaster" type="checkbox" />
+                  <span>Grandmaster</span>
+                </label>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="min-w-0 rounded border border-slate-300 p-3">
+            <legend class="px-1 font-semibold">Defender</legend>
+            <div id="battle-defender-units" class="grid grid-cols-1 gap-y-1 text-sm"></div>
+
+            <div class="mt-4 space-y-3 border-t border-slate-200 pt-3 text-sm">
+              <div>
+                <span class="mb-1 block text-xs font-medium text-slate-600">Paladins</span>
+                <div id="battle-defender-paladins" class="space-y-1"></div>
+                <button id="battle-add-paladin" type="button" class="mt-1 rounded border border-slate-300 px-2 py-1 hover:bg-slate-100">+ Add paladin</button>
+              </div>
+
+              <div class="grid grid-cols-2 gap-x-3">
+                <label>
+                  <span class="mb-1 block text-xs font-medium text-slate-600">Faith</span>
+                  <select id="battle-defender-faith" class="w-full min-w-0 rounded border border-slate-300 px-2 py-1"></select>
+                </label>
+                <label>
+                  <span class="mb-1 block text-xs font-medium text-slate-600">Wall</span>
+                  <input id="battle-wall" type="number" inputmode="numeric" min="0" max="20" value="0" class="w-full rounded border border-slate-300 px-2 py-1" />
+                </label>
+              </div>
+
+              <div class="grid grid-cols-2 items-end gap-x-3">
+                <label>
+                  <span class="mb-1 block text-xs font-medium text-slate-600">Iron wall</span>
+                  <select id="battle-iron-wall" class="w-full min-w-0 rounded border border-slate-300 px-2 py-1"></select>
+                </label>
+                <label class="flex items-center gap-2 py-1">
+                  <input id="battle-night" type="checkbox" />
+                  <span>Night bonus</span>
+                </label>
+              </div>
+            </div>
+          </fieldset>
+        </div>
+
+        <div class="mt-4 flex flex-wrap gap-2">
+          <button id="battle-use-survivors" type="button" class="rounded border border-slate-300 px-3 py-2 text-sm font-medium hover:bg-slate-100">Use defender survivors</button>
+          <button id="battle-reset" type="button" class="rounded border border-slate-300 px-3 py-2 text-sm font-medium hover:bg-slate-100">Reset</button>
+        </div>
+        </section>
       </main>
     </div>
 

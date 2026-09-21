@@ -8,20 +8,21 @@
 //   attackerUnits   — { spear: 0, sword: 0, ... } (any subset of UNIT_KEYS)
 //   defenderUnits   — same shape
 //   attackerWeapon  — { id, level: 1|2|3 } | null
-//   defenderWeapons — [{ id, level }] | []
+//   defenderWeapons — [{ id, level }] | [] (one per weapon id — see strongestWeapons)
 //   wall            — 0–20
 //   night           — boolean
 //   morale          — 30–100 (%)
 //   luck            — -15..+15 (%)
 //   faithAttacker   — 50 | 100 | 105 | 110 (%)
 //   faithDefender   — 50 | 100 | 105 | 110 (%)
-//   ironWall        — 0–20 (skill level: wall floor)
+//   ironWall        — 0–20 (wall floor, not the tribe skill level)
 //   grandmaster     — boolean
-//   weaponMastery   — integer (%)
+//   weaponMastery   — integer (%, not the tribe skill level)
 //
 // result:
 //   attacker, defender — { quantity: {unit: n}, losses: {unit: n} }
-//   wallBefore, wallAfter
+//   attackerModifier, defenderModifier — (%)
+//   wallBefore, wallAfterRams, wallAfter
 
 export const UNIT_KEYS = [
   "spear", "sword", "axe", "archer",
@@ -48,6 +49,8 @@ const WALL_HITPOINTS = {
   9: 6, 10: 7, 11: 8, 12: 9, 13: 9, 14: 10, 15: 11, 16: 13,
   17: 14, 18: 15, 19: 17, 20: 18,
 };
+
+const LOSS_EPSILON = 1e-9;
 
 function sumValues(obj) {
   let total = 0;
@@ -169,6 +172,16 @@ function resolveWeaponBonuses(attackerWeapon, defenderWeapons, weaponData) {
   return { attackBonuses, defenceBonuses, ramWallBonus };
 }
 
+export function strongestWeapons(selections) {
+  const levelById = new Map();
+  for (const selection of selections) {
+    if (!selection || !selection.id) continue;
+    const level = selection.level ?? 1;
+    if (level > (levelById.get(selection.id) ?? 0)) levelById.set(selection.id, level);
+  }
+  return [...levelById].map(([id, level]) => ({ id, level }));
+}
+
 export function simulate(input) {
   const {
     unitStats,
@@ -214,7 +227,7 @@ export function simulate(input) {
   }
 
   const attackerModifier =
-    faithAttacker * (morale / 100)
+    Math.floor(faithAttacker * morale / 100)
     + luck
     + weaponMastery
     + (grandmaster ? 10 : 0);
@@ -224,7 +237,7 @@ export function simulate(input) {
     atkUnits.ram, wall, attackerModifier, demolitionModifier, ramWallBonus, ironWall
   );
 
-  const defenderModifier = (faithDefender + wallAfterRams * 5) * (night ? 2 : 1);
+  const defenderModifier = Math.floor(faithDefender * (100 + wallAfterRams * 5) / 100) * (night ? 2 : 1);
 
   const wallFlatDefense = wallAfterRams === 0
     ? 0
@@ -285,11 +298,12 @@ export function simulate(input) {
   }
 
   // Losses are measured against the original counts, so cancelled rams count as lost.
+  // Survivors round up; the epsilon keeps float noise (e.g. 1e-14 left) from saving a unit.
   const attackerLosses = zeroUnitMap();
   const defenderLosses = zeroUnitMap();
   for (const unit of UNIT_KEYS) {
-    attackerLosses[unit] = originalAttacker[unit] - Math.round(Math.max(0, atkRemaining[unit] || 0));
-    defenderLosses[unit] = originalDefender[unit] - Math.round(Math.max(0, defRemaining[unit] || 0));
+    attackerLosses[unit] = Math.floor(originalAttacker[unit] - Math.max(0, atkRemaining[unit] || 0) + LOSS_EPSILON);
+    defenderLosses[unit] = Math.floor(originalDefender[unit] - Math.max(0, defRemaining[unit] || 0) + LOSS_EPSILON);
   }
 
   // Surviving rams hit the wall a second time, with no demolition cap.
@@ -301,7 +315,10 @@ export function simulate(input) {
   return {
     attacker: { quantity: { ...originalAttacker }, losses: attackerLosses },
     defender: { quantity: { ...originalDefender }, losses: defenderLosses },
-    wallBefore:  wall,
-    wallAfter:   wallAfterFight,
+    attackerModifier,
+    defenderModifier,
+    wallBefore:    wall,
+    wallAfterRams,
+    wallAfter:     wallAfterFight,
   };
 }
