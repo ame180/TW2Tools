@@ -2393,6 +2393,8 @@
   },
   "units": {
     "spear": {
+      "name": "Spearman",
+      "alias": "Sp",
       "attack": 10,
       "def_inf": 25,
       "def_cav": 45,
@@ -2400,6 +2402,8 @@
       "food": 1
     },
     "sword": {
+      "name": "Swordsman",
+      "alias": "Sw",
       "attack": 25,
       "def_inf": 55,
       "def_cav": 5,
@@ -2407,6 +2411,8 @@
       "food": 1
     },
     "axe": {
+      "name": "Axeman",
+      "alias": "Axe",
       "attack": 45,
       "def_inf": 10,
       "def_cav": 5,
@@ -2414,6 +2420,8 @@
       "food": 1
     },
     "archer": {
+      "name": "Archer",
+      "alias": "Ar",
       "attack": 25,
       "def_inf": 10,
       "def_cav": 30,
@@ -2421,6 +2429,8 @@
       "food": 1
     },
     "light_cavalry": {
+      "name": "Light Cavalry",
+      "alias": "LC",
       "attack": 130,
       "def_inf": 30,
       "def_cav": 40,
@@ -2428,6 +2438,8 @@
       "food": 4
     },
     "mounted_archer": {
+      "name": "Mounted Archer",
+      "alias": "MA",
       "attack": 150,
       "def_inf": 40,
       "def_cav": 30,
@@ -2435,6 +2447,8 @@
       "food": 5
     },
     "heavy_cavalry": {
+      "name": "Heavy Cavalry",
+      "alias": "HC",
       "attack": 150,
       "def_inf": 200,
       "def_cav": 160,
@@ -2442,6 +2456,8 @@
       "food": 6
     },
     "ram": {
+      "name": "Ram",
+      "alias": "Ram",
       "attack": 2,
       "def_inf": 20,
       "def_cav": 50,
@@ -2449,6 +2465,8 @@
       "food": 5
     },
     "catapult": {
+      "name": "Catapult",
+      "alias": "Cat",
       "attack": 100,
       "def_inf": 100,
       "def_cav": 50,
@@ -2456,6 +2474,8 @@
       "food": 8
     },
     "berserker": {
+      "name": "Berserker",
+      "alias": "Zerk",
       "attack": 300,
       "def_inf": 100,
       "def_cav": 100,
@@ -2463,6 +2483,8 @@
       "food": 6
     },
     "trebuchet": {
+      "name": "Trebuchet",
+      "alias": "Treb",
       "attack": 30,
       "def_inf": 200,
       "def_cav": 250,
@@ -2470,6 +2492,8 @@
       "food": 10
     },
     "nobleman": {
+      "name": "Nobleman",
+      "alias": "Nob",
       "attack": 30,
       "def_inf": 100,
       "def_cav": 50,
@@ -2477,6 +2501,8 @@
       "food": 100
     },
     "knight": {
+      "name": "Paladin",
+      "alias": "Pal",
       "attack": 150,
       "def_inf": 250,
       "def_cav": 400,
@@ -2579,5 +2605,10 @@
       "attackBonus": [25, 50, 100],
       "defenceBonus": [5, 10, 20]
     }
+  },
+  "faithLevels": [50, 100, 105, 110],
+  "tribeSkills": {
+    "weaponMastery": [0, 2, 4, 6, 8, 10],
+    "ironWall": [0, 1, 2, 3, 4, 5]
   }
 }

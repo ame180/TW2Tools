@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { simulate, UNIT_KEYS } from "../js/lib/battle.js";
+import { simulate, strongestWeapons, UNIT_KEYS } from "../js/lib/battle.js";
 
 const data = JSON.parse(await readFile(new URL("../data.json", import.meta.url), "utf8"));
 
@@ -79,9 +79,9 @@ test("wall already below iron wall level stays unchanged", () => {
 
 test("berserker doubles against defender food more than twice its own", () => {
   // Without the doubling mechanic this scenario kills 42 spears (upstream oracle);
-  // with doubled berserker attack it kills 118.
+  // with doubled berserker attack it kills 117 (118 before survivors rounded up).
   const result = run({ attackerUnits: { berserker: 10 }, defenderUnits: { spear: 1000 } });
-  assert.equal(result.defender.losses.spear, 118);
+  assert.equal(result.defender.losses.spear, 117);
 });
 
 test("higher faith reduces attacker losses", () => {
@@ -137,4 +137,89 @@ test("every unit has the three defence stats", () => {
       assert.equal(typeof data.units[unit][stat], "number", `${unit}.${stat} missing`);
     }
   }
+});
+
+test("defender faith multiplies the wall bonus", () => {
+  const result = run({ attackerUnits: { axe: 10 }, defenderUnits: { spear: 10 }, faithDefender: 110, wall: 20 });
+  assert.equal(result.defenderModifier, 220);
+});
+
+test("low faith and morale product is rounded down before flat bonuses", () => {
+  const result = run({ attackerUnits: { axe: 10 }, defenderUnits: { spear: 10 }, faithAttacker: 50, morale: 27, weaponMastery: 8 });
+  assert.equal(result.attackerModifier, 21);
+});
+
+test("grandmaster is a flat bonus not scaled by faith or morale", () => {
+  const result = run({
+    attackerUnits: { axe: 10 },
+    defenderUnits: { spear: 10 },
+    faithAttacker: 50,
+    morale: 27,
+    weaponMastery: 8,
+    grandmaster: true
+  });
+  assert.equal(result.attackerModifier, 31);
+});
+
+test("luck and weapon mastery add to the attacker modifier", () => {
+  const result = run({
+    attackerUnits: { axe: 10 },
+    defenderUnits: { spear: 10 },
+    morale: 90,
+    luck: 5,
+    weaponMastery: 4,
+    grandmaster: true
+  });
+  assert.equal(result.attackerModifier, 109);
+});
+
+test("wall after rams sits between the starting and final wall", () => {
+  const result = run({
+    attackerUnits: { axe: 3000, ram: 200 },
+    defenderUnits: { spear: 500 },
+    wall: 20
+  });
+  assert.ok(result.wallAfterRams < result.wallBefore, "rams must damage the wall before combat");
+  assert.ok(result.wallAfter < result.wallAfterRams, "surviving rams must damage the wall after combat");
+});
+
+test("strongestWeapons keeps the highest level per weapon and drops empty picks", () => {
+  const picked = strongestWeapons([
+    { id: "halberd_of_guan_yu", level: 1 },
+    null,
+    { id: "halberd_of_guan_yu", level: 3 },
+    { id: null, level: 2 },
+    { id: "baptistes_banner", level: 2 },
+    { id: "halberd_of_guan_yu", level: 2 }
+  ]);
+  assert.deepEqual(picked, [
+    { id: "halberd_of_guan_yu", level: 3 },
+    { id: "baptistes_banner", level: 2 }
+  ]);
+});
+
+test("real report: survivors round up", () => {
+  const result = run({
+    attackerUnits: { axe: 22886, ram: 580, knight: 1 },
+    defenderUnits: { axe: 4, light_cavalry: 145, heavy_cavalry: 4043, ram: 13 },
+    attackerWeapon: { id: "thorgards_battle_axe", level: 3 },
+    weaponMastery: 2,
+    grandmaster: true,
+    wall: 7
+  });
+  assert.equal(result.attackerModifier, 112);
+  assert.equal(result.attacker.losses.axe, 9128);
+  assert.equal(result.attacker.losses.ram, 231);
+  assert.equal(result.attacker.losses.knight, 0);
+  assert.deepEqual(
+    [result.defender.losses.axe, result.defender.losses.light_cavalry, result.defender.losses.heavy_cavalry, result.defender.losses.ram],
+    [4, 145, 4043, 13]
+  );
+  assert.deepEqual([result.wallBefore, result.wallAfterRams, result.wallAfter], [7, 0, 0]);
+});
+
+test("defender modifier is rounded down before the night bonus", () => {
+  const scenario = { attackerUnits: { axe: 10 }, defenderUnits: { spear: 10 }, faithDefender: 105, wall: 1 };
+  assert.equal(run(scenario).defenderModifier, 110);
+  assert.equal(run({ ...scenario, night: true }).defenderModifier, 220);
 });
