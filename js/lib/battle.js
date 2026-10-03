@@ -73,6 +73,20 @@ function totalFood(units, unitStats, excludeUnit) {
   return total;
 }
 
+// Attacking nobles sit out the fight; their losses follow the rest of the army's food losses,
+// rounded half down (1 noble dies only when more than half the army dies).
+function getAttackingNobleLosses(originalAttacker, attackerLosses, unitStats, defenderHasForce) {
+  const nobles = originalAttacker.nobleman;
+  if (nobles === 0) return 0;
+
+  const armyFood = totalFood(originalAttacker, unitStats, "nobleman");
+  if (armyFood === 0) return defenderHasForce ? nobles : 0;
+
+  const lostFood = totalFood(attackerLosses, unitStats, "nobleman");
+  const lostNobles = Math.ceil(nobles * lostFood / armyFood - 0.5);
+  return Math.min(nobles, Math.max(0, lostNobles));
+}
+
 function getAttackStrength(units, unitStats, attackBonuses) {
   const sum = { attack: 0, attack_cavalry: 0, attack_archer: 0 };
   for (const unit of UNIT_KEYS) {
@@ -244,6 +258,7 @@ export function simulate(input) {
     : Math.round(Math.pow(1.25, wallAfterRams) * 20);
 
   const atkRemaining = { ...atkUnits };
+  atkRemaining.nobleman = 0;
   const defRemaining = { ...defUnits };
 
   do {
@@ -305,6 +320,8 @@ export function simulate(input) {
     attackerLosses[unit] = Math.floor(originalAttacker[unit] - Math.max(0, atkRemaining[unit] || 0) + LOSS_EPSILON);
     defenderLosses[unit] = Math.floor(originalDefender[unit] - Math.max(0, defRemaining[unit] || 0) + LOSS_EPSILON);
   }
+  const defenderHasForce = sumValues(originalDefender) > 0 || wallAfterRams > 0;
+  attackerLosses.nobleman = getAttackingNobleLosses(originalAttacker, attackerLosses, unitStats, defenderHasForce);
 
   // Surviving rams hit the wall a second time, with no demolition cap.
   const survivingRams = originalAttacker.ram - attackerLosses.ram;
