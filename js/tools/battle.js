@@ -2,9 +2,9 @@ import { formatNumber, toNonNegativeInt, clamp } from "../lib/format.js";
 import { UNIT_KEYS } from "../lib/battle.js";
 import { simulateSequence, summarizeSequence, defenderProvisions } from "../lib/battle-sequence.js";
 import {
-  createInitialState, addHit, deleteHit, moveHit, selectHit, setActiveAttacker, toSequenceInput,
+  createInitialState, addHit, deleteHit, moveHit, selectHit, setActiveAttacker, toSequenceInput, toFormPaladins,
   NO_PALADIN, NO_WEAPON, DEFAULT_FAITH, INPUT_UNIT_KEYS
-} from "../lib/battle-hits.js";
+} from "../lib/battle-calc-state.js";
 
 const els = {};
 
@@ -288,27 +288,27 @@ function writeForm() {
   els.defenderFaith.value = String(defender.faith);
   els.night.checked = defender.night;
   els.ironWall.value = String(defender.ironWallLevel);
+}
 
+// Starting values are written only when the active hit changes, so typing is never overwritten.
+function renderDefenderPanel(step, includeStartValues) {
   const editable = state.activeHit === 0;
   for (const input of defenderUnitInputs.values()) {
     input.disabled = !editable;
   }
   els.wall.disabled = !editable;
   els.addPaladin.hidden = !editable;
-  if (editable) {
-    writeUnitInputs(defenderUnitInputs, defender.units);
-    els.wall.value = String(defender.wall);
-    renderDefenderPaladins(defender.paladins, false);
-  }
-}
+  els.defenderSource.textContent = editable ? "" : ` (from hit #${state.activeHit})`;
 
-function writeIncomingDefender(defenderBefore) {
-  writeUnitInputs(defenderUnitInputs, defenderBefore.units);
-  els.wall.value = String(defenderBefore.wall);
-  renderDefenderPaladins(
-    defenderBefore.paladins.map((paladin) => ({ weapon: paladin.id ?? NO_WEAPON, level: paladin.level })),
-    true
-  );
+  if (editable && !includeStartValues) {
+    return;
+  }
+  const shown = editable
+    ? state.defender
+    : { ...step.defenderBefore, paladins: toFormPaladins(step.defenderBefore.paladins) };
+  writeUnitInputs(defenderUnitInputs, shown.units);
+  els.wall.value = String(shown.wall);
+  renderDefenderPaladins(shown.paladins, !editable);
 }
 
 function handleFormChange() {
@@ -323,7 +323,7 @@ function updateState(nextState) {
 
 function showActiveHit() {
   writeForm();
-  render();
+  render({ includeDefenderStart: true });
   scrollActiveChipIntoView();
 }
 
@@ -345,7 +345,7 @@ function resetHits() {
   updateState(createInitialState());
 }
 
-function render() {
+function render({ includeDefenderStart = false } = {}) {
   const luck = Number(els.luck.value);
   els.luckValue.textContent = `${luck > 0 ? "+" : ""}${luck}%`;
   els.attackerWeaponLevel.disabled = !weapons[els.attackerWeapon.value];
@@ -363,11 +363,7 @@ function render() {
   els.wallStages.textContent =
     `Wall: ${result.wallBefore} → ${result.wallAfterRams} → ${result.wallAfter}`;
 
-  if (state.activeHit > 0) {
-    writeIncomingDefender(activeStep.defenderBefore);
-  }
-  els.defenderSource.textContent = state.activeHit > 0 ? ` (from hit #${state.activeHit})` : "";
-
+  renderDefenderPanel(activeStep, includeDefenderStart);
   renderHitStrip(steps);
 }
 

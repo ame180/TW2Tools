@@ -1,5 +1,5 @@
 // Battle calculator state, kept as form values (skill levels, weapon select values).
-// toSequenceInput converts it to engine values; operations never mutate.
+// toSequenceInput / toFormPaladins convert to and from engine values; operations never mutate.
 
 import { UNIT_KEYS } from "./battle.js";
 
@@ -75,6 +75,10 @@ export function selectHit(state, index) {
 export function setActiveAttacker(state, attacker) {
   const hits = state.hits.map((hit, index) => (index === state.activeHit ? { ...hit, attacker } : hit));
   return { ...state, hits };
+}
+
+export function toFormPaladins(enginePaladins) {
+  return enginePaladins.map((paladin) => ({ weapon: paladin.id ?? NO_WEAPON, level: paladin.level }));
 }
 
 export function toSequenceInput(state, { units, weapons, tribeSkills = {} }) {

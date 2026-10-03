@@ -2,9 +2,9 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import {
-  createInitialState, addHit, deleteHit, moveHit, selectHit, setActiveAttacker, toSequenceInput,
+  createInitialState, addHit, deleteHit, moveHit, selectHit, setActiveAttacker, toSequenceInput, toFormPaladins,
   NO_PALADIN, NO_WEAPON
-} from "../js/lib/battle-hits.js";
+} from "../js/lib/battle-calc-state.js";
 import { defenderProvisions } from "../js/lib/battle-sequence.js";
 
 const data = JSON.parse(await readFile(new URL("../data.json", import.meta.url), "utf8"));
@@ -118,6 +118,12 @@ test("sequence input converts form values to engine terms", () => {
   assert.equal(input.hits[0].weaponMastery, data.tribeSkills.weaponMastery[4]);
   assert.equal(input.hits[0].attackerUnits.knight, 1);
   assert.deepEqual(input.hits[0].attackerWeapon, { id: "thorgards_battle_axe", level: 3 });
+});
+
+test("engine paladins convert back to form values", () => {
+  const formPaladins = [{ weapon: "halberd_of_guan_yu", level: 2 }, { weapon: NO_WEAPON, level: 1 }];
+  const state = { ...createInitialState(), defender: { ...createInitialState().defender, paladins: formPaladins } };
+  assert.deepEqual(toFormPaladins(toSequenceInput(state, data).defender.paladins), formPaladins);
 });
 
 test("attacker paladin without a weapon counts as a knight without a weapon bonus", () => {
