@@ -294,6 +294,18 @@
         <section id="view-battle" class="hidden rounded border border-slate-300 bg-white p-4">
         <h2 class="mb-4 text-lg font-semibold">Battle Calculator</h2>
 
+        <div class="mb-4">
+          <div class="flex items-start gap-2 text-sm">
+            <div id="battle-hits" class="flex min-w-0 gap-2 overflow-x-auto pb-1"></div>
+            <button id="battle-add-hit" type="button" class="shrink-0 whitespace-nowrap rounded border border-dashed border-slate-400 px-3 py-1 font-medium text-slate-600 hover:bg-slate-100">+ Add hit</button>
+          </div>
+          <div id="battle-hit-toolbar" class="mt-2 hidden flex-wrap gap-2 text-sm">
+            <button id="battle-move-left" type="button" class="rounded border border-slate-300 px-2 py-1 hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-transparent">&larr; Move</button>
+            <button id="battle-move-right" type="button" class="rounded border border-slate-300 px-2 py-1 hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-transparent">Move &rarr;</button>
+            <button id="battle-delete-hit" type="button" class="rounded border border-slate-300 px-2 py-1 text-red-700 hover:bg-red-50">Delete hit</button>
+          </div>
+        </div>
+
         <div class="space-y-4">
           <div>
             <h3 class="font-semibold">Attacker (<span id="battle-attacker-modifier">100%</span>)</h3>
@@ -360,7 +372,7 @@
           </fieldset>
 
           <fieldset class="min-w-0 rounded border border-slate-300 p-3">
-            <legend class="px-1 font-semibold">Defender</legend>
+            <legend class="px-1 font-semibold">Defender<span id="battle-defender-source" class="font-normal text-slate-500"></span></legend>
             <div id="battle-defender-units" class="grid grid-cols-1 gap-y-1 text-sm"></div>
 
             <div class="mt-4 space-y-3 border-t border-slate-200 pt-3 text-sm">
@@ -377,7 +389,7 @@
                 </label>
                 <label>
                   <span class="mb-1 block text-xs font-medium text-slate-600">Wall</span>
-                  <input id="battle-wall" type="number" inputmode="numeric" min="0" max="20" value="0" class="w-full rounded border border-slate-300 px-2 py-1" />
+                  <input id="battle-wall" type="number" inputmode="numeric" min="0" max="20" value="0" class="w-full rounded border border-slate-300 px-2 py-1 disabled:bg-slate-100 disabled:text-slate-500" />
                 </label>
               </div>
 
@@ -396,7 +408,6 @@
         </div>
 
         <div class="mt-4 flex flex-wrap gap-2">
-          <button id="battle-use-survivors" type="button" class="rounded border border-slate-300 px-3 py-2 text-sm font-medium hover:bg-slate-100">Use defender survivors</button>
           <button id="battle-reset" type="button" class="rounded border border-slate-300 px-3 py-2 text-sm font-medium hover:bg-slate-100">Reset</button>
         </div>
         </section>

@@ -1,18 +1,24 @@
 import { formatNumber, toNonNegativeInt, clamp } from "../lib/format.js";
-import { simulate, strongestWeapons, UNIT_KEYS } from "../lib/battle.js";
+import { UNIT_KEYS } from "../lib/battle.js";
+import { simulateSequence, summarizeSequence, defenderProvisions } from "../lib/battle-sequence.js";
+import {
+  createInitialState, addHit, deleteHit, moveHit, selectHit, setActiveAttacker, toSequenceInput,
+  NO_PALADIN, NO_WEAPON, DEFAULT_FAITH, INPUT_UNIT_KEYS
+} from "../lib/battle-hits.js";
 
 const els = {};
 
-const NO_PALADIN = "";
-const NO_WEAPON = "none";
 const WEAPON_LEVELS = [1, 2, 3];
-const DEFAULT_FAITH = 100;
-const INPUT_UNIT_KEYS = UNIT_KEYS.filter((unit) => unit !== "knight");
+const DISABLED_INPUT_CLASSES = "disabled:bg-slate-100 disabled:text-slate-500";
+const HIT_CHIP_CLASSES = "whitespace-nowrap rounded border px-3 py-1 tabular-nums";
+const ACTIVE_HIT_CHIP_CLASSES = `${HIT_CHIP_CLASSES} border-slate-800 bg-slate-800 text-white`;
+const INACTIVE_HIT_CHIP_CLASSES = `${HIT_CHIP_CLASSES} border-slate-300 hover:bg-slate-100`;
 
 let units = {};
 let weapons = {};
 let faithLevels = [];
 let tribeSkills = {};
+let state = createInitialState();
 const attackerUnitInputs = new Map();
 const defenderUnitInputs = new Map();
 
@@ -29,6 +35,12 @@ function init(data) {
   tribeSkills = data.tribeSkills || {};
 
   els.section = document.getElementById("view-battle");
+  els.hits = document.getElementById("battle-hits");
+  els.addHit = document.getElementById("battle-add-hit");
+  els.hitToolbar = document.getElementById("battle-hit-toolbar");
+  els.moveLeft = document.getElementById("battle-move-left");
+  els.moveRight = document.getElementById("battle-move-right");
+  els.deleteHit = document.getElementById("battle-delete-hit");
   els.attackerModifier = document.getElementById("battle-attacker-modifier");
   els.defenderModifier = document.getElementById("battle-defender-modifier");
   els.wallStages = document.getElementById("battle-wall-stages");
@@ -36,6 +48,7 @@ function init(data) {
   els.defenderResults = document.getElementById("battle-defender-results");
   els.attackerUnits = document.getElementById("battle-attacker-units");
   els.defenderUnits = document.getElementById("battle-defender-units");
+  els.defenderSource = document.getElementById("battle-defender-source");
   els.attackerWeapon = document.getElementById("battle-attacker-weapon");
   els.attackerWeaponLevel = document.getElementById("battle-attacker-weapon-level");
   els.defenderPaladins = document.getElementById("battle-defender-paladins");
@@ -50,7 +63,6 @@ function init(data) {
   els.ironWall = document.getElementById("battle-iron-wall");
   els.grandmaster = document.getElementById("battle-grandmaster");
   els.night = document.getElementById("battle-night");
-  els.useSurvivors = document.getElementById("battle-use-survivors");
   els.reset = document.getElementById("battle-reset");
 
   renderUnitInputs(els.attackerUnits, attackerUnitInputs);
@@ -63,18 +75,21 @@ function init(data) {
   populateSkillSelect(els.weaponMastery, tribeSkills.weaponMastery);
   populateSkillSelect(els.ironWall, tribeSkills.ironWall);
 
-  els.section.addEventListener("input", recalculate);
-  els.section.addEventListener("change", recalculate);
+  els.section.addEventListener("input", handleFormChange);
+  els.section.addEventListener("change", handleFormChange);
   els.morale.addEventListener("change", normalizeNumberInputs);
   els.wall.addEventListener("change", normalizeNumberInputs);
   els.addPaladin.addEventListener("click", () => {
-    addDefenderPaladin(NO_WEAPON, 1);
-    recalculate();
+    addDefenderPaladin(NO_WEAPON, 1, false);
+    handleFormChange();
   });
-  els.useSurvivors.addEventListener("click", useDefenderSurvivors);
-  els.reset.addEventListener("click", resetInputs);
+  els.addHit.addEventListener("click", () => updateState(addHit(state)));
+  els.moveLeft.addEventListener("click", () => updateState(moveHit(state, state.activeHit, -1)));
+  els.moveRight.addEventListener("click", () => updateState(moveHit(state, state.activeHit, 1)));
+  els.deleteHit.addEventListener("click", () => updateState(deleteHit(state, state.activeHit)));
+  els.reset.addEventListener("click", resetHits);
 
-  recalculate();
+  showActiveHit();
 }
 
 function renderUnitInputs(container, inputs) {
@@ -91,7 +106,7 @@ function renderUnitInputs(container, inputs) {
     input.inputMode = "numeric";
     input.min = "0";
     input.value = "0";
-    input.className = "w-full rounded border border-slate-300 px-2 py-1";
+    input.className = `w-full rounded border border-slate-300 px-2 py-1 ${DISABLED_INPUT_CLASSES}`;
     input.addEventListener("change", normalizeNumberInputs);
 
     label.append(name, input);
@@ -166,91 +181,178 @@ function populateSkillSelect(select, values = []) {
   }
 }
 
-function addDefenderPaladin(weaponId, level) {
+function addDefenderPaladin(weaponId, level, disabled) {
   const row = document.createElement("div");
   row.className = "flex items-center gap-1";
 
   const weaponSelect = document.createElement("select");
-  weaponSelect.className = "min-w-0 flex-1 rounded border border-slate-300 px-2 py-1";
+  weaponSelect.className = `min-w-0 flex-1 rounded border border-slate-300 px-2 py-1 ${DISABLED_INPUT_CLASSES}`;
   weaponSelect.setAttribute("aria-label", "Weapon");
   weaponSelect.dataset.role = "weapon";
   populateWeaponSelect(weaponSelect, false);
   weaponSelect.value = weaponId;
+  weaponSelect.disabled = disabled;
 
   const levelSelect = document.createElement("select");
-  levelSelect.className = "rounded border border-slate-300 px-2 py-1";
+  levelSelect.className = `rounded border border-slate-300 px-2 py-1 ${DISABLED_INPUT_CLASSES}`;
   levelSelect.dataset.role = "level";
   levelSelect.setAttribute("aria-label", "Weapon level");
   populateLevelSelect(levelSelect);
   levelSelect.value = String(level);
+  levelSelect.disabled = disabled;
 
-  const removeButton = document.createElement("button");
-  removeButton.type = "button";
-  removeButton.textContent = "×";
-  removeButton.setAttribute("aria-label", "Remove paladin");
-  removeButton.className = "rounded px-2 py-1 text-slate-500 hover:bg-slate-200";
-  removeButton.addEventListener("click", () => {
-    row.remove();
-    recalculate();
-  });
+  row.append(weaponSelect, levelSelect);
 
-  row.append(weaponSelect, levelSelect, removeButton);
+  if (!disabled) {
+    const removeButton = document.createElement("button");
+    removeButton.type = "button";
+    removeButton.textContent = "×";
+    removeButton.setAttribute("aria-label", "Remove paladin");
+    removeButton.className = "rounded px-2 py-1 text-slate-500 hover:bg-slate-200";
+    removeButton.addEventListener("click", () => {
+      row.remove();
+      handleFormChange();
+    });
+    row.appendChild(removeButton);
+  }
+
   els.defenderPaladins.appendChild(row);
 }
 
-function getDefenderPaladinRows() {
-  return [...els.defenderPaladins.children];
+function renderDefenderPaladins(paladins, disabled) {
+  els.defenderPaladins.replaceChildren();
+  for (const paladin of paladins) {
+    addDefenderPaladin(paladin.weapon, paladin.level, disabled);
+  }
 }
 
-function readInputs() {
-  const attackerUnits = {};
-  const defenderUnits = {};
+function readUnitInputs(inputs) {
+  const values = {};
   for (const unit of INPUT_UNIT_KEYS) {
-    attackerUnits[unit] = toNonNegativeInt(attackerUnitInputs.get(unit).value, 0);
-    defenderUnits[unit] = toNonNegativeInt(defenderUnitInputs.get(unit).value, 0);
+    values[unit] = toNonNegativeInt(inputs.get(unit).value, 0);
   }
+  return values;
+}
 
-  const attackerWeaponId = els.attackerWeapon.value;
-  attackerUnits.knight = attackerWeaponId === NO_PALADIN ? 0 : 1;
-  const attackerWeapon = weapons[attackerWeaponId]
-    ? { id: attackerWeaponId, level: Number(els.attackerWeaponLevel.value) }
-    : null;
+function writeUnitInputs(inputs, values) {
+  for (const unit of INPUT_UNIT_KEYS) {
+    inputs.get(unit).value = String(values[unit] ?? 0);
+  }
+}
 
-  const paladinRows = getDefenderPaladinRows();
-  defenderUnits.knight = paladinRows.length;
-  const defenderWeapons = strongestWeapons(paladinRows.map((row) => {
-    const weaponId = row.querySelector("[data-role=weapon]").value;
-    if (!weapons[weaponId]) {
-      return null;
-    }
-    return { id: weaponId, level: Number(row.querySelector("[data-role=level]").value) };
+function readDefenderPaladinRows() {
+  return [...els.defenderPaladins.children].map((row) => ({
+    weapon: row.querySelector("[data-role=weapon]").value,
+    level: Number(row.querySelector("[data-role=level]").value)
   }));
+}
 
-  return {
-    unitStats: units,
-    weaponData: weapons,
-    attackerUnits,
-    defenderUnits,
-    attackerWeapon,
-    defenderWeapons,
-    wall: clamp(toNonNegativeInt(els.wall.value, 0), 0, 20),
-    night: els.night.checked,
+function readForm() {
+  state = setActiveAttacker(state, {
+    units: readUnitInputs(attackerUnitInputs),
+    paladinWeapon: els.attackerWeapon.value,
+    paladinLevel: Number(els.attackerWeaponLevel.value),
+    faith: Number(els.attackerFaith.value) || DEFAULT_FAITH,
     morale: clamp(toNonNegativeInt(els.morale.value, 100), 25, 100),
     luck: Number(els.luck.value),
-    faithAttacker: Number(els.attackerFaith.value) || DEFAULT_FAITH,
-    faithDefender: Number(els.defenderFaith.value) || DEFAULT_FAITH,
-    ironWall: tribeSkills.ironWall?.[Number(els.ironWall.value)] ?? 0,
-    grandmaster: els.grandmaster.checked,
-    weaponMastery: tribeSkills.weaponMastery?.[Number(els.weaponMastery.value)] ?? 0
+    weaponMasteryLevel: Number(els.weaponMastery.value),
+    grandmaster: els.grandmaster.checked
+  });
+
+  const defender = {
+    ...state.defender,
+    faith: Number(els.defenderFaith.value) || DEFAULT_FAITH,
+    night: els.night.checked,
+    ironWallLevel: Number(els.ironWall.value)
   };
+  if (state.activeHit === 0) {
+    defender.units = readUnitInputs(defenderUnitInputs);
+    defender.wall = clamp(toNonNegativeInt(els.wall.value, 0), 0, 20);
+    defender.paladins = readDefenderPaladinRows();
+  }
+  state = { ...state, defender };
 }
 
-function recalculate() {
+function writeForm() {
+  const { attacker } = state.hits[state.activeHit];
+  writeUnitInputs(attackerUnitInputs, attacker.units);
+  els.attackerWeapon.value = attacker.paladinWeapon;
+  els.attackerWeaponLevel.value = String(attacker.paladinLevel);
+  els.attackerFaith.value = String(attacker.faith);
+  els.morale.value = String(attacker.morale);
+  els.luck.value = String(attacker.luck);
+  els.weaponMastery.value = String(attacker.weaponMasteryLevel);
+  els.grandmaster.checked = attacker.grandmaster;
+
+  const { defender } = state;
+  els.defenderFaith.value = String(defender.faith);
+  els.night.checked = defender.night;
+  els.ironWall.value = String(defender.ironWallLevel);
+
+  const editable = state.activeHit === 0;
+  for (const input of defenderUnitInputs.values()) {
+    input.disabled = !editable;
+  }
+  els.wall.disabled = !editable;
+  els.addPaladin.hidden = !editable;
+  if (editable) {
+    writeUnitInputs(defenderUnitInputs, defender.units);
+    els.wall.value = String(defender.wall);
+    renderDefenderPaladins(defender.paladins, false);
+  }
+}
+
+function writeIncomingDefender(defenderBefore) {
+  writeUnitInputs(defenderUnitInputs, defenderBefore.units);
+  els.wall.value = String(defenderBefore.wall);
+  renderDefenderPaladins(
+    defenderBefore.paladins.map((paladin) => ({ weapon: paladin.id ?? NO_WEAPON, level: paladin.level })),
+    true
+  );
+}
+
+function handleFormChange() {
+  readForm();
+  render();
+}
+
+function updateState(nextState) {
+  state = nextState;
+  showActiveHit();
+}
+
+function showActiveHit() {
+  writeForm();
+  render();
+  scrollActiveChipIntoView();
+}
+
+// Horizontal only — scrollIntoView would also move the page vertically (e.g. on Reset).
+function scrollActiveChipIntoView() {
+  const stripBox = els.hits.getBoundingClientRect();
+  const chipBox = els.hits.children[state.activeHit].getBoundingClientRect();
+  if (chipBox.left < stripBox.left) {
+    els.hits.scrollLeft -= stripBox.left - chipBox.left;
+  } else if (chipBox.right > stripBox.right) {
+    els.hits.scrollLeft += chipBox.right - stripBox.right;
+  }
+}
+
+function resetHits() {
+  if (state.hits.length > 1 && !window.confirm("Remove all hits and reset the calculator?")) {
+    return;
+  }
+  updateState(createInitialState());
+}
+
+function render() {
   const luck = Number(els.luck.value);
   els.luckValue.textContent = `${luck > 0 ? "+" : ""}${luck}%`;
   els.attackerWeaponLevel.disabled = !weapons[els.attackerWeapon.value];
 
-  const result = simulate(readInputs());
+  const steps = simulateSequence(toSequenceInput(state, { units, weapons, tribeSkills }));
+  const activeStep = steps[state.activeHit];
+  const { result } = activeStep;
 
   els.attackerModifier.textContent = formatModifier(result.attackerModifier);
   els.defenderModifier.textContent = formatModifier(result.defenderModifier);
@@ -260,6 +362,13 @@ function recalculate() {
   els.wallStages.hidden = result.wallBefore === 0;
   els.wallStages.textContent =
     `Wall: ${result.wallBefore} → ${result.wallAfterRams} → ${result.wallAfter}`;
+
+  if (state.activeHit > 0) {
+    writeIncomingDefender(activeStep.defenderBefore);
+  }
+  els.defenderSource.textContent = state.activeHit > 0 ? ` (from hit #${state.activeHit})` : "";
+
+  renderHitStrip(steps);
 }
 
 function renderSide(table, side) {
@@ -272,6 +381,51 @@ function renderSide(table, side) {
   }
 }
 
+function renderHitStrip(steps) {
+  const { clearedAt } = summarizeSequence(steps);
+  const startProvisions = defenderProvisions(steps[0].defenderBefore, units);
+  const stripHadFocus = els.hits.contains(document.activeElement);
+
+  const chips = steps.map((step, index) => {
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.textContent = describeHit(step, index, clearedAt, startProvisions);
+    chip.className = index === state.activeHit ? ACTIVE_HIT_CHIP_CLASSES : INACTIVE_HIT_CHIP_CLASSES;
+    chip.setAttribute("aria-pressed", String(index === state.activeHit));
+    chip.addEventListener("click", () => updateState(selectHit(state, index)));
+    return chip;
+  });
+  els.hits.replaceChildren(...chips);
+  if (stripHadFocus) {
+    chips[state.activeHit].focus();
+  }
+
+  els.hitToolbar.classList.toggle("hidden", steps.length <= 1);
+  els.hitToolbar.classList.toggle("flex", steps.length > 1);
+  els.moveLeft.disabled = state.activeHit === 0;
+  els.moveRight.disabled = state.activeHit === steps.length - 1;
+}
+
+function describeHit(step, index, clearedAt, startProvisions) {
+  const details = [];
+  if (step.result.wallBefore > 0) {
+    details.push(`${step.result.wallBefore}→${step.result.wallAfter}`);
+  }
+  details.push(describeDefenderLeft(step, index, clearedAt, startProvisions));
+  return `#${index + 1} ${details.join(" · ")}`;
+}
+
+function describeDefenderLeft(step, index, clearedAt, startProvisions) {
+  if (index === clearedAt) {
+    return "cleared";
+  }
+  if (defenderProvisions(step.defenderBefore, units) === 0) {
+    return "empty";
+  }
+  const provisionsLeft = defenderProvisions(step.defenderAfter, units);
+  return `${Math.ceil(provisionsLeft / startProvisions * 100)}%`;
+}
+
 function formatModifier(value) {
   return `${Number(value.toFixed(2))}%`;
 }
@@ -282,42 +436,5 @@ function normalizeNumberInputs() {
   }
   els.morale.value = String(clamp(toNonNegativeInt(els.morale.value, 100), 25, 100));
   els.wall.value = String(clamp(toNonNegativeInt(els.wall.value, 0), 0, 20));
-  recalculate();
-}
-
-function useDefenderSurvivors() {
-  const result = simulate(readInputs());
-
-  for (const unit of INPUT_UNIT_KEYS) {
-    const survivors = result.defender.quantity[unit] - result.defender.losses[unit];
-    defenderUnitInputs.get(unit).value = String(survivors);
-  }
-
-  const survivingPaladins = result.defender.quantity.knight - result.defender.losses.knight;
-  const paladinRows = getDefenderPaladinRows();
-  for (const row of paladinRows.slice(survivingPaladins)) {
-    row.remove();
-  }
-
-  els.wall.value = String(result.wallAfter);
-  recalculate();
-}
-
-function resetInputs() {
-  for (const input of [...attackerUnitInputs.values(), ...defenderUnitInputs.values()]) {
-    input.value = "0";
-  }
-  els.attackerWeapon.value = NO_PALADIN;
-  els.attackerWeaponLevel.value = "1";
-  els.defenderPaladins.replaceChildren();
-  els.attackerFaith.value = String(DEFAULT_FAITH);
-  els.defenderFaith.value = String(DEFAULT_FAITH);
-  els.morale.value = "100";
-  els.luck.value = "0";
-  els.wall.value = "0";
-  els.weaponMastery.value = "0";
-  els.ironWall.value = "0";
-  els.grandmaster.checked = false;
-  els.night.checked = false;
-  recalculate();
+  handleFormChange();
 }
