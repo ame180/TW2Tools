@@ -19,6 +19,12 @@ function countDefenderUnits(defenderState) {
   return total;
 }
 
+export function defenderProvisions(defenderState, unitStats) {
+  let total = defenderState.paladins.length * unitStats.knight.food;
+  for (const unit of DEFENDER_UNIT_KEYS) total += (defenderState.units[unit] || 0) * unitStats[unit].food;
+  return total;
+}
+
 export function simulateSequence({ unitStats, weaponData, defender, hits }) {
   const steps = [];
   let defenderBefore = {
