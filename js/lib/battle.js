@@ -11,7 +11,7 @@
 //   defenderWeapons — [{ id, level }] | [] (one per weapon id — see strongestWeapons)
 //   wall            — 0–20
 //   night           — boolean
-//   morale          — 30–100 (%)
+//   morale          — 25–100 (%)
 //   luck            — -15..+15 (%)
 //   faithAttacker   — 50 | 100 | 105 | 110 (%)
 //   faithDefender   — 50 | 100 | 105 | 110 (%)
@@ -240,9 +240,9 @@ export function simulate(input) {
     attackBonuses.berserker = (attackBonuses.berserker || 0) + 100;
   }
 
+  // Rounding (floor before luck, ceil after) is a best fit to in-game reports, not confirmed.
   const attackerModifier =
-    Math.floor(faithAttacker * morale / 100)
-    + luck
+    Math.ceil(Math.floor(faithAttacker * morale / 100) * (100 + luck) / 100)
     + weaponMastery
     + (grandmaster ? 10 : 0);
 
