@@ -346,9 +346,9 @@ function resetHits() {
 }
 
 function render({ includeDefenderStart = false } = {}) {
-  const luck = Number(els.luck.value);
+  const { luck, paladinWeapon } = state.hits[state.activeHit].attacker;
   els.luckValue.textContent = `${luck > 0 ? "+" : ""}${luck}%`;
-  els.attackerWeaponLevel.disabled = !weapons[els.attackerWeapon.value];
+  els.attackerWeaponLevel.disabled = !weapons[paladinWeapon];
 
   const steps = simulateSequence(toSequenceInput(state, { units, weapons, tribeSkills }));
   const activeStep = steps[state.activeHit];
@@ -419,7 +419,7 @@ function describeDefenderLeft(step, index, clearedAt, startProvisions) {
     return "empty";
   }
   const provisionsLeft = defenderProvisions(step.defenderAfter, units);
-  return `${Math.ceil(provisionsLeft / startProvisions * 100)}%`;
+  return `${Math.ceil(provisionsLeft * 100 / startProvisions)}%`;
 }
 
 function formatModifier(value) {
