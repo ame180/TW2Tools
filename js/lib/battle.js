@@ -1,4 +1,4 @@
-// Single-engagement battle simulator. Pure function, no DOM. Mechanics notes: reference/battle-equation.md.
+// Single-engagement battle simulator. Pure function, no DOM.
 //
 // simulate(input) → result
 //
