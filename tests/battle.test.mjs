@@ -165,12 +165,12 @@ test("luck scales faith and morale, weapon mastery and grandmaster add flat", ()
   const result = run({
     attackerUnits: { axe: 10 },
     defenderUnits: { spear: 10 },
-    morale: 90,
-    luck: 5,
+    morale: 50,
+    luck: 10,
     weaponMastery: 4,
     grandmaster: true
   });
-  assert.equal(result.attackerModifier, 109);
+  assert.equal(result.attackerModifier, 69);
 });
 
 test("real reports: attacker modifier with luck", () => {
