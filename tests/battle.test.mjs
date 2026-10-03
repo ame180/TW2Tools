@@ -238,3 +238,48 @@ test("no wall and no defenders costs nothing", () => {
   const result = run({ attackerUnits: { axe: 1000 }, defenderUnits: {}, wall: 0 });
   assert.equal(result.attacker.losses.axe, 0);
 });
+
+test("attacking noble with cavalry survives and does not skew cavalry losses", () => {
+  const withNoble = run({ attackerUnits: { light_cavalry: 500, nobleman: 1 }, defenderUnits: { spear: 100 } });
+  const withoutNoble = run({ attackerUnits: { light_cavalry: 500 }, defenderUnits: { spear: 100 } });
+  assert.equal(withNoble.attacker.losses.nobleman, 0);
+  assert.equal(withNoble.attacker.losses.light_cavalry, withoutNoble.attacker.losses.light_cavalry);
+});
+
+test("attacking noble survives when at most half the army dies", () => {
+  const result = run({ attackerUnits: { axe: 1000, nobleman: 1 }, defenderUnits: { spear: 1050 } });
+  assert.equal(result.attacker.losses.axe, 445);
+  assert.equal(result.attacker.losses.nobleman, 0);
+});
+
+test("attacking noble dies when more than half the army dies", () => {
+  const result = run({ attackerUnits: { axe: 1000, nobleman: 1 }, defenderUnits: { spear: 1200 } });
+  assert.equal(result.attacker.losses.axe, 544);
+  assert.equal(result.attacker.losses.nobleman, 1);
+});
+
+test("attacking noble dies with a wiped army", () => {
+  const result = run({ attackerUnits: { axe: 100, nobleman: 1 }, defenderUnits: { spear: 1000 } });
+  assert.equal(result.attacker.losses.axe, 100);
+  assert.equal(result.attacker.losses.nobleman, 1);
+});
+
+test("several attacking nobles lose their share of the army's food losses, rounded half down", () => {
+  const result = run({ attackerUnits: { axe: 1000, light_cavalry: 100, nobleman: 4 }, defenderUnits: { spear: 1200 } });
+  const losses = result.attacker.losses;
+  const armyFood = 1000 * data.units.axe.food + 100 * data.units.light_cavalry.food;
+  const lostFood = losses.axe * data.units.axe.food + losses.light_cavalry * data.units.light_cavalry.food;
+  assert.ok(lostFood / armyFood > 0.5 && lostFood / armyFood < 0.75);
+  assert.equal(losses.nobleman, Math.ceil(4 * lostFood / armyFood - 0.5));
+});
+
+test("lone attacking noble survives only an empty village without a wall", () => {
+  assert.equal(run({ attackerUnits: { nobleman: 1 }, defenderUnits: {} }).attacker.losses.nobleman, 0);
+  assert.equal(run({ attackerUnits: { nobleman: 1 }, defenderUnits: { spear: 1 } }).attacker.losses.nobleman, 1);
+  assert.equal(run({ attackerUnits: { nobleman: 1 }, defenderUnits: {}, wall: 1 }).attacker.losses.nobleman, 1);
+});
+
+test("defending noble still fights as a normal unit", () => {
+  const result = run({ attackerUnits: { axe: 1000 }, defenderUnits: { nobleman: 5 } });
+  assert.equal(result.defender.losses.nobleman, 5);
+});
