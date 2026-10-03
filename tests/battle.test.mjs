@@ -161,7 +161,7 @@ test("grandmaster is a flat bonus not scaled by faith or morale", () => {
   assert.equal(result.attackerModifier, 31);
 });
 
-test("luck and weapon mastery add to the attacker modifier", () => {
+test("luck scales faith and morale, weapon mastery and grandmaster add flat", () => {
   const result = run({
     attackerUnits: { axe: 10 },
     defenderUnits: { spear: 10 },
@@ -171,6 +171,27 @@ test("luck and weapon mastery add to the attacker modifier", () => {
     grandmaster: true
   });
   assert.equal(result.attackerModifier, 109);
+});
+
+test("real reports: attacker modifier with luck", () => {
+  const modifier = (overrides) => run({ attackerUnits: { axe: 10 }, defenderUnits: { spear: 10 }, ...overrides }).attackerModifier;
+  assert.equal(modifier({ faithAttacker: 100, morale: 29, luck: -9, weaponMastery: 10 }), 37);
+  assert.equal(modifier({ faithAttacker: 110, morale: 81, luck: 15, weaponMastery: 10, grandmaster: true }), 123);
+  assert.equal(modifier({ faithAttacker: 100, morale: 89, luck: 15, weaponMastery: 10 }), 113);
+});
+
+test("lowest faith, morale and luck keep the attacker modifier positive", () => {
+  const result = run({
+    attackerUnits: { axe: 1000, ram: 100 },
+    defenderUnits: { spear: 1000 },
+    faithAttacker: 50,
+    morale: 25,
+    luck: -15,
+    wall: 10
+  });
+  assert.ok(result.attackerModifier > 0);
+  assert.ok(result.defender.losses.spear < 1000, "a weak attack must not wipe the defender");
+  assert.ok(result.wallAfter <= 10, "rams never raise the wall");
 });
 
 test("wall after rams sits between the starting and final wall", () => {
