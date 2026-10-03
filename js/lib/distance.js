@@ -1,5 +1,5 @@
 // Map is a hex grid stored as offset x/y coordinates (odd rows shifted half a tile),
-// so distance is not Euclidean. Mirrors the game's math - see reference/walk-time-equation.md.
+// so distance is not Euclidean. Mirrors the game's math.
 export function actualDistance(start, end) {
   let dx = start.x - end.x;
   const dy = start.y - end.y;
