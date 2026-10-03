@@ -246,7 +246,7 @@ export function simulate(input) {
   const atkRemaining = { ...atkUnits };
   const defRemaining = { ...defUnits };
 
-  while (sumValues(atkRemaining) >= 1 && sumValues(defRemaining) >= 1) {
+  do {
     const attackStrength = getAttackStrength(atkRemaining, unitStats, attackBonuses);
     const defendStrength = getDefendStrength(defRemaining, unitStats, defenceBonuses);
     const attackFoodByType = getAttackFoodByType(atkRemaining, unitStats);
@@ -295,7 +295,7 @@ export function simulate(input) {
         }
       }
     }
-  }
+  } while (sumValues(atkRemaining) >= 1 && sumValues(defRemaining) >= 1);
 
   // Losses are measured against the original counts, so cancelled rams count as lost.
   // Survivors round up; the epsilon keeps float noise (e.g. 1e-14 left) from saving a unit.

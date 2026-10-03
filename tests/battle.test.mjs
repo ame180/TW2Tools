@@ -223,3 +223,18 @@ test("defender modifier is rounded down before the night bonus", () => {
   assert.equal(run(scenario).defenderModifier, 110);
   assert.equal(run({ ...scenario, night: true }).defenderModifier, 220);
 });
+
+test("wall alone wipes a weak attack", () => {
+  const result = run({ attackerUnits: { axe: 10 }, defenderUnits: {}, wall: 20 });
+  assert.equal(result.attacker.losses.axe, 10);
+});
+
+test("wall alone damages a strong attack", () => {
+  const result = run({ attackerUnits: { axe: 100 }, defenderUnits: {}, wall: 20 });
+  assert.equal(result.attacker.losses.axe, 23);
+});
+
+test("no wall and no defenders costs nothing", () => {
+  const result = run({ attackerUnits: { axe: 1000 }, defenderUnits: {}, wall: 0 });
+  assert.equal(result.attacker.losses.axe, 0);
+});
