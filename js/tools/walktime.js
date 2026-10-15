@@ -12,7 +12,7 @@ export const walktimeTool = {
 };
 
 function init(data) {
-  troops = data.troops || {};
+  troops = data.units || {};
 
   els.walkSource = document.getElementById("walk-source");
   els.walkTarget = document.getElementById("walk-target");

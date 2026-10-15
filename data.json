@@ -2238,128 +2238,6 @@
     "fixedTime": 300,
     "fixedCrowns": 3
   },
-  "troops": {
-    "spearman": {
-      "name": "Spearman",
-      "recruitBuilding": "barracks",
-      "wood": 50,
-      "clay": 30,
-      "iron": 20,
-      "provisions": 1,
-      "recruitTime": 90,
-      "speed": 14
-    },
-    "swordsman": {
-      "name": "Swordsman",
-      "recruitBuilding": "barracks",
-      "wood": 30,
-      "clay": 30,
-      "iron": 70,
-      "provisions": 1,
-      "recruitTime": 120,
-      "speed": 18
-    },
-    "axeman": {
-      "name": "Axeman",
-      "recruitBuilding": "barracks",
-      "wood": 60,
-      "clay": 30,
-      "iron": 40,
-      "provisions": 1,
-      "recruitTime": 150,
-      "speed": 14
-    },
-    "archer": {
-      "name": "Archer",
-      "recruitBuilding": "barracks",
-      "wood": 80,
-      "clay": 30,
-      "iron": 60,
-      "provisions": 1,
-      "recruitTime": 180,
-      "speed": 14
-    },
-    "lightCavalry": {
-      "name": "Light Cavalry",
-      "recruitBuilding": "barracks",
-      "wood": 125,
-      "clay": 100,
-      "iron": 250,
-      "provisions": 4,
-      "recruitTime": 360,
-      "speed": 8
-    },
-    "mountedArcher": {
-      "name": "Mounted Archer",
-      "recruitBuilding": "barracks",
-      "wood": 250,
-      "clay": 200,
-      "iron": 100,
-      "provisions": 5,
-      "recruitTime": 450,
-      "speed": 8
-    },
-    "heavyCavalry": {
-      "name": "Heavy Cavalry",
-      "recruitBuilding": "barracks",
-      "wood": 200,
-      "clay": 150,
-      "iron": 600,
-      "provisions": 6,
-      "recruitTime": 600,
-      "speed": 9
-    },
-    "ram": {
-      "name": "Ram",
-      "recruitBuilding": "barracks",
-      "wood": 300,
-      "clay": 200,
-      "iron": 200,
-      "provisions": 5,
-      "recruitTime": 480,
-      "speed": 24
-    },
-    "catapult": {
-      "name": "Catapult",
-      "recruitBuilding": "barracks",
-      "wood": 320,
-      "clay": 400,
-      "iron": 100,
-      "provisions": 8,
-      "recruitTime": 450,
-      "speed": 24
-    },
-    "trebuchet": {
-      "name": "Trebuchet",
-      "recruitBuilding": "hallOfOrders",
-      "wood": 4000,
-      "clay": 2000,
-      "iron": 2000,
-      "provisions": 10,
-      "recruitTime": 1200,
-      "speed": 50
-    },
-    "berserker": {
-      "name": "Berserker",
-      "recruitBuilding": "hallOfOrders",
-      "wood": 1200,
-      "clay": 1200,
-      "iron": 2400,
-      "provisions": 6,
-      "recruitTime": 1200,
-      "speed": 14
-    },
-    "nobleman": {
-      "name": "Nobleman",
-      "recruitBuilding": "academy",
-      "wood": 40000,
-      "clay": 50000,
-      "iron": 50000,
-      "provisions": 100,
-      "recruitTime": 10800,
-      "speed": 35
-    }
-  },
   "recruitModifiers": {
     "barracksSpeedTechs": [
       {
@@ -2395,119 +2273,191 @@
     "spear": {
       "name": "Spearman",
       "alias": "Sp",
+      "recruitBuilding": "barracks",
+      "wood": 50,
+      "clay": 30,
+      "iron": 20,
+      "provisions": 1,
+      "recruitTime": 90,
+      "speed": 14,
       "attack": 10,
       "def_inf": 25,
       "def_cav": 45,
-      "def_arc": 10,
-      "food": 1
+      "def_arc": 10
     },
     "sword": {
       "name": "Swordsman",
       "alias": "Sw",
+      "recruitBuilding": "barracks",
+      "wood": 30,
+      "clay": 30,
+      "iron": 70,
+      "provisions": 1,
+      "recruitTime": 120,
+      "speed": 18,
       "attack": 25,
       "def_inf": 55,
       "def_cav": 5,
-      "def_arc": 30,
-      "food": 1
+      "def_arc": 30
     },
     "axe": {
       "name": "Axeman",
       "alias": "Axe",
+      "recruitBuilding": "barracks",
+      "wood": 60,
+      "clay": 30,
+      "iron": 40,
+      "provisions": 1,
+      "recruitTime": 150,
+      "speed": 14,
       "attack": 45,
       "def_inf": 10,
       "def_cav": 5,
-      "def_arc": 10,
-      "food": 1
+      "def_arc": 10
     },
     "archer": {
       "name": "Archer",
       "alias": "Ar",
+      "recruitBuilding": "barracks",
+      "wood": 80,
+      "clay": 30,
+      "iron": 60,
+      "provisions": 1,
+      "recruitTime": 180,
+      "speed": 14,
       "attack": 25,
       "def_inf": 10,
       "def_cav": 30,
-      "def_arc": 60,
-      "food": 1
+      "def_arc": 60
     },
     "light_cavalry": {
       "name": "Light Cavalry",
       "alias": "LC",
+      "recruitBuilding": "barracks",
+      "wood": 125,
+      "clay": 100,
+      "iron": 250,
+      "provisions": 4,
+      "recruitTime": 360,
+      "speed": 8,
       "attack": 130,
       "def_inf": 30,
       "def_cav": 40,
-      "def_arc": 30,
-      "food": 4
+      "def_arc": 30
     },
     "mounted_archer": {
       "name": "Mounted Archer",
       "alias": "MA",
+      "recruitBuilding": "barracks",
+      "wood": 250,
+      "clay": 200,
+      "iron": 100,
+      "provisions": 5,
+      "recruitTime": 450,
+      "speed": 8,
       "attack": 150,
       "def_inf": 40,
       "def_cav": 30,
-      "def_arc": 50,
-      "food": 5
+      "def_arc": 50
     },
     "heavy_cavalry": {
       "name": "Heavy Cavalry",
       "alias": "HC",
+      "recruitBuilding": "barracks",
+      "wood": 200,
+      "clay": 150,
+      "iron": 600,
+      "provisions": 6,
+      "recruitTime": 600,
+      "speed": 9,
       "attack": 150,
       "def_inf": 200,
       "def_cav": 160,
-      "def_arc": 180,
-      "food": 6
+      "def_arc": 180
     },
     "ram": {
       "name": "Ram",
       "alias": "Ram",
+      "recruitBuilding": "barracks",
+      "wood": 300,
+      "clay": 200,
+      "iron": 200,
+      "provisions": 5,
+      "recruitTime": 480,
+      "speed": 24,
       "attack": 2,
       "def_inf": 20,
       "def_cav": 50,
-      "def_arc": 20,
-      "food": 5
+      "def_arc": 20
     },
     "catapult": {
       "name": "Catapult",
       "alias": "Cat",
+      "recruitBuilding": "barracks",
+      "wood": 320,
+      "clay": 400,
+      "iron": 100,
+      "provisions": 8,
+      "recruitTime": 450,
+      "speed": 24,
       "attack": 100,
       "def_inf": 100,
       "def_cav": 50,
-      "def_arc": 100,
-      "food": 8
+      "def_arc": 100
     },
     "berserker": {
       "name": "Berserker",
       "alias": "Zerk",
+      "recruitBuilding": "hallOfOrders",
+      "wood": 1200,
+      "clay": 1200,
+      "iron": 2400,
+      "provisions": 6,
+      "recruitTime": 1200,
+      "speed": 14,
       "attack": 300,
       "def_inf": 100,
       "def_cav": 100,
-      "def_arc": 50,
-      "food": 6
+      "def_arc": 50
     },
     "trebuchet": {
       "name": "Trebuchet",
       "alias": "Treb",
+      "recruitBuilding": "hallOfOrders",
+      "wood": 4000,
+      "clay": 2000,
+      "iron": 2000,
+      "provisions": 10,
+      "recruitTime": 1200,
+      "speed": 50,
       "attack": 30,
       "def_inf": 200,
       "def_cav": 250,
-      "def_arc": 200,
-      "food": 10
+      "def_arc": 200
     },
     "nobleman": {
       "name": "Nobleman",
       "alias": "Nob",
+      "recruitBuilding": "academy",
+      "wood": 40000,
+      "clay": 50000,
+      "iron": 50000,
+      "provisions": 100,
+      "recruitTime": 10800,
+      "speed": 35,
       "attack": 30,
       "def_inf": 100,
       "def_cav": 50,
-      "def_arc": 100,
-      "food": 100
+      "def_arc": 100
     },
     "knight": {
       "name": "Paladin",
       "alias": "Pal",
+      "provisions": 1,
       "attack": 150,
       "def_inf": 250,
       "def_cav": 400,
-      "def_arc": 150,
-      "food": 1
+      "def_arc": 150
     }
   },
   "weapons": {

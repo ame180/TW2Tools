@@ -141,5 +141,5 @@ test("defender provisions count paladins and unit food", () => {
     { units: { spear: 10, heavy_cavalry: 2 }, paladins: [{ id: null, level: 1 }] },
     data.units
   );
-  assert.equal(provisions, 10 * data.units.spear.food + 2 * data.units.heavy_cavalry.food + data.units.knight.food);
+  assert.equal(provisions, 10 * data.units.spear.provisions + 2 * data.units.heavy_cavalry.provisions + data.units.knight.provisions);
 });
