@@ -1,6 +1,7 @@
-import { formatNumber, toNonNegativeInt, clamp } from "../lib/format.js";
+import { formatNumber, formatDuration, toNonNegativeInt, clamp } from "../lib/format.js";
 import { UNIT_KEYS } from "../lib/battle.js";
 import { simulateSequence, summarizeSequence, defenderProvisions } from "../lib/battle-sequence.js";
+import { recruitSummary } from "../lib/recruit.js";
 import {
   createInitialState, addHit, deleteHit, moveHit, selectHit, setActiveAttacker, toSequenceInput, toFormPaladins,
   NO_PALADIN, NO_WEAPON, DEFAULT_FAITH, INPUT_UNIT_KEYS
@@ -18,6 +19,7 @@ let units = {};
 let weapons = {};
 let faithLevels = [];
 let tribeSkills = {};
+let recruitModifiers = {};
 let state = createInitialState();
 const attackerUnitInputs = new Map();
 const defenderUnitInputs = new Map();
@@ -33,6 +35,7 @@ function init(data) {
   weapons = data.weapons || {};
   faithLevels = data.faithLevels || [];
   tribeSkills = data.tribeSkills || {};
+  recruitModifiers = data.recruitModifiers || {};
 
   els.section = document.getElementById("view-battle");
   els.hits = document.getElementById("battle-hits");
@@ -46,6 +49,8 @@ function init(data) {
   els.wallStages = document.getElementById("battle-wall-stages");
   els.attackerResults = document.getElementById("battle-attacker-results");
   els.defenderResults = document.getElementById("battle-defender-results");
+  els.attackerCost = document.getElementById("battle-attacker-cost");
+  els.defenderCost = document.getElementById("battle-defender-cost");
   els.attackerUnits = document.getElementById("battle-attacker-units");
   els.defenderUnits = document.getElementById("battle-defender-units");
   els.defenderSource = document.getElementById("battle-defender-source");
@@ -365,6 +370,47 @@ function render({ includeDefenderStart = false } = {}) {
 
   renderDefenderPanel(activeStep, includeDefenderStart);
   renderHitStrip(steps);
+  renderLossCosts(steps, result);
+}
+
+function renderLossCosts(steps, result) {
+  const totals = steps.length > 1 ? summarizeSequence(steps) : null;
+  renderCostTable(els.attackerCost, result.attacker.losses, totals?.attackerLosses);
+  renderCostTable(els.defenderCost, result.defender.losses, totals?.defenderLosses);
+}
+
+function renderCostTable(table, hitLosses, totalLosses) {
+  const summaries = [recruitSummary(hitLosses, units, recruitModifiers)];
+  if (totalLosses) summaries.push(recruitSummary(totalLosses, units, recruitModifiers));
+
+  const rows = [];
+  if (totalLosses) {
+    const headerRow = document.createElement("tr");
+    headerRow.appendChild(createCell("th", ""));
+    for (const label of ["This hit", "All hits"]) {
+      headerRow.appendChild(createCell("th", label, "pl-4 py-1 text-right text-xs font-medium text-slate-500"));
+    }
+    rows.push(headerRow);
+  }
+
+  const lines = [
+    ["Wood", "wood", formatNumber],
+    ["Clay", "clay", formatNumber],
+    ["Iron", "iron", formatNumber],
+    ["Provisions", "provisions", formatNumber],
+    ["Barracks", "barracksTime", formatDuration],
+    ["Hall of Orders", "hallOfOrdersTime", formatDuration],
+  ];
+  for (const [label, key, format] of lines) {
+    const row = document.createElement("tr");
+    row.className = key === "barracksTime" ? "border-t border-slate-300" : "border-t border-slate-200";
+    row.appendChild(createCell("th", label, "py-1 pr-2 text-left font-medium"));
+    for (const summary of summaries) {
+      row.appendChild(createCell("td", format(summary[key]), "pl-4 py-1 text-right tabular-nums"));
+    }
+    rows.push(row);
+  }
+  table.replaceChildren(...rows);
 }
 
 function renderSide(table, side) {
