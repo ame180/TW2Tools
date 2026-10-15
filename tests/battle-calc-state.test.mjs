@@ -143,3 +143,15 @@ test("defender provisions count paladins and unit food", () => {
   );
   assert.equal(provisions, 10 * data.units.spear.provisions + 2 * data.units.heavy_cavalry.provisions + data.units.knight.provisions);
 });
+
+test("initial state applies battle defaults to the first attacker and the defender", () => {
+  const state = createInitialState({ weaponMasteryLevel: 4, ironWallLevel: 2, grandmaster: true });
+  assert.equal(state.hits[0].attacker.weaponMasteryLevel, 4);
+  assert.equal(state.hits[0].attacker.grandmaster, true);
+  assert.equal(state.defender.ironWallLevel, 2);
+
+  const plain = createInitialState();
+  assert.equal(plain.hits[0].attacker.weaponMasteryLevel, 0);
+  assert.equal(plain.hits[0].attacker.grandmaster, false);
+  assert.equal(plain.defender.ironWallLevel, 0);
+});

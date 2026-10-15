@@ -14,7 +14,7 @@ function emptyUnits() {
   return units;
 }
 
-export function createInitialState() {
+export function createInitialState({ weaponMasteryLevel = 0, ironWallLevel = 0, grandmaster = false } = {}) {
   return {
     defender: {
       units: emptyUnits(),
@@ -22,7 +22,7 @@ export function createInitialState() {
       wall: 0,
       faith: DEFAULT_FAITH,
       night: false,
-      ironWallLevel: 0
+      ironWallLevel
     },
     hits: [{
       attacker: {
@@ -32,8 +32,8 @@ export function createInitialState() {
         faith: DEFAULT_FAITH,
         morale: 100,
         luck: 0,
-        weaponMasteryLevel: 0,
-        grandmaster: false
+        weaponMasteryLevel,
+        grandmaster
       },
       defenderAdjustments: {}
     }],
