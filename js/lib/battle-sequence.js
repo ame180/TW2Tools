@@ -20,8 +20,8 @@ function countDefenderUnits(defenderState) {
 }
 
 export function defenderProvisions(defenderState, unitStats) {
-  let total = defenderState.paladins.length * unitStats.knight.food;
-  for (const unit of DEFENDER_UNIT_KEYS) total += (defenderState.units[unit] || 0) * unitStats[unit].food;
+  let total = defenderState.paladins.length * unitStats.knight.provisions;
+  for (const unit of DEFENDER_UNIT_KEYS) total += (defenderState.units[unit] || 0) * unitStats[unit].provisions;
   return total;
 }
 

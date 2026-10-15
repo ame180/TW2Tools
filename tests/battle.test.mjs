@@ -288,8 +288,8 @@ test("attacking noble dies with a wiped army", () => {
 test("several attacking nobles lose their share of the army's food losses, rounded half down", () => {
   const result = run({ attackerUnits: { axe: 1000, light_cavalry: 100, nobleman: 4 }, defenderUnits: { spear: 1200 } });
   const losses = result.attacker.losses;
-  const armyFood = 1000 * data.units.axe.food + 100 * data.units.light_cavalry.food;
-  const lostFood = losses.axe * data.units.axe.food + losses.light_cavalry * data.units.light_cavalry.food;
+  const armyFood = 1000 * data.units.axe.provisions + 100 * data.units.light_cavalry.provisions;
+  const lostFood = losses.axe * data.units.axe.provisions + losses.light_cavalry * data.units.light_cavalry.provisions;
   assert.ok(lostFood / armyFood > 0.5 && lostFood / armyFood < 0.75);
   assert.equal(losses.nobleman, Math.ceil(4 * lostFood / armyFood - 0.5));
 });

@@ -68,7 +68,7 @@ function totalFood(units, unitStats, excludeUnit) {
   let total = 0;
   for (const unit of UNIT_KEYS) {
     if (unit === excludeUnit) continue;
-    total += unitStats[unit].food * (units[unit] || 0);
+    total += unitStats[unit].provisions * (units[unit] || 0);
   }
   return total;
 }
@@ -103,7 +103,7 @@ function getAttackFoodByType(units, unitStats) {
   for (const unit of UNIT_KEYS) {
     const count = units[unit] || 0;
     if (count === 0) continue;
-    sum[UNIT_ATTACK_TYPE[unit]] += unitStats[unit].food * count;
+    sum[UNIT_ATTACK_TYPE[unit]] += unitStats[unit].provisions * count;
   }
   return sum;
 }

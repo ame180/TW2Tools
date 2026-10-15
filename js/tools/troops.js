@@ -15,7 +15,7 @@ export const troopsTool = {
 };
 
 function init(data) {
-  troops = data.troops || {};
+  troops = data.units || {};
   recruitModifiers = data.recruitModifiers || {};
   instantFinish = data.instantFinish || {};
 
@@ -55,7 +55,7 @@ function init(data) {
 }
 
 function populateTroopSelect() {
-  const entries = Object.entries(troops).sort(([, a], [, b]) => {
+  const entries = Object.entries(troops).filter(([, troop]) => troop.recruitBuilding).sort(([, a], [, b]) => {
     return String(a.name || "").localeCompare(String(b.name || ""));
   });
 
