@@ -6,6 +6,7 @@ import {
   createInitialState, addHit, deleteHit, moveHit, selectHit, setActiveAttacker, toSequenceInput, toFormPaladins,
   NO_PALADIN, NO_WEAPON, DEFAULT_FAITH, INPUT_UNIT_KEYS
 } from "../lib/battle-calc-state.js";
+import { loadSettings } from "../lib/settings.js";
 
 const els = {};
 
@@ -94,6 +95,7 @@ function init(data) {
   els.deleteHit.addEventListener("click", () => updateState(deleteHit(state, state.activeHit)));
   els.reset.addEventListener("click", resetHits);
 
+  state = createDefaultState();
   showActiveHit();
 }
 
@@ -347,7 +349,11 @@ function resetHits() {
   if (state.hits.length > 1 && !window.confirm("Remove all hits and reset the calculator?")) {
     return;
   }
-  updateState(createInitialState());
+  updateState(createDefaultState());
+}
+
+function createDefaultState() {
+  return createInitialState(loadSettings(tribeSkills).battle);
 }
 
 function render({ includeDefenderStart = false } = {}) {

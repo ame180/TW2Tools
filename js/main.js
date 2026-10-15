@@ -5,8 +5,9 @@ import { troopsTool } from "./tools/troops.js";
 import { moraleTool } from "./tools/morale.js";
 import { walktimeTool } from "./tools/walktime.js";
 import { battleTool } from "./tools/battle.js";
+import { settingsTool } from "./tools/settings.js";
 
-const tools = [buildingTool, crownsTool, wallbreakerTool, troopsTool, moraleTool, walktimeTool, battleTool];
+const tools = [buildingTool, crownsTool, wallbreakerTool, troopsTool, moraleTool, walktimeTool, battleTool, settingsTool];
 const DEFAULT_TOOL = tools[0].id;
 
 const els = {};
@@ -16,6 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
   els.dataStatus = document.getElementById("data-status");
   els.sidebar = document.getElementById("sidebar");
   els.sidebarNav = document.getElementById("sidebar-nav");
+  els.sidebarFooter = document.getElementById("sidebar-footer");
   els.sidebarBackdrop = document.getElementById("sidebar-backdrop");
   els.sidebarToggle = document.getElementById("sidebar-toggle");
 
@@ -53,7 +55,7 @@ function buildSidebarNav() {
     const button = document.createElement("button");
     button.type = "button";
     button.dataset.tool = tool.id;
-    button.textContent = tool.title;
+    button.textContent = tool.nav === false ? `\u2699\uFE0E ${tool.title}` : tool.title;
     button.className =
       "block w-full rounded px-3 py-2 text-left text-sm font-medium hover:bg-slate-200";
     button.addEventListener("click", () => {
@@ -61,7 +63,8 @@ function buildSidebarNav() {
       closeSidebar();
     });
 
-    els.sidebarNav.appendChild(button);
+    const container = tool.nav === false ? els.sidebarFooter : els.sidebarNav;
+    container.appendChild(button);
     navButtons.set(tool.id, button);
   }
 }

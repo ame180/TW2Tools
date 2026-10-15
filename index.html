@@ -22,11 +22,12 @@
     <div class="md:flex">
       <aside
         id="sidebar"
-        class="fixed inset-y-0 left-0 z-20 w-64 -translate-x-full transform border-r border-slate-300 bg-white p-4 transition-transform md:static md:h-auto md:min-h-screen md:translate-x-0 md:transform-none"
+        class="fixed inset-y-0 left-0 z-20 flex w-64 -translate-x-full transform flex-col overflow-y-auto border-r border-slate-300 bg-white p-4 transition-transform md:sticky md:top-0 md:h-screen md:shrink-0 md:translate-x-0 md:transform-none"
       >
         <h1 class="mb-4 hidden text-xl font-bold md:block">TW2 Tools</h1>
         <nav id="sidebar-nav" class="space-y-1"></nav>
         <p id="data-status" class="mt-6 text-xs text-slate-500">Loading data...</p>
+        <div id="sidebar-footer" class="mt-auto border-t border-slate-200 pt-3"></div>
       </aside>
 
       <div id="sidebar-backdrop" class="fixed inset-0 z-10 hidden bg-slate-900/40 md:hidden"></div>
@@ -421,6 +422,27 @@
         <div class="mt-4 flex flex-wrap gap-2">
           <button id="battle-reset" type="button" class="rounded border border-slate-300 px-3 py-2 text-sm font-medium hover:bg-slate-100">Reset</button>
         </div>
+        </section>
+
+        <section id="view-settings" class="hidden rounded border border-slate-300 bg-white p-4">
+          <h2 class="mb-1 text-lg font-semibold">Settings</h2>
+          <p class="mb-4 text-sm text-slate-600">Saved in this browser. Defaults apply when a calculator loads or is reset.</p>
+
+          <h3 class="mb-2 font-semibold">Battle Calculator</h3>
+          <div class="grid gap-4 text-sm md:grid-cols-3">
+            <label>
+              <span class="mb-1 block text-xs font-medium text-slate-600">Weapon mastery</span>
+              <select id="settings-weapon-mastery" class="w-full min-w-0 rounded border border-slate-300 px-2 py-1"></select>
+            </label>
+            <label>
+              <span class="mb-1 block text-xs font-medium text-slate-600">Iron wall</span>
+              <select id="settings-iron-wall" class="w-full min-w-0 rounded border border-slate-300 px-2 py-1"></select>
+            </label>
+            <label class="flex items-center gap-2 py-1 md:self-end">
+              <input id="settings-grandmaster" type="checkbox" />
+              <span>Grandmaster</span>
+            </label>
+          </div>
         </section>
       </main>
     </div>
