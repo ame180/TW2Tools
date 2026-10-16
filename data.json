@@ -2560,5 +2560,10 @@
   "tribeSkills": {
     "weaponMastery": [0, 2, 4, 6, 8, 10],
     "ironWall": [0, 1, 2, 3, 4, 5]
+  },
+  "healing": {
+    "medic": 10,
+    "medicus": 10,
+    "excludedUnits": ["ram", "catapult", "trebuchet", "nobleman", "knight"]
   }
 }

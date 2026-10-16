@@ -8,7 +8,9 @@ export function defaultSettings() {
     battle: {
       weaponMasteryLevel: 0,
       ironWallLevel: 0,
-      grandmaster: false
+      grandmaster: false,
+      medic: false,
+      medicus: false
     }
   };
 }
@@ -38,8 +40,10 @@ export function parseSettings(json, tribeSkills = {}) {
   if (isSkillLevel(battle.ironWallLevel, tribeSkills.ironWall)) {
     settings.battle.ironWallLevel = battle.ironWallLevel;
   }
-  if (typeof battle.grandmaster === "boolean") {
-    settings.battle.grandmaster = battle.grandmaster;
+  for (const flag of ["grandmaster", "medic", "medicus"]) {
+    if (typeof battle[flag] === "boolean") {
+      settings.battle[flag] = battle[flag];
+    }
   }
   return settings;
 }

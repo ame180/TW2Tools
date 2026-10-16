@@ -155,3 +155,20 @@ test("initial state applies battle defaults to the first attacker and the defend
   assert.equal(plain.hits[0].attacker.grandmaster, false);
   assert.equal(plain.defender.ironWallLevel, 0);
 });
+
+test("medic and medicus become a per-hit heal percentage", () => {
+  let state = createInitialState({ medicus: true });
+  state = addHit(state);
+  state = setActiveAttacker(state, { ...state.hits[1].attacker, medic: true });
+
+  const input = toSequenceInput(state, data);
+  assert.deepEqual(input.hits.map((hit) => hit.healPercent), [10, 20]);
+  assert.deepEqual(input.healExcludedUnits, data.healing.excludedUnits);
+});
+
+test("healing defaults to off", () => {
+  const { attacker } = createInitialState().hits[0];
+  assert.equal(attacker.medic, false);
+  assert.equal(attacker.medicus, false);
+  assert.equal(toSequenceInput(createInitialState(), data).hits[0].healPercent, 0);
+});

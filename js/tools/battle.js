@@ -2,6 +2,7 @@ import { formatNumber, formatDuration, toNonNegativeInt, clamp } from "../lib/fo
 import { UNIT_KEYS } from "../lib/battle.js";
 import { simulateSequence, summarizeSequence, defenderProvisions } from "../lib/battle-sequence.js";
 import { recruitSummary } from "../lib/recruit.js";
+import { subtractUnits } from "../lib/healing.js";
 import {
   createInitialState, addHit, deleteHit, moveHit, selectHit, setActiveAttacker, toSequenceInput, toFormPaladins,
   NO_PALADIN, NO_WEAPON, DEFAULT_FAITH, INPUT_UNIT_KEYS
@@ -15,12 +16,15 @@ const DISABLED_INPUT_CLASSES = "disabled:bg-slate-100 disabled:text-slate-500";
 const HIT_CHIP_CLASSES = "whitespace-nowrap rounded border px-3 py-1 tabular-nums";
 const ACTIVE_HIT_CHIP_CLASSES = `${HIT_CHIP_CLASSES} border-slate-800 bg-slate-800 text-white`;
 const INACTIVE_HIT_CHIP_CLASSES = `${HIT_CHIP_CLASSES} border-slate-300 hover:bg-slate-100`;
+const DEFENDER_ROWS = [["Units", ""], ["Losses", "text-red-700"]];
+const ATTACKER_ROWS = [...DEFENDER_ROWS, ["Healed", "text-green-700"]];
 
 let units = {};
 let weapons = {};
 let faithLevels = [];
 let tribeSkills = {};
 let recruitModifiers = {};
+let healing = {};
 let state = createInitialState();
 const attackerUnitInputs = new Map();
 const defenderUnitInputs = new Map();
@@ -37,6 +41,7 @@ function init(data) {
   faithLevels = data.faithLevels || [];
   tribeSkills = data.tribeSkills || {};
   recruitModifiers = data.recruitModifiers || {};
+  healing = data.healing || {};
 
   els.section = document.getElementById("view-battle");
   els.hits = document.getElementById("battle-hits");
@@ -68,6 +73,8 @@ function init(data) {
   els.weaponMastery = document.getElementById("battle-weapon-mastery");
   els.ironWall = document.getElementById("battle-iron-wall");
   els.grandmaster = document.getElementById("battle-grandmaster");
+  els.medic = document.getElementById("battle-medic");
+  els.medicus = document.getElementById("battle-medicus");
   els.night = document.getElementById("battle-night");
   els.reset = document.getElementById("battle-reset");
 
@@ -123,7 +130,7 @@ function renderUnitInputs(container, inputs) {
 }
 
 function renderResultTables() {
-  for (const table of [els.attackerResults, els.defenderResults]) {
+  for (const [table, rows] of [[els.attackerResults, ATTACKER_ROWS], [els.defenderResults, DEFENDER_ROWS]]) {
     const headerRow = document.createElement("tr");
     headerRow.appendChild(createCell("th", ""));
     for (const unit of UNIT_KEYS) {
@@ -137,7 +144,7 @@ function renderResultTables() {
     table.appendChild(thead);
 
     const tbody = document.createElement("tbody");
-    for (const [label, rowClass] of [["Units", ""], ["Losses", "text-red-700"]]) {
+    for (const [label, rowClass] of rows) {
       const row = document.createElement("tr");
       row.className = `border-t border-slate-200 ${rowClass}`;
       row.appendChild(createCell("th", label, "py-1 pr-2 text-left font-medium"));
@@ -263,7 +270,9 @@ function readForm() {
     morale: clamp(toNonNegativeInt(els.morale.value, 100), 25, 100),
     luck: Number(els.luck.value),
     weaponMasteryLevel: Number(els.weaponMastery.value),
-    grandmaster: els.grandmaster.checked
+    grandmaster: els.grandmaster.checked,
+    medic: els.medic.checked,
+    medicus: els.medicus.checked
   });
 
   const defender = {
@@ -290,6 +299,8 @@ function writeForm() {
   els.luck.value = String(attacker.luck);
   els.weaponMastery.value = String(attacker.weaponMasteryLevel);
   els.grandmaster.checked = attacker.grandmaster;
+  els.medic.checked = attacker.medic;
+  els.medicus.checked = attacker.medicus;
 
   const { defender } = state;
   els.defenderFaith.value = String(defender.faith);
@@ -361,13 +372,13 @@ function render({ includeDefenderStart = false } = {}) {
   els.luckValue.textContent = `${luck > 0 ? "+" : ""}${luck}%`;
   els.attackerWeaponLevel.disabled = !weapons[paladinWeapon];
 
-  const steps = simulateSequence(toSequenceInput(state, { units, weapons, tribeSkills }));
+  const steps = simulateSequence(toSequenceInput(state, { units, weapons, tribeSkills, healing }));
   const activeStep = steps[state.activeHit];
   const { result } = activeStep;
 
   els.attackerModifier.textContent = formatModifier(result.attackerModifier);
   els.defenderModifier.textContent = formatModifier(result.defenderModifier);
-  renderSide(els.attackerResults, result.attacker);
+  renderSide(els.attackerResults, result.attacker, activeStep);
   renderSide(els.defenderResults, result.defender);
 
   els.wallStages.hidden = result.wallBefore === 0;
@@ -376,12 +387,17 @@ function render({ includeDefenderStart = false } = {}) {
 
   renderDefenderPanel(activeStep, includeDefenderStart);
   renderHitStrip(steps);
-  renderLossCosts(steps, result);
+  renderLossCosts(steps, activeStep);
 }
 
-function renderLossCosts(steps, result) {
+function renderLossCosts(steps, activeStep) {
+  const { result } = activeStep;
   const totals = steps.length > 1 ? summarizeSequence(steps) : null;
-  renderCostTable(els.attackerCost, result.attacker.losses, totals?.attackerLosses);
+  renderCostTable(
+    els.attackerCost,
+    subtractUnits(result.attacker.losses, activeStep.attackerHealed),
+    totals && subtractUnits(totals.attackerLosses, totals.attackerHealed)
+  );
   renderCostTable(els.defenderCost, result.defender.losses, totals?.defenderLosses);
 }
 
@@ -419,13 +435,19 @@ function renderCostTable(table, hitLosses, totalLosses) {
   table.replaceChildren(...rows);
 }
 
-function renderSide(table, side) {
-  const [unitsRow, lossesRow] = table.tBodies[0].rows;
+function renderSide(table, side, step) {
+  const [unitsRow, lossesRow, healedRow] = table.tBodies[0].rows;
   for (const cell of unitsRow.querySelectorAll("td")) {
     cell.textContent = formatNumber(side.quantity[cell.dataset.unit]);
   }
   for (const cell of lossesRow.querySelectorAll("td")) {
     cell.textContent = formatNumber(side.losses[cell.dataset.unit]);
+  }
+  if (!healedRow) return;
+
+  healedRow.hidden = step.healPercent === 0;
+  for (const cell of healedRow.querySelectorAll("td")) {
+    cell.textContent = formatNumber(step.attackerHealed[cell.dataset.unit]);
   }
 }
 

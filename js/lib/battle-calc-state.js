@@ -2,6 +2,7 @@
 // toSequenceInput / toFormPaladins convert to and from engine values; operations never mutate.
 
 import { UNIT_KEYS } from "./battle.js";
+import { healPercent } from "./healing.js";
 
 export const NO_PALADIN = "";
 export const NO_WEAPON = "none";
@@ -14,7 +15,9 @@ function emptyUnits() {
   return units;
 }
 
-export function createInitialState({ weaponMasteryLevel = 0, ironWallLevel = 0, grandmaster = false } = {}) {
+export function createInitialState({
+  weaponMasteryLevel = 0, ironWallLevel = 0, grandmaster = false, medic = false, medicus = false
+} = {}) {
   return {
     defender: {
       units: emptyUnits(),
@@ -33,7 +36,9 @@ export function createInitialState({ weaponMasteryLevel = 0, ironWallLevel = 0, 
         morale: 100,
         luck: 0,
         weaponMasteryLevel,
-        grandmaster
+        grandmaster,
+        medic,
+        medicus
       },
       defenderAdjustments: {}
     }],
@@ -81,11 +86,12 @@ export function toFormPaladins(enginePaladins) {
   return enginePaladins.map((paladin) => ({ weapon: paladin.id ?? NO_WEAPON, level: paladin.level }));
 }
 
-export function toSequenceInput(state, { units, weapons, tribeSkills = {} }) {
+export function toSequenceInput(state, { units, weapons, tribeSkills = {}, healing = {} }) {
   const { defender } = state;
   return {
     unitStats: units,
     weaponData: weapons,
+    healExcludedUnits: healing.excludedUnits ?? [],
     defender: {
       units: { ...defender.units },
       paladins: defender.paladins.map((paladin) => ({
@@ -106,7 +112,8 @@ export function toSequenceInput(state, { units, weapons, tribeSkills = {} }) {
       luck: attacker.luck,
       faithAttacker: attacker.faith,
       weaponMastery: tribeSkills.weaponMastery?.[attacker.weaponMasteryLevel] ?? 0,
-      grandmaster: attacker.grandmaster
+      grandmaster: attacker.grandmaster,
+      healPercent: healPercent(attacker, healing)
     }))
   };
 }
