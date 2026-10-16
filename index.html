@@ -292,6 +292,61 @@
         </p>
         </section>
 
+        <section id="view-planner" class="hidden rounded border border-slate-300 bg-white p-4">
+        <h2 class="mb-4 text-lg font-semibold">Attack Planner</h2>
+
+        <label class="block text-sm md:w-80">
+          <span class="mb-1 block font-medium">Landing Time</span>
+          <input id="planner-landing" type="datetime-local" step="1" class="w-full rounded border border-slate-300 px-3 py-2" />
+        </label>
+
+        <div class="mt-4 grid gap-4 md:grid-cols-2">
+          <div class="min-w-0">
+            <label class="text-sm">
+              <span class="mb-1 block font-medium">Your Villages <span id="planner-source-count" class="font-normal text-slate-500"></span></span>
+              <input id="planner-source-input" type="text" placeholder="Name (500|500)" class="w-full rounded border border-slate-300 px-3 py-2" />
+            </label>
+            <p id="planner-source-error" class="mt-1 text-xs text-red-700"></p>
+            <ul id="planner-source-list" class="mt-1 max-h-64 space-y-1 overflow-y-auto pr-1 text-sm"></ul>
+          </div>
+
+          <div class="min-w-0">
+            <label class="text-sm">
+              <span class="mb-1 block font-medium">Targets <span id="planner-target-count" class="font-normal text-slate-500"></span></span>
+              <input id="planner-target-input" type="text" placeholder="Name (512|498)" class="w-full rounded border border-slate-300 px-3 py-2" />
+            </label>
+            <p id="planner-target-error" class="mt-1 text-xs text-red-700"></p>
+            <ul id="planner-target-list" class="mt-1 max-h-64 space-y-1 overflow-y-auto pr-1 text-sm"></ul>
+          </div>
+        </div>
+
+        <div id="planner-attacks" class="mt-6 rounded border border-slate-200 bg-slate-50 p-3"></div>
+
+        <div class="mt-6">
+          <div class="flex flex-wrap items-baseline justify-between gap-2">
+            <h3 class="font-semibold">Send Plan</h3>
+            <p id="planner-countdown" class="text-sm"></p>
+          </div>
+          <div class="mt-2 overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b border-slate-300 text-left text-xs text-slate-500">
+                  <th class="py-1 pr-3 font-medium">Send At</th>
+                  <th class="py-1 pr-3 font-medium">From</th>
+                  <th class="py-1 pr-3 font-medium">To</th>
+                  <th class="py-1 pr-3 font-medium">Speed</th>
+                  <th class="py-1 pr-3 font-medium">Travel</th>
+                  <th class="py-1 pr-3 font-medium">Lands</th>
+                  <th class="py-1 pr-3 font-medium">Note</th>
+                  <th class="py-1 font-medium">Sent</th>
+                </tr>
+              </thead>
+              <tbody id="planner-plan"></tbody>
+            </table>
+          </div>
+        </div>
+        </section>
+
         <section id="view-battle" class="hidden rounded border border-slate-300 bg-white p-4">
         <h2 class="mb-4 text-lg font-semibold">Battle Calculator</h2>
 

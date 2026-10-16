@@ -30,3 +30,9 @@ export function toNonNegativeInt(value, fallback = 0) {
 export function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
+
+export function formatDateTime(date) {
+  const pad = (part) => String(part).padStart(2, "0");
+  const day = `${pad(date.getDate())}.${pad(date.getMonth() + 1)}`;
+  return `${day} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+}
