@@ -370,7 +370,7 @@
                 </span>
               </label>
 
-              <div class="grid grid-cols-2 items-end gap-x-3">
+              <div class="grid grid-cols-2 items-end gap-x-3 gap-y-1">
                 <label>
                   <span class="mb-1 block text-xs font-medium text-slate-600">Weapon mastery</span>
                   <select id="battle-weapon-mastery" class="w-full min-w-0 rounded border border-slate-300 px-2 py-1"></select>
@@ -378,6 +378,14 @@
                 <label class="flex items-center gap-2 py-1">
                   <input id="battle-grandmaster" type="checkbox" />
                   <span>Grandmaster</span>
+                </label>
+                <label class="flex items-center gap-2 py-1">
+                  <input id="battle-medicus" type="checkbox" />
+                  <span>Medicus</span>
+                </label>
+                <label class="flex items-center gap-2 py-1">
+                  <input id="battle-medic" type="checkbox" />
+                  <span>Medic</span>
                 </label>
               </div>
             </div>
@@ -441,6 +449,15 @@
             <label class="flex items-center gap-2 py-1 md:self-end">
               <input id="settings-grandmaster" type="checkbox" />
               <span>Grandmaster</span>
+            </label>
+            <label class="flex items-center gap-2 py-1">
+              <input id="settings-medicus" type="checkbox" />
+              <span>Medicus</span>
+            </label>
+            <div class="hidden md:block"></div>
+            <label class="flex items-center gap-2 py-1">
+              <input id="settings-medic" type="checkbox" />
+              <span>Medic</span>
             </label>
           </div>
         </section>

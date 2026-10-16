@@ -12,14 +12,14 @@ test("missing or corrupt storage yields defaults", () => {
 });
 
 test("valid stored battle settings are kept", () => {
-  const stored = { battle: { weaponMasteryLevel: 5, ironWallLevel: 3, grandmaster: true } };
+  const stored = { battle: { weaponMasteryLevel: 5, ironWallLevel: 3, grandmaster: true, medic: true, medicus: false } };
   assert.deepEqual(parseSettings(JSON.stringify(stored), tribeSkills), stored);
 });
 
 test("each invalid field falls back to its default, valid fields are kept", () => {
-  const stored = { battle: { weaponMasteryLevel: 6, ironWallLevel: 2, grandmaster: "yes" } };
+  const stored = { battle: { weaponMasteryLevel: 6, ironWallLevel: 2, grandmaster: "yes", medic: 1, medicus: true } };
   assert.deepEqual(parseSettings(JSON.stringify(stored), tribeSkills), {
-    battle: { weaponMasteryLevel: 0, ironWallLevel: 2, grandmaster: false }
+    battle: { weaponMasteryLevel: 0, ironWallLevel: 2, grandmaster: false, medic: false, medicus: true }
   });
 });
 
@@ -36,4 +36,11 @@ test("defaultSettings returns a fresh object each call", () => {
   const settings = defaultSettings();
   settings.battle.grandmaster = true;
   assert.equal(defaultSettings().battle.grandmaster, false);
+});
+
+test("settings saved before healing existed load with healing off", () => {
+  const stored = { battle: { weaponMasteryLevel: 2, ironWallLevel: 1, grandmaster: true } };
+  assert.deepEqual(parseSettings(JSON.stringify(stored), tribeSkills), {
+    battle: { ...stored.battle, medic: false, medicus: false }
+  });
 });

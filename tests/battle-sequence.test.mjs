@@ -179,3 +179,37 @@ test("inputs are not mutated", () => {
   assert.deepEqual(defenderState, defenderCopy);
   assert.deepEqual(hits, hitsCopy);
 });
+
+test("healing is computed per hit from attacker losses and does not change the fight", () => {
+  const excluded = data.healing.excludedUnits;
+  const baseHit = { attackerUnits: { axe: 3000, light_cavalry: 500, ram: 100 }, morale: 100, luck: 0, faithAttacker: 100 };
+  const defenderState = defender({ units: { spear: 3000, sword: 3000 }, wall: 10 });
+
+  const plain = simulateSequence({
+    unitStats: data.units, weaponData: data.weapons, defender: defenderState, hits: [baseHit, baseHit]
+  });
+  const healed = simulateSequence({
+    unitStats: data.units, weaponData: data.weapons, defender: defenderState, healExcludedUnits: excluded,
+    hits: [{ ...baseHit, healPercent: 20 }, { ...baseHit, healPercent: 0 }]
+  });
+
+  assert.deepEqual(healed.map((step) => step.result), plain.map((step) => step.result));
+  assert.deepEqual(healed.map((step) => step.defenderAfter), plain.map((step) => step.defenderAfter));
+
+  const firstLosses = healed[0].result.attacker.losses;
+  assert.equal(healed[0].healPercent, 20);
+  assert.equal(healed[0].attackerHealed.axe, Math.floor(firstLosses.axe * 0.2));
+  assert.equal(healed[0].attackerHealed.ram, 0);
+  assert.ok(healed[0].attackerHealed.axe > 0);
+  assert.ok(Object.values(healed[1].attackerHealed).every((count) => count === 0));
+
+  const summary = summarizeSequence(healed);
+  assert.equal(summary.attackerHealed.axe, healed[0].attackerHealed.axe);
+  assert.equal(summary.attackerHealed.light_cavalry, healed[0].attackerHealed.light_cavalry);
+});
+
+test("hits without healPercent heal nothing", () => {
+  const steps = runSequence(defender({ units: { spear: 1000 } }), [{ attackerUnits: { axe: 2000 } }]);
+  assert.equal(steps[0].healPercent, 0);
+  assert.ok(Object.values(steps[0].attackerHealed).every((count) => count === 0));
+});
