@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { formatNumber, formatDuration, toNumber, toNonNegativeInt, clamp } from "../js/lib/format.js";
+import { formatNumber, formatDuration, formatDateTime, toNumber, toNonNegativeInt, clamp } from "../js/lib/format.js";
 
 test("formatNumber rounds and groups thousands", () => {
   assert.equal(formatNumber(1234567.6), "1,234,568");
@@ -29,4 +29,9 @@ test("clamp keeps value within bounds", () => {
   assert.equal(clamp(5, 1, 10), 5);
   assert.equal(clamp(-2, 1, 10), 1);
   assert.equal(clamp(99, 1, 10), 10);
+});
+
+test("formatDateTime renders local DD.MM HH:MM:SS", () => {
+  assert.equal(formatDateTime(new Date(2026, 9, 5, 7, 3, 9)), "05.10 07:03:09");
+  assert.equal(formatDateTime(new Date(2026, 11, 31, 23, 59, 59)), "31.12 23:59:59");
 });
