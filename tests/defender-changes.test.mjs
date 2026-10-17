@@ -2,10 +2,11 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { emptyChanges, hasChanges, applyChanges, mergeChanges } from "../js/lib/defender-changes.js";
 
-const HALBERD = { id: "halberd", level: 3 };
-const LONGSWORD = { id: "longsword", level: 3 };
-const BOW = { id: "bow", level: 2 };
-const AXE = { id: "axe", level: 1 };
+const HALBERD = { uid: 1, id: "halberd", level: 3 };
+const LONGSWORD = { uid: 2, id: "longsword", level: 3 };
+const BOW = { uid: 3, id: "bow", level: 2 };
+const AXE = { uid: 4, id: "axe", level: 1 };
+const AXE_SWAP = { id: "axe", level: 1 };
 
 function defender(overrides) {
   return { units: { spear: 1000, sword: 300 }, paladins: [], wall: 12, faith: 100, night: false, ...overrides };
@@ -38,18 +39,18 @@ test("wall, faith and night overrides replace the carried values", () => {
   assert.equal(lowered.night, false);
 });
 
-test("paladins are swapped and removed by slot, arrivals join at the end", () => {
+test("paladins are swapped and removed by uid, arrivals join at the end", () => {
   const after = applyChanges(
     defender({ paladins: [HALBERD, LONGSWORD, BOW] }),
-    changes({ paladins: { removed: [1], swaps: { 0: AXE }, arriving: [LONGSWORD] } })
+    changes({ paladins: { removed: [2], swaps: { 1: AXE_SWAP }, arriving: [AXE] } })
   );
-  assert.deepEqual(after.paladins, [AXE, BOW, LONGSWORD]);
+  assert.deepEqual(after.paladins, [{ ...AXE_SWAP, uid: 1 }, BOW, AXE]);
 });
 
-test("paladin changes for slots that no longer exist are ignored", () => {
+test("paladin changes for paladins that are not present have no effect", () => {
   const after = applyChanges(
     defender({ paladins: [HALBERD] }),
-    changes({ paladins: { removed: [2], swaps: { 1: AXE }, arriving: [] } })
+    changes({ paladins: { removed: [3], swaps: { 2: AXE_SWAP }, arriving: [] } })
   );
   assert.deepEqual(after.paladins, [HALBERD]);
 });
@@ -60,13 +61,13 @@ test("any unit delta, override or paladin change counts as a change", () => {
   assert.equal(hasChanges(changes({ wall: 0 })), true);
   assert.equal(hasChanges(changes({ night: false })), true);
   assert.equal(hasChanges(changes({ paladins: { arriving: [BOW] } })), true);
-  assert.equal(hasChanges(changes({ paladins: { swaps: { 0: BOW } } })), true);
-  assert.equal(hasChanges(changes({ paladins: { removed: [0] } })), true);
+  assert.equal(hasChanges(changes({ paladins: { swaps: { 1: AXE_SWAP } } })), true);
+  assert.equal(hasChanges(changes({ paladins: { removed: [1] } })), true);
 });
 
 test("applying does not mutate its inputs", () => {
   const before = defender({ paladins: [HALBERD] });
-  const gap = changes({ units: { spear: 5 }, paladins: { swaps: { 0: AXE }, arriving: [BOW] } });
+  const gap = changes({ units: { spear: 5 }, paladins: { swaps: { 1: AXE_SWAP }, arriving: [BOW] } });
   const beforeCopy = structuredClone(before);
   const gapCopy = structuredClone(gap);
   applyChanges(before, gap);
@@ -77,8 +78,7 @@ test("applying does not mutate its inputs", () => {
 test("merged unit deltas sum and later overrides win", () => {
   const merged = mergeChanges(
     changes({ units: { spear: 500, sword: -100 }, wall: 15, faith: 50 }),
-    changes({ units: { spear: -500, axe: 20 }, wall: 10, night: true }),
-    0
+    changes({ units: { spear: -500, axe: 20 }, wall: 10, night: true })
   );
   assert.deepEqual(merged.units, { sword: -100, axe: 20 });
   assert.equal(merged.wall, 10);
@@ -87,28 +87,37 @@ test("merged unit deltas sum and later overrides win", () => {
 });
 
 test("merging equals applying both in order", () => {
-  const start = defender({ paladins: [HALBERD, LONGSWORD, BOW] });
+  const start = defender({ paladins: [HALBERD, LONGSWORD] });
   const cases = [
     [
-      changes({ paladins: { removed: [0], swaps: { 2: AXE }, arriving: [HALBERD] } }),
-      changes({ paladins: { removed: [0], swaps: { 1: BOW, 2: LONGSWORD }, arriving: [AXE] } })
+      changes({ paladins: { removed: [1], swaps: { 2: AXE_SWAP }, arriving: [BOW] } }),
+      changes({ paladins: { removed: [2], swaps: { 3: AXE_SWAP }, arriving: [AXE] } })
     ],
     [
       changes({ paladins: { arriving: [AXE, BOW] } }),
-      changes({ paladins: { removed: [3, 1], swaps: { 4: HALBERD } } })
+      changes({ paladins: { removed: [4, 1], swaps: { 3: { id: "halberd", level: 1 } } } })
     ],
     [
-      changes({ paladins: { swaps: { 1: AXE } } }),
-      changes({ paladins: { removed: [1], swaps: { 1: BOW } } })
+      changes({ paladins: { swaps: { 2: AXE_SWAP } } }),
+      changes({ paladins: { removed: [2], swaps: { 1: AXE_SWAP } } })
     ],
     [
       changes({ units: { spear: 100 }, wall: 3 }),
-      changes({ paladins: { removed: [0, 1, 2] } })
+      changes({ paladins: { removed: [1, 2] } })
     ]
   ];
 
   for (const [first, second] of cases) {
-    const merged = mergeChanges(first, second, start.paladins.length);
+    const merged = mergeChanges(first, second);
     assert.deepEqual(applyChanges(start, merged), applyChanges(applyChanges(start, first), second));
   }
+});
+
+test("merging keeps changes to paladins that are not present", () => {
+  const merged = mergeChanges(
+    changes({ paladins: { removed: [7] } }),
+    changes({ paladins: { swaps: { 8: AXE_SWAP } } })
+  );
+  assert.deepEqual(merged.paladins.removed, [7]);
+  assert.deepEqual(merged.paladins.swaps, { 8: AXE_SWAP });
 });
