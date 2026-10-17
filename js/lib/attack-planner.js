@@ -12,6 +12,8 @@ export const SPEED_CLASSES = [
   { id: "treb", label: "Treb", unit: "trebuchet" }
 ];
 
+export const SPEED_LABELS = Object.fromEntries(SPEED_CLASSES.map((speedClass) => [speedClass.id, speedClass.label]));
+
 export function minutesPerTileByClass(units) {
   const speeds = {};
   for (const speedClass of SPEED_CLASSES) {
@@ -71,7 +73,6 @@ export function villageLabel(village) {
 // One line per unsent attack, sorted by send time. Send times on the landing day drop the date.
 export function formatPlanText(rows, landingMs) {
   const landingDay = new Date(landingMs).toDateString();
-  const speedLabels = Object.fromEntries(SPEED_CLASSES.map((speedClass) => [speedClass.id, speedClass.label]));
   const lines = [`Landing: ${formatDateTime(new Date(landingMs))}`, ""];
 
   for (const { attack, source, target, sendMs } of rows) {
@@ -82,7 +83,7 @@ export function formatPlanText(rows, landingMs) {
     const sendText = formatDateTime(sendDate);
     const sendTime = sendDate.toDateString() === landingDay ? sendText.split(" ")[1] : sendText;
     const offset = attack.offsetSeconds ? ` ${attack.offsetSeconds > 0 ? "+" : ""}${attack.offsetSeconds}s` : "";
-    const parts = [sendTime, `${villageLabel(source)} → ${villageLabel(target)}`, `${speedLabels[attack.speedClassId]}${offset}`];
+    const parts = [sendTime, `${villageLabel(source)} → ${villageLabel(target)}`, `${SPEED_LABELS[attack.speedClassId]}${offset}`];
     if (attack.note.trim()) {
       parts.push(attack.note.trim());
     }
