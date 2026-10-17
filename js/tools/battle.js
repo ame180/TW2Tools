@@ -613,7 +613,8 @@ function writeStartDefender() {
   els.defenderUnitsHeader.classList.remove("defender-change-grid");
   for (const [unit, { row, changeCell, total, hint }] of defenderChangeRows) {
     row.className = "grid grid-cols-2 items-center gap-x-3";
-    changeCell.hidden = true;
+    changeCell.classList.add("hidden");
+    changeCell.classList.remove("flex");
     total.hidden = true;
     hint.hidden = true;
     defenderUnitInputs.get(unit).disabled = false;
@@ -648,7 +649,8 @@ function writeDefenderChanges(changes) {
   for (const [unit, { row, changeCell, sign, change, total }] of defenderChangeRows) {
     const delta = changes.units[unit] ?? 0;
     row.className = "defender-change-grid rounded px-1";
-    changeCell.hidden = false;
+    changeCell.classList.remove("hidden");
+    changeCell.classList.add("flex");
     total.hidden = false;
     setSign(sign, delta < 0 ? -1 : 1);
     change.value = delta === 0 ? "" : String(Math.abs(delta));
