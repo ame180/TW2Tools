@@ -2,6 +2,7 @@ import { formatDuration, formatDateTime } from "../lib/format.js";
 import { travelTimeSeconds } from "../lib/distance.js";
 import {
   SPEED_CLASSES,
+  SPEED_LABELS,
   minutesPerTileByClass,
   parseVillageLine,
   targetsByDistance,
@@ -28,7 +29,7 @@ const state = {
   ...emptyPlan(),
   minutesPerTile: {}
 };
-const confirmTimers = new Map();
+const buttonTimers = new Map();
 
 export const plannerTool = {
   id: "planner",
@@ -55,7 +56,10 @@ function init(data) {
     els[kind].list.addEventListener("click", (event) => handleVillageListClick(kind, event));
   }
 
-  els.landing.addEventListener("input", () => commit(renderPlan));
+  els.landing.addEventListener("input", () => {
+    state.landing = els.landing.value;
+    commit(renderPlan);
+  });
   els.attacks.addEventListener("click", handleAttacksClick);
   els.attacks.addEventListener("change", handleAttacksChange);
   els.attacks.addEventListener("input", handleAttacksInput);
@@ -265,7 +269,8 @@ function handleAttacksInput(event) {
   const field = event.target;
 
   if (field.dataset.offset) {
-    findAttack(field.dataset.offset).offsetSeconds = Math.trunc(Number(field.value)) || 0;
+    const offsetSeconds = Math.trunc(Number(field.value));
+    findAttack(field.dataset.offset).offsetSeconds = Number.isFinite(offsetSeconds) ? offsetSeconds : 0;
     commit(renderPlan);
     return;
   }
@@ -287,7 +292,7 @@ function handlePlanChange(event) {
 
 function commit(render = renderAll) {
   render();
-  savePlan({ ...state, landing: els.landing.value });
+  savePlan(state);
 }
 
 function applyPlan(plan) {
@@ -306,7 +311,7 @@ function bindPlanActions() {
 
   const exportButton = document.getElementById("planner-export");
   exportButton.addEventListener("click", () =>
-    copyText(exportButton, JSON.stringify(serializePlan({ ...state, landing: els.landing.value })))
+    copyText(exportButton, JSON.stringify(serializePlan(state)))
   );
 
   const copyButton = document.getElementById("planner-copy-text");
@@ -366,8 +371,8 @@ function copyText(button, text) {
 function flashLabel(button, text) {
   button.dataset.label ??= button.textContent;
   button.textContent = text;
-  clearTimeout(confirmTimers.get(button));
-  confirmTimers.set(button, setTimeout(() => {
+  clearTimeout(buttonTimers.get(button));
+  buttonTimers.set(button, setTimeout(() => {
     button.textContent = button.dataset.label;
     delete button.dataset.label;
   }, FLASH_MS));
@@ -375,7 +380,7 @@ function flashLabel(button, text) {
 
 // Destructive actions run on the second click within CONFIRM_MS.
 function confirmClick(button, action) {
-  clearTimeout(confirmTimers.get(button));
+  clearTimeout(buttonTimers.get(button));
   if (button.dataset.armed) {
     disarm(button);
     action();
@@ -386,7 +391,7 @@ function confirmClick(button, action) {
   button.textContent = "Click again to confirm";
   button.classList.remove(...IDLE_CLASSES);
   button.classList.add(...ARMED_CLASSES);
-  confirmTimers.set(button, setTimeout(() => disarm(button), CONFIRM_MS));
+  buttonTimers.set(button, setTimeout(() => disarm(button), CONFIRM_MS));
 }
 
 function disarm(button) {
@@ -537,10 +542,10 @@ function renderAttacks() {
 }
 
 function landingMs() {
-  if (!els.landing.value) {
+  if (!state.landing) {
     return null;
   }
-  const time = new Date(els.landing.value).getTime();
+  const time = new Date(state.landing).getTime();
   return Number.isFinite(time) ? time : null;
 }
 
@@ -573,8 +578,6 @@ function renderPlan() {
   }
 
   const rows = currentSendPlan();
-  const speedLabels = Object.fromEntries(SPEED_CLASSES.map((speedClass) => [speedClass.id, speedClass.label]));
-
   for (const { attack, source, target, travelSeconds, landsMs, sendMs } of rows) {
     const row = element("tr", "border-b border-slate-200");
     row.dataset.sendMs = sendMs;
@@ -604,7 +607,7 @@ function renderPlan() {
       sendCell,
       element("td", "py-1 pr-3", villageLabel(source)),
       element("td", "py-1 pr-3", villageLabel(target)),
-      element("td", "py-1 pr-3 whitespace-nowrap", speedLabels[attack.speedClassId]),
+      element("td", "py-1 pr-3 whitespace-nowrap", SPEED_LABELS[attack.speedClassId]),
       element("td", "py-1 pr-3 whitespace-nowrap font-mono text-xs", formatDuration(travelSeconds)),
       landsCell,
       element("td", "py-1 pr-3", attack.note),
