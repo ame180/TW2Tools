@@ -117,15 +117,15 @@ function init(data) {
   });
   els.wallReset.addEventListener("click", () => {
     els.wallOverride.value = "";
-    handleFormChange();
+    handleFormChange({ target: els.wallOverride });
   });
   els.faithReset.addEventListener("click", () => {
     els.defenderFaith.value = String(carriedDefender.faith);
-    handleFormChange();
+    handleFormChange({ target: els.defenderFaith });
   });
   els.nightReset.addEventListener("click", () => {
     els.night.checked = carriedDefender.night;
-    handleFormChange();
+    handleFormChange({ target: els.night });
   });
   els.addHit.addEventListener("click", () => updateState(addHit(state)));
   els.moveLeft.addEventListener("click", () => updateState(moveHit(state, state.activeHit, -1)));
@@ -514,8 +514,15 @@ function readPaladinChanges() {
   return { removed, swaps, arriving };
 }
 
-// Values equal to the carried ones are no change.
-function readDefenderChanges() {
+// Wall, faith and night are read only from the field just edited: setting the carried value drops the override,
+// while edits elsewhere (an earlier hit, iron wall) never touch it, even when the carried value catches up with it.
+function readDefenderChanges(editedField) {
+  const stored = state.defenderChanges[state.activeHit];
+  const readOverride = (field, value, carried, storedValue) => {
+    if (field !== editedField) return storedValue;
+    return value === carried ? null : value;
+  };
+
   const unitChanges = {};
   for (const [unit, { sign, change }] of defenderChangeRows) {
     const typed = Number.parseInt(change.value, 10);
@@ -528,14 +535,14 @@ function readDefenderChanges() {
   const night = els.night.checked;
   return {
     units: unitChanges,
-    wall: wall === carriedDefender.wall ? null : wall,
-    faith: faith === carriedDefender.faith ? null : faith,
-    night: night === carriedDefender.night ? null : night,
+    wall: readOverride(els.wallOverride, wall, carriedDefender.wall, stored.wall),
+    faith: readOverride(els.defenderFaith, faith, carriedDefender.faith, stored.faith),
+    night: readOverride(els.night, night, carriedDefender.night, stored.night),
     paladins: readPaladinChanges()
   };
 }
 
-function readForm() {
+function readForm(editedField) {
   state = setActiveAttacker(state, {
     units: readUnitInputs(attackerUnitInputs),
     paladinWeapon: els.attackerWeapon.value,
@@ -557,7 +564,7 @@ function readForm() {
     defender.faith = Number(els.defenderFaith.value) || DEFAULT_FAITH;
     defender.night = els.night.checked;
   } else {
-    state = setActiveDefenderChanges(state, readDefenderChanges());
+    state = setActiveDefenderChanges(state, readDefenderChanges(editedField));
   }
   state = { ...state, defender };
 }
@@ -687,7 +694,7 @@ function renderChangeMarkers(step) {
   const wallChanged = changes.wall !== null;
   els.wallOverride.classList.toggle(CHANGED_ROW_CLASS, wallChanged);
   els.wallReset.classList.toggle("hidden", !wallChanged);
-  els.wallHint.hidden = !wallChanged;
+  els.wallHint.hidden = !wallChanged || changes.wall === carriedDefender.wall;
   if (wallChanged) {
     els.wallHint.textContent = `${changes.wall > carriedDefender.wall ? "rebuilt" : "reduced"} from ${carriedDefender.wall}`;
   }
@@ -695,13 +702,13 @@ function renderChangeMarkers(step) {
   const faithChanged = changes.faith !== null;
   els.defenderFaith.classList.toggle(CHANGED_ROW_CLASS, faithChanged);
   els.faithReset.classList.toggle("hidden", !faithChanged);
-  els.faithHint.hidden = !faithChanged;
+  els.faithHint.hidden = !faithChanged || changes.faith === carriedDefender.faith;
   els.faithHint.textContent = `was ${carriedDefender.faith}%`;
 
   const nightChanged = changes.night !== null;
   els.nightLabel.classList.toggle(CHANGED_ROW_CLASS, nightChanged);
   els.nightReset.classList.toggle("hidden", !nightChanged);
-  els.nightHint.hidden = !nightChanged;
+  els.nightHint.hidden = !nightChanged || changes.night === carriedDefender.night;
   els.nightHint.textContent = `was ${carriedDefender.night ? "on" : "off"}`;
 
   for (const row of els.defenderPaladins.children) {
@@ -715,8 +722,8 @@ function renderChangeMarkers(step) {
   }
 }
 
-function handleFormChange() {
-  readForm();
+function handleFormChange(event) {
+  readForm(event?.target);
   render();
 }
 
