@@ -34,6 +34,9 @@ export function parseVillageLine(rawLine) {
 
   const x = Number(match[2]);
   const y = Number(match[3]);
+  if (!isCoordinate(x) || !isCoordinate(y)) {
+    return null;
+  }
   const key = `${x}|${y}`;
   const name = match[1].replace(/[\s(]+$/, "").trim();
 

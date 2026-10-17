@@ -12,6 +12,11 @@ import {
   parsePlan
 } from "../js/lib/attack-planner.js";
 
+test("parseVillageLine rejects coordinates with a leading zero, which stored plans would drop", () => {
+  assert.equal(parseVillageLine("Typo 050|500"), null);
+  assert.equal(parseVillageLine("Typo (500|099)"), null);
+});
+
 test("parseVillageLine reads a game-style copy with name and coordinates", () => {
   assert.deepEqual(parseVillageLine("Red Fort (507|498)"), { key: "507|498", x: 507, y: 498, name: "Red Fort" });
 });
