@@ -1,8 +1,10 @@
 // defender.ironWall is the wall floor, not the tribe skill level.
 // Which defending paladins die is unknown; survivors are kept from the start of the list.
+// Each hit may carry defenderChanges, applied to the previous hit's survivors before the fight.
 
 import { simulate, strongestWeapons, UNIT_KEYS } from "./battle.js";
 import { healedUnits } from "./healing.js";
+import { applyChanges, emptyChanges } from "./defender-changes.js";
 
 const DEFENDER_UNIT_KEYS = UNIT_KEYS.filter((unit) => unit !== "knight");
 
@@ -28,13 +30,16 @@ export function defenderProvisions(defenderState, unitStats) {
 
 export function simulateSequence({ unitStats, weaponData, defender, hits, healExcludedUnits = [] }) {
   const steps = [];
-  let defenderBefore = {
+  let defenderCarried = {
     units: { ...defender.units },
     paladins: defender.paladins.map((paladin) => ({ ...paladin })),
     wall: defender.wall,
+    faith: defender.faith,
+    night: defender.night,
   };
 
-  for (const { healPercent = 0, ...hit } of hits) {
+  for (const { healPercent = 0, defenderChanges = emptyChanges(), ...hit } of hits) {
+    const defenderBefore = applyChanges(defenderCarried, defenderChanges);
     const result = simulate({
       ...hit,
       unitStats,
@@ -42,8 +47,8 @@ export function simulateSequence({ unitStats, weaponData, defender, hits, healEx
       defenderUnits: { ...defenderBefore.units, knight: defenderBefore.paladins.length },
       defenderWeapons: strongestWeapons(defenderBefore.paladins),
       wall: defenderBefore.wall,
-      night: defender.night,
-      faithDefender: defender.faith,
+      night: defenderBefore.night,
+      faithDefender: defenderBefore.faith,
       ironWall: defender.ironWall,
     });
 
@@ -52,14 +57,26 @@ export function simulateSequence({ unitStats, weaponData, defender, hits, healEx
       units: survivingUnits(result.defender),
       paladins: defenderBefore.paladins.slice(0, survivingPaladins),
       wall: result.wallAfter,
+      faith: defenderBefore.faith,
+      night: defenderBefore.night,
     };
 
     const attackerHealed = healedUnits(result.attacker.losses, healPercent, healExcludedUnits);
-    steps.push({ defenderBefore, result, defenderAfter, healPercent, attackerHealed });
-    defenderBefore = defenderAfter;
+    steps.push({ defenderCarried, defenderBefore, result, defenderAfter, healPercent, attackerHealed });
+    defenderCarried = defenderAfter;
   }
 
   return steps;
+}
+
+// Per hit: starting provisions plus everything that arrived up to that hit; removals never lower it.
+export function provisionBaselines(steps, unitStats) {
+  let baseline = 0;
+  return steps.map((step, index) => {
+    const before = defenderProvisions(step.defenderBefore, unitStats);
+    baseline += index === 0 ? before : Math.max(0, before - defenderProvisions(step.defenderCarried, unitStats));
+    return baseline;
+  });
 }
 
 // clearedAt: hit that took the defender to 0 units, paladins counted, wall ignored; null if none.

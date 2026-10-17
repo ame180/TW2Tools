@@ -1,8 +1,11 @@
 // Battle calculator state, kept as form values (skill levels, weapon select values).
 // toSequenceInput / toFormPaladins convert to and from engine values; operations never mutate.
+// defenderChanges[i] holds the defender changes before hit i. They belong to the position, not the hit: moving hits
+// leaves them in place. defenderChanges[0] stays empty, the first hit's defender is state.defender.
 
 import { UNIT_KEYS } from "./battle.js";
 import { healPercent } from "./healing.js";
+import { emptyChanges, applyChanges, mergeChanges } from "./defender-changes.js";
 
 export const NO_PALADIN = "";
 export const NO_WEAPON = "none";
@@ -39,24 +42,38 @@ export function createInitialState({
         grandmaster,
         medic,
         medicus
-      },
-      defenderAdjustments: {}
+      }
     }],
+    defenderChanges: [emptyChanges()],
     activeHit: 0
   };
 }
 
 export function addHit(state) {
   const hits = [...state.hits, structuredClone(state.hits[state.hits.length - 1])];
-  return { ...state, hits, activeHit: hits.length - 1 };
+  const defenderChanges = [...state.defenderChanges, emptyChanges()];
+  return { ...state, hits, defenderChanges, activeHit: hits.length - 1 };
 }
 
-export function deleteHit(state, index) {
+// The changes on both sides of a deleted hit now happen back to back, so they merge. carriedPaladinCount = paladins
+// that reached the deleted hit before its changes; needed to merge paladin changes.
+export function deleteHit(state, index, carriedPaladinCount = 0) {
   if (state.hits.length <= 1 || index < 0 || index >= state.hits.length) return state;
 
   const hits = state.hits.filter((_, hitIndex) => hitIndex !== index);
   const activeHit = index <= state.activeHit ? Math.max(0, state.activeHit - 1) : state.activeHit;
-  return { ...state, hits, activeHit };
+  const gaps = state.defenderChanges;
+
+  if (index === 0) {
+    const defender = applyChanges(state.defender, gaps[1]);
+    return { ...state, hits, defender, defenderChanges: [emptyChanges(), ...gaps.slice(2)], activeHit };
+  }
+  if (index === hits.length) {
+    return { ...state, hits, defenderChanges: gaps.slice(0, index), activeHit };
+  }
+  const merged = mergeChanges(gaps[index], gaps[index + 1], carriedPaladinCount);
+  const defenderChanges = [...gaps.slice(0, index), merged, ...gaps.slice(index + 2)];
+  return { ...state, hits, defenderChanges, activeHit };
 }
 
 export function moveHit(state, index, delta) {
@@ -82,8 +99,34 @@ export function setActiveAttacker(state, attacker) {
   return { ...state, hits };
 }
 
+export function setActiveDefenderChanges(state, changes) {
+  if (state.activeHit === 0) return state;
+  const defenderChanges = state.defenderChanges.map((gap, index) => (index === state.activeHit ? changes : gap));
+  return { ...state, defenderChanges };
+}
+
 export function toFormPaladins(enginePaladins) {
   return enginePaladins.map((paladin) => ({ weapon: paladin.id ?? NO_WEAPON, level: paladin.level }));
+}
+
+function toEnginePaladin(paladin, weapons) {
+  return { id: weapons[paladin.weapon] ? paladin.weapon : null, level: paladin.level };
+}
+
+function toEngineChanges(changes, weapons) {
+  const swaps = {};
+  for (const [slot, paladin] of Object.entries(changes.paladins.swaps)) {
+    swaps[slot] = toEnginePaladin(paladin, weapons);
+  }
+  return {
+    ...changes,
+    units: { ...changes.units },
+    paladins: {
+      removed: [...changes.paladins.removed],
+      swaps,
+      arriving: changes.paladins.arriving.map((paladin) => toEnginePaladin(paladin, weapons))
+    }
+  };
 }
 
 export function toSequenceInput(state, { units, weapons, tribeSkills = {}, healing = {} }) {
@@ -94,16 +137,13 @@ export function toSequenceInput(state, { units, weapons, tribeSkills = {}, heali
     healExcludedUnits: healing.excludedUnits ?? [],
     defender: {
       units: { ...defender.units },
-      paladins: defender.paladins.map((paladin) => ({
-        id: weapons[paladin.weapon] ? paladin.weapon : null,
-        level: paladin.level
-      })),
+      paladins: defender.paladins.map((paladin) => toEnginePaladin(paladin, weapons)),
       wall: defender.wall,
       faith: defender.faith,
       night: defender.night,
       ironWall: tribeSkills.ironWall?.[defender.ironWallLevel] ?? 0
     },
-    hits: state.hits.map(({ attacker }) => ({
+    hits: state.hits.map(({ attacker }, index) => ({
       attackerUnits: { ...attacker.units, knight: attacker.paladinWeapon === NO_PALADIN ? 0 : 1 },
       attackerWeapon: weapons[attacker.paladinWeapon]
         ? { id: attacker.paladinWeapon, level: attacker.paladinLevel }
@@ -113,7 +153,8 @@ export function toSequenceInput(state, { units, weapons, tribeSkills = {}, heali
       faithAttacker: attacker.faith,
       weaponMastery: tribeSkills.weaponMastery?.[attacker.weaponMasteryLevel] ?? 0,
       grandmaster: attacker.grandmaster,
-      healPercent: healPercent(attacker, healing)
+      healPercent: healPercent(attacker, healing),
+      defenderChanges: toEngineChanges(state.defenderChanges[index], weapons)
     }))
   };
 }

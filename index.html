@@ -5,6 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TW2 Tools</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      .change-input { -moz-appearance: textfield; appearance: textfield; }
+      .change-input::-webkit-inner-spin-button,
+      .change-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+      .defender-change-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 4rem 5.5rem 3.25rem;
+        column-gap: 0.25rem;
+        align-items: center;
+      }
+    </style>
   </head>
   <body class="bg-slate-100 text-slate-900">
     <header class="flex items-center gap-3 border-b border-slate-300 bg-white px-4 py-3 md:hidden">
@@ -471,6 +482,9 @@
 
           <fieldset class="min-w-0 rounded border border-slate-300 p-3">
             <legend class="px-1 font-semibold">Defender<span id="battle-defender-source" class="font-normal text-slate-500"></span></legend>
+            <div id="battle-defender-units-header" class="hidden px-1 pb-1 text-[11px] font-medium text-slate-500">
+              <span></span><span class="text-right">Carried</span><span class="text-right">Change</span><span class="text-right">Total</span>
+            </div>
             <div id="battle-defender-units" class="grid grid-cols-1 gap-y-1 text-sm"></div>
 
             <div class="mt-4 space-y-3 border-t border-slate-200 pt-3 text-sm">
@@ -481,14 +495,24 @@
               </div>
 
               <div class="grid grid-cols-2 gap-x-3">
-                <label>
-                  <span class="mb-1 block text-xs font-medium text-slate-600">Faith</span>
-                  <select id="battle-defender-faith" class="w-full min-w-0 rounded border border-slate-300 px-2 py-1"></select>
-                </label>
-                <label>
-                  <span class="mb-1 block text-xs font-medium text-slate-600">Wall</span>
-                  <input id="battle-wall" type="number" inputmode="numeric" min="0" max="20" value="0" class="w-full rounded border border-slate-300 px-2 py-1 disabled:bg-slate-100 disabled:text-slate-500" />
-                </label>
+                <div class="min-w-0">
+                  <label for="battle-defender-faith" class="mb-1 block text-xs font-medium text-slate-600">Faith</label>
+                  <div class="flex items-center gap-1">
+                    <select id="battle-defender-faith" class="w-full min-w-0 rounded border border-slate-300 px-2 py-1"></select>
+                    <button id="battle-faith-reset" type="button" aria-label="Undo faith change" class="hidden rounded px-1 text-slate-500 hover:bg-slate-200">&times;</button>
+                  </div>
+                  <p id="battle-faith-hint" class="mt-0.5 text-[11px] text-slate-500" hidden></p>
+                </div>
+                <div class="min-w-0">
+                  <label for="battle-wall" class="mb-1 block text-xs font-medium text-slate-600">Wall</label>
+                  <div class="flex items-center gap-1">
+                    <input id="battle-wall" type="number" inputmode="numeric" min="0" max="20" value="0" class="w-full min-w-0 rounded border border-slate-300 px-2 py-1 disabled:bg-slate-100 disabled:text-slate-500" />
+                    <span id="battle-wall-arrow" class="text-slate-400" hidden>&rarr;</span>
+                    <input id="battle-wall-override" type="number" inputmode="numeric" min="0" max="20" aria-label="Wall level before this hit" class="change-input w-full min-w-0 rounded border border-slate-300 px-2 py-1" hidden />
+                    <button id="battle-wall-reset" type="button" aria-label="Undo wall change" class="hidden rounded px-1 text-slate-500 hover:bg-slate-200">&times;</button>
+                  </div>
+                  <p id="battle-wall-hint" class="mt-0.5 text-[11px] text-slate-500" hidden></p>
+                </div>
               </div>
 
               <div class="grid grid-cols-2 items-end gap-x-3">
@@ -496,10 +520,16 @@
                   <span class="mb-1 block text-xs font-medium text-slate-600">Iron wall</span>
                   <select id="battle-iron-wall" class="w-full min-w-0 rounded border border-slate-300 px-2 py-1"></select>
                 </label>
-                <label class="flex items-center gap-2 py-1">
-                  <input id="battle-night" type="checkbox" />
-                  <span>Night bonus</span>
-                </label>
+                <div class="min-w-0 py-1">
+                  <div class="flex items-center gap-2">
+                    <label id="battle-night-label" class="flex items-center gap-2 rounded">
+                      <input id="battle-night" type="checkbox" />
+                      <span>Night bonus</span>
+                    </label>
+                    <button id="battle-night-reset" type="button" aria-label="Undo night change" class="hidden rounded px-1 text-slate-500 hover:bg-slate-200">&times;</button>
+                  </div>
+                  <p id="battle-night-hint" class="text-[11px] text-slate-500" hidden></p>
+                </div>
               </div>
             </div>
           </fieldset>
