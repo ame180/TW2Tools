@@ -16,12 +16,6 @@ function survivingUnits(side) {
   return units;
 }
 
-function countDefenderUnits(defenderState) {
-  let total = defenderState.paladins.length;
-  for (const unit of DEFENDER_UNIT_KEYS) total += defenderState.units[unit] || 0;
-  return total;
-}
-
 export function defenderProvisions(defenderState, unitStats) {
   let total = defenderState.paladins.length * unitStats.knight.provisions;
   for (const unit of DEFENDER_UNIT_KEYS) total += (defenderState.units[unit] || 0) * unitStats[unit].provisions;
@@ -79,7 +73,6 @@ export function provisionBaselines(steps, unitStats) {
   });
 }
 
-// clearedAt: hit that took the defender to 0 units, paladins counted, wall ignored; null if none.
 export function summarizeSequence(steps) {
   const attackerLosses = {};
   const attackerHealed = {};
@@ -90,20 +83,15 @@ export function summarizeSequence(steps) {
     defenderLosses[unit] = 0;
   }
 
-  let clearedAt = null;
-  steps.forEach((step, index) => {
+  for (const step of steps) {
     for (const unit of UNIT_KEYS) {
       attackerLosses[unit] += step.result.attacker.losses[unit];
       attackerHealed[unit] += step.attackerHealed[unit];
       defenderLosses[unit] += step.result.defender.losses[unit];
     }
-
-    const tookDefenderToZero =
-      countDefenderUnits(step.defenderBefore) > 0 && countDefenderUnits(step.defenderAfter) === 0;
-    if (clearedAt === null && tookDefenderToZero) clearedAt = index;
-  });
+  }
 
   const finalWall = steps.length === 0 ? null : steps[steps.length - 1].defenderAfter.wall;
 
-  return { attackerLosses, attackerHealed, defenderLosses, finalWall, clearedAt };
+  return { attackerLosses, attackerHealed, defenderLosses, finalWall };
 }

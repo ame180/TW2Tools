@@ -7,8 +7,8 @@ import { emptyChanges } from "../js/lib/defender-changes.js";
 
 const data = JSON.parse(await readFile(new URL("../data.json", import.meta.url), "utf8"));
 
-const HALBERD = { id: "halberd_of_guan_yu", level: 3 };
-const LONGSWORD = { id: "paracelsus_longsword", level: 3 };
+const HALBERD = { uid: 1, id: "halberd_of_guan_yu", level: 3 };
+const LONGSWORD = { uid: 2, id: "paracelsus_longsword", level: 3 };
 
 function defender(overrides) {
   return { units: {}, paladins: [], wall: 0, faith: 100, night: false, ironWall: 0, ...overrides };
@@ -145,31 +145,12 @@ test("summary totals losses across hits and reports the final wall and the clear
   }
   assert.equal(summary.defenderLosses.spear, 3000);
   assert.equal(summary.finalWall, steps[2].defenderAfter.wall);
-  assert.equal(summary.clearedAt, 1);
-});
-
-test("clearing ignores the wall but counts paladins", () => {
-  const paladinSurvives = runSequence(
-    defender({ units: { spear: 300, sword: 300 }, paladins: [HALBERD, LONGSWORD] }),
-    [{ attackerUnits: { axe: 450 } }]
-  );
-  assert.equal(summarizeSequence(paladinSurvives).clearedAt, null);
-
-  const wallSurvives = runSequence(defender({ units: { spear: 10 }, wall: 20 }), [{ attackerUnits: { axe: 1000 } }]);
-  assert.equal(wallSurvives[0].defenderAfter.wall, 20);
-  assert.equal(summarizeSequence(wallSurvives).clearedAt, 0);
-});
-
-test("a defender that starts empty is never reported as cleared", () => {
-  const steps = runSequence(defender({ wall: 5 }), [{ attackerUnits: { axe: 1000 } }]);
-  assert.equal(summarizeSequence(steps).clearedAt, null);
 });
 
 test("no hits gives no steps and an empty summary", () => {
   assert.deepEqual(runSequence(defender({ units: { spear: 10 }, wall: 5 }), []), []);
   const summary = summarizeSequence([]);
   assert.equal(summary.finalWall, null);
-  assert.equal(summary.clearedAt, null);
   assert.equal(summary.attackerLosses.axe, 0);
 });
 
@@ -282,4 +263,13 @@ test("provision baselines grow only by what arrives", () => {
     - defenderProvisions(steps[1].defenderCarried, data.units);
 
   assert.deepEqual(provisionBaselines(steps, data.units), [start, start + arrived, start + arrived]);
+});
+
+test("paladin changes follow the paladin's uid and skip paladins that died earlier", () => {
+  const steps = runSequence(defender({ units: { spear: 300, sword: 300 }, paladins: [HALBERD, LONGSWORD] }), [
+    { attackerUnits: { axe: 450 } },
+    { attackerUnits: { axe: 10 }, defenderChanges: changes({ paladins: { swaps: { 1: LONGSWORD, 2: HALBERD } } }) }
+  ]);
+  assert.deepEqual(steps[1].defenderCarried.paladins, [HALBERD]);
+  assert.deepEqual(steps[1].defenderBefore.paladins, [{ ...LONGSWORD, uid: 1 }]);
 });

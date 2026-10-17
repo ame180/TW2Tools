@@ -34,6 +34,7 @@ const defenderChangeRows = new Map();
 // Defender as carried into the active hit (form terms), before its changes; null on hit #1.
 let carriedDefender = null;
 let latestSteps = [];
+let lastPaladinUid = 0;
 
 export const battleTool = {
   id: "battle",
@@ -110,7 +111,8 @@ function init(data) {
   els.wall.addEventListener("change", normalizeNumberInputs);
   els.wallOverride.addEventListener("change", normalizeNumberInputs);
   els.addPaladin.addEventListener("click", () => {
-    addDefenderPaladin({ kind: state.activeHit === 0 ? "start" : "arriving", paladin: { weapon: NO_WEAPON, level: 1 } });
+    const paladin = { uid: ++lastPaladinUid, weapon: NO_WEAPON, level: 1 };
+    addDefenderPaladin({ kind: state.activeHit === 0 ? "start" : "arriving", paladin });
     handleFormChange();
   });
   els.wallReset.addEventListener("click", () => {
@@ -128,10 +130,7 @@ function init(data) {
   els.addHit.addEventListener("click", () => updateState(addHit(state)));
   els.moveLeft.addEventListener("click", () => updateState(moveHit(state, state.activeHit, -1)));
   els.moveRight.addEventListener("click", () => updateState(moveHit(state, state.activeHit, 1)));
-  els.deleteHit.addEventListener("click", () => {
-    const carriedPaladinCount = latestSteps[state.activeHit].defenderCarried.paladins.length;
-    updateState(deleteHit(state, state.activeHit, carriedPaladinCount));
-  });
+  els.deleteHit.addEventListener("click", () => updateState(deleteHit(state, state.activeHit)));
   els.reset.addEventListener("click", resetHits);
 
   state = createDefaultState();
@@ -295,11 +294,11 @@ function populateSkillSelect(select, values = []) {
   }
 }
 
-// kind: "start" (hit #1), "carried" (slot of the carried list, swap or remove), "arriving" (joins before this hit).
-function addDefenderPaladin({ kind, paladin, slot = null, removed = false }) {
+// kind: "start" (hit #1), "carried" (reached this hit: swap or remove), "arriving" (joins before this hit).
+function addDefenderPaladin({ kind, paladin, removed = false }) {
   const row = document.createElement("div");
   row.dataset.kind = kind;
-  if (slot !== null) row.dataset.slot = String(slot);
+  row.dataset.uid = String(paladin.uid);
 
   const editor = document.createElement("div");
   editor.className = "flex items-center gap-1";
@@ -353,7 +352,7 @@ function addDefenderPaladin({ kind, paladin, slot = null, removed = false }) {
   removedView.className = "flex items-center gap-2 py-1";
   const removedText = document.createElement("span");
   removedText.className = "min-w-0 flex-1 truncate text-slate-500 line-through";
-  removedText.textContent = describePaladin(carriedDefender.paladins[slot]);
+  removedText.textContent = describePaladin(findCarriedPaladin(paladin.uid));
   const removedTag = document.createElement("span");
   removedTag.className = "text-[11px] text-red-700";
   removedTag.textContent = "removed";
@@ -383,9 +382,56 @@ function addDefenderPaladin({ kind, paladin, slot = null, removed = false }) {
   els.defenderPaladins.appendChild(row);
 }
 
+// A change kept for a paladin that does not reach this hit (died earlier, or the hits were reordered).
+function addOrphanPaladinChange(uid, description) {
+  const row = document.createElement("div");
+  row.dataset.kind = "orphan";
+  row.dataset.uid = String(uid);
+
+  const line = document.createElement("div");
+  line.className = "flex items-center gap-2";
+  const text = document.createElement("span");
+  text.className = "min-w-0 flex-1 truncate py-1 text-slate-400";
+  text.textContent = description;
+  const hint = document.createElement("p");
+  hint.className = "text-[11px] text-slate-500";
+  hint.textContent = "not present at this hit · change kept";
+  const discardButton = document.createElement("button");
+  discardButton.type = "button";
+  discardButton.textContent = "×";
+  discardButton.setAttribute("aria-label", "Discard change");
+  discardButton.className = "rounded px-2 py-1 text-slate-500 hover:bg-slate-200";
+  discardButton.addEventListener("click", () => {
+    row.remove();
+    handleFormChange();
+  });
+
+  line.append(text, discardButton);
+  row.append(line, hint);
+  els.defenderPaladins.appendChild(row);
+}
+
 function describePaladin(paladin) {
+  if (!paladin) return "Paladin";
   const weapon = weapons[paladin.weapon];
   return weapon ? `${weapon.name || paladin.weapon} ${paladin.level}` : "No weapon";
+}
+
+function findCarriedPaladin(uid) {
+  return carriedDefender.paladins.find((paladin) => paladin.uid === uid);
+}
+
+// The paladin as it first entered the sequence, wherever that was.
+function findAnyPaladin(uid) {
+  for (const step of latestSteps) {
+    const paladin = step.defenderBefore.paladins.find((candidate) => candidate.uid === uid);
+    if (paladin) return toFormPaladins([paladin])[0];
+  }
+  return null;
+}
+
+function paladinUids(defender) {
+  return defender ? defender.paladins.map((paladin) => paladin.uid).join() : "";
 }
 
 function renderStartPaladins(paladins) {
@@ -398,11 +444,20 @@ function renderStartPaladins(paladins) {
 function renderChangedPaladins(changes) {
   els.defenderPaladins.replaceChildren();
   const { removed, swaps, arriving } = changes.paladins;
-  carriedDefender.paladins.forEach((paladin, slot) => {
-    addDefenderPaladin({ kind: "carried", paladin: swaps[slot] ?? paladin, slot, removed: removed.includes(slot) });
-  });
+  for (const paladin of carriedDefender.paladins) {
+    addDefenderPaladin({ kind: "carried", paladin: swaps[paladin.uid] ?? paladin, removed: removed.includes(paladin.uid) });
+  }
   for (const paladin of arriving) {
     addDefenderPaladin({ kind: "arriving", paladin });
+  }
+  for (const uid of removed) {
+    if (findCarriedPaladin(uid)) continue;
+    addOrphanPaladinChange(uid, `Remove ${describePaladin(findAnyPaladin(uid))}`);
+  }
+  for (const [key, swap] of Object.entries(swaps)) {
+    const uid = Number(key);
+    if (findCarriedPaladin(uid) || removed.includes(uid)) continue;
+    addOrphanPaladinChange(uid, `${describePaladin(findAnyPaladin(uid))} → ${describePaladin(swap)}`);
   }
 }
 
@@ -422,6 +477,7 @@ function writeUnitInputs(inputs, values) {
 
 function readPaladinRow(row) {
   return {
+    uid: Number(row.dataset.uid),
     weapon: row.querySelector("[data-role=weapon]").value,
     level: Number(row.querySelector("[data-role=level]").value)
   };
@@ -432,21 +488,27 @@ function readDefenderPaladinRows() {
 }
 
 function readPaladinChanges() {
+  const stored = state.defenderChanges[state.activeHit].paladins;
   const removed = [];
   const swaps = {};
   const arriving = [];
   for (const row of els.defenderPaladins.children) {
+    const uid = Number(row.dataset.uid);
+    if (row.dataset.kind === "orphan") {
+      if (stored.removed.includes(uid)) removed.push(uid);
+      if (stored.swaps[uid]) swaps[uid] = stored.swaps[uid];
+      continue;
+    }
     const paladin = readPaladinRow(row);
     if (row.dataset.kind === "arriving") {
       arriving.push(paladin);
       continue;
     }
-    const slot = Number(row.dataset.slot);
-    const carried = carriedDefender.paladins[slot];
+    const carried = findCarriedPaladin(uid);
     if (row.dataset.removed === "true") {
-      removed.push(slot);
+      removed.push(uid);
     } else if (paladin.weapon !== carried.weapon || paladin.level !== carried.level) {
-      swaps[slot] = paladin;
+      swaps[uid] = paladin;
     }
   }
   return { removed, swaps, arriving };
@@ -516,18 +578,25 @@ function writeForm() {
   els.ironWall.value = String(state.defender.ironWallLevel);
 }
 
-// Form values are written only when the active hit changes, so typing is never overwritten. The carried defender
-// cannot change while a hit stays active: it depends only on earlier hits and changes.
+// Editable values are written only when the active hit changes, so typing is never overwritten. The carried defender
+// is refreshed on every render: settings that apply to all hits (iron wall) change it while a hit stays active.
 function renderDefenderPanel(step, includeStartValues) {
-  const isFirstHit = state.activeHit === 0;
-  if (includeStartValues) {
-    carriedDefender = isFirstHit
-      ? null
-      : { ...step.defenderCarried, paladins: toFormPaladins(step.defenderCarried.paladins) };
-    if (isFirstHit) writeStartDefender();
-    else writeDefenderChanges(state.defenderChanges[state.activeHit]);
+  if (state.activeHit === 0) {
+    carriedDefender = null;
+    if (includeStartValues) writeStartDefender();
+    return;
   }
-  if (!isFirstHit) renderChangeMarkers(step);
+
+  const previousPaladinUids = paladinUids(carriedDefender);
+  carriedDefender = { ...step.defenderCarried, paladins: toFormPaladins(step.defenderCarried.paladins) };
+  const changes = state.defenderChanges[state.activeHit];
+  if (includeStartValues) {
+    writeDefenderChanges(changes);
+  } else if (paladinUids(carriedDefender) !== previousPaladinUids) {
+    renderChangedPaladins(changes);
+  }
+  writeCarriedValues();
+  renderChangeMarkers(step);
 }
 
 function writeStartDefender() {
@@ -579,20 +648,23 @@ function writeDefenderChanges(changes) {
     defenderUnitInputs.get(unit).disabled = true;
     setCarriedLayout(defenderUnitInputs.get(unit), true);
   }
-  writeUnitInputs(defenderUnitInputs, carriedDefender.units);
 
   els.wall.disabled = true;
   setCarriedLayout(els.wall, true);
-  els.wall.value = String(carriedDefender.wall);
   els.wallArrow.hidden = false;
   els.wallOverride.hidden = false;
-  els.wallOverride.placeholder = String(carriedDefender.wall);
   els.wallOverride.value = changes.wall === null ? "" : String(changes.wall);
 
   els.defenderFaith.value = String(changes.faith ?? carriedDefender.faith);
   els.night.checked = changes.night ?? carriedDefender.night;
 
   renderChangedPaladins(changes);
+}
+
+function writeCarriedValues() {
+  writeUnitInputs(defenderUnitInputs, carriedDefender.units);
+  els.wall.value = String(carriedDefender.wall);
+  els.wallOverride.placeholder = String(carriedDefender.wall);
 }
 
 // Totals, tints and hints that follow the active hit's changes on every render.
@@ -634,12 +706,12 @@ function renderChangeMarkers(step) {
 
   for (const row of els.defenderPaladins.children) {
     if (row.dataset.kind !== "carried") continue;
-    const slot = Number(row.dataset.slot);
-    const swapped = row.dataset.removed !== "true" && changes.paladins.swaps[slot] !== undefined;
+    const uid = Number(row.dataset.uid);
+    const swapped = row.dataset.removed !== "true" && changes.paladins.swaps[uid] !== undefined;
     row.classList.toggle(CHANGED_ROW_CLASS, swapped);
     const hint = row.querySelector("[data-role=hint]");
     hint.hidden = !swapped;
-    hint.textContent = `weapon swapped · was ${describePaladin(carriedDefender.paladins[slot])}`;
+    hint.textContent = `weapon swapped · was ${describePaladin(findCarriedPaladin(uid))}`;
   }
 }
 

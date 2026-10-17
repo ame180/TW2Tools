@@ -1,5 +1,6 @@
 // Battle calculator state, kept as form values (skill levels, weapon select values).
 // toSequenceInput / toFormPaladins convert to and from engine values; operations never mutate.
+// Defender paladins carry a uid that defender changes refer to.
 // defenderChanges[i] holds the defender changes before hit i. They belong to the position, not the hit: moving hits
 // leaves them in place. defenderChanges[0] stays empty, the first hit's defender is state.defender.
 
@@ -55,9 +56,8 @@ export function addHit(state) {
   return { ...state, hits, defenderChanges, activeHit: hits.length - 1 };
 }
 
-// The changes on both sides of a deleted hit now happen back to back, so they merge. carriedPaladinCount = paladins
-// that reached the deleted hit before its changes; needed to merge paladin changes.
-export function deleteHit(state, index, carriedPaladinCount = 0) {
+// The changes on both sides of a deleted hit now happen back to back, so they merge.
+export function deleteHit(state, index) {
   if (state.hits.length <= 1 || index < 0 || index >= state.hits.length) return state;
 
   const hits = state.hits.filter((_, hitIndex) => hitIndex !== index);
@@ -71,7 +71,7 @@ export function deleteHit(state, index, carriedPaladinCount = 0) {
   if (index === hits.length) {
     return { ...state, hits, defenderChanges: gaps.slice(0, index), activeHit };
   }
-  const merged = mergeChanges(gaps[index], gaps[index + 1], carriedPaladinCount);
+  const merged = mergeChanges(gaps[index], gaps[index + 1]);
   const defenderChanges = [...gaps.slice(0, index), merged, ...gaps.slice(index + 2)];
   return { ...state, hits, defenderChanges, activeHit };
 }
@@ -106,17 +106,17 @@ export function setActiveDefenderChanges(state, changes) {
 }
 
 export function toFormPaladins(enginePaladins) {
-  return enginePaladins.map((paladin) => ({ weapon: paladin.id ?? NO_WEAPON, level: paladin.level }));
+  return enginePaladins.map((paladin) => ({ uid: paladin.uid, weapon: paladin.id ?? NO_WEAPON, level: paladin.level }));
 }
 
 function toEnginePaladin(paladin, weapons) {
-  return { id: weapons[paladin.weapon] ? paladin.weapon : null, level: paladin.level };
+  return { uid: paladin.uid, id: weapons[paladin.weapon] ? paladin.weapon : null, level: paladin.level };
 }
 
 function toEngineChanges(changes, weapons) {
   const swaps = {};
-  for (const [slot, paladin] of Object.entries(changes.paladins.swaps)) {
-    swaps[slot] = toEnginePaladin(paladin, weapons);
+  for (const [uid, paladin] of Object.entries(changes.paladins.swaps)) {
+    swaps[uid] = toEnginePaladin(paladin, weapons);
   }
   return {
     ...changes,
