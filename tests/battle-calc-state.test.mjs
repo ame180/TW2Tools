@@ -2,9 +2,10 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import {
-  createInitialState, addHit, deleteHit, moveHit, selectHit, setActiveAttacker, toSequenceInput, toFormPaladins,
-  NO_PALADIN, NO_WEAPON
+  createInitialState, addHit, deleteHit, moveHit, selectHit, setActiveAttacker, setActiveDefenderChanges,
+  toSequenceInput, toFormPaladins, NO_PALADIN, NO_WEAPON
 } from "../js/lib/battle-calc-state.js";
+import { emptyChanges } from "../js/lib/defender-changes.js";
 import { defenderProvisions } from "../js/lib/battle-sequence.js";
 
 const data = JSON.parse(await readFile(new URL("../data.json", import.meta.url), "utf8"));
@@ -171,4 +172,90 @@ test("healing defaults to off", () => {
   assert.equal(attacker.medic, false);
   assert.equal(attacker.medicus, false);
   assert.equal(toSequenceInput(createInitialState(), data).hits[0].healPercent, 0);
+});
+
+const BOW = { weapon: "nimrods_longbow", level: 3 };
+const HALBERD = { weapon: "halberd_of_guan_yu", level: 2 };
+
+function gap(overrides = {}) {
+  const base = emptyChanges();
+  return { ...base, ...overrides, paladins: { ...base.paladins, ...overrides.paladins } };
+}
+
+function withGaps(state, gaps) {
+  return { ...state, defenderChanges: [emptyChanges(), ...gaps] };
+}
+
+function spearDeltas(state) {
+  return state.defenderChanges.map((changes) => changes.units.spear ?? 0);
+}
+
+test("every hit has a defender changes slot, the first one stays empty", () => {
+  const state = threeHits(0);
+  assert.equal(state.defenderChanges.length, 3);
+  assert.ok(state.defenderChanges.every((changes) => JSON.stringify(changes) === JSON.stringify(emptyChanges())));
+  assert.equal(state.hits[0].defenderAdjustments, undefined);
+});
+
+test("defender changes stay in place when hits move", () => {
+  const state = withGaps(threeHits(1), [gap({ units: { spear: 100 } }), gap({ units: { spear: 200 } })]);
+  const moved = moveHit(state, 1, 1);
+  assert.deepEqual(axesPerHit(moved), [100, 300, 200]);
+  assert.deepEqual(spearDeltas(moved), [0, 100, 200]);
+});
+
+test("setting changes on the active hit only touches its slot", () => {
+  const state = threeHits(2);
+  const changes = gap({ wall: 15 });
+  const updated = setActiveDefenderChanges(state, changes);
+  assert.deepEqual(updated.defenderChanges[2], changes);
+  assert.deepEqual(updated.defenderChanges[1], emptyChanges());
+});
+
+test("deleting a middle hit merges the changes on both sides of it", () => {
+  const state = withGaps(threeHits(0), [
+    gap({ units: { spear: 100 }, wall: 10, paladins: { arriving: [BOW] } }),
+    gap({ units: { spear: 50 }, faith: 50, paladins: { removed: [1] } })
+  ]);
+  const deleted = deleteHit(state, 1, 1);
+
+  assert.equal(deleted.defenderChanges.length, 2);
+  assert.deepEqual(deleted.defenderChanges[1], gap({
+    units: { spear: 150 }, wall: 10, faith: 50, paladins: { removed: [], swaps: {}, arriving: [] }
+  }));
+});
+
+test("deleting the last hit drops the changes before it", () => {
+  const state = withGaps(threeHits(2), [gap({ units: { spear: 100 } }), gap({ units: { spear: 200 } })]);
+  assert.deepEqual(spearDeltas(deleteHit(state, 2)), [0, 100]);
+});
+
+test("deleting the first hit folds the next changes into the starting defender", () => {
+  let state = withGaps(threeHits(0), [
+    gap({ units: { spear: 100, sword: -5 }, wall: 15, paladins: { removed: [0], arriving: [BOW] } }),
+    gap({ units: { spear: 200 } })
+  ]);
+  state.defender = { ...state.defender, units: { ...state.defender.units, spear: 1000 }, wall: 12, paladins: [HALBERD] };
+  const deleted = deleteHit(state, 0);
+
+  assert.equal(deleted.defender.units.spear, 1100);
+  assert.equal(deleted.defender.units.sword, 0);
+  assert.equal(deleted.defender.wall, 15);
+  assert.deepEqual(deleted.defender.paladins, [BOW]);
+  assert.equal(deleted.defender.ironWallLevel, state.defender.ironWallLevel);
+  assert.deepEqual(spearDeltas(deleted), [0, 200]);
+});
+
+test("sequence input carries each hit's defender changes in engine terms", () => {
+  const state = withGaps(addHit(createInitialState()), [
+    gap({ units: { spear: 5 }, night: true, paladins: { swaps: { 0: BOW }, arriving: [{ weapon: NO_WEAPON, level: 1 }] } })
+  ]);
+  const input = toSequenceInput(state, data);
+
+  assert.deepEqual(input.hits[0].defenderChanges, emptyChanges());
+  assert.deepEqual(input.hits[1].defenderChanges, gap({
+    units: { spear: 5 },
+    night: true,
+    paladins: { swaps: { 0: { id: "nimrods_longbow", level: 3 } }, arriving: [{ id: null, level: 1 }] }
+  }));
 });

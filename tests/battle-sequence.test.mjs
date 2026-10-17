@@ -2,7 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { simulate } from "../js/lib/battle.js";
-import { simulateSequence, summarizeSequence } from "../js/lib/battle-sequence.js";
+import { simulateSequence, summarizeSequence, defenderProvisions, provisionBaselines } from "../js/lib/battle-sequence.js";
+import { emptyChanges } from "../js/lib/defender-changes.js";
 
 const data = JSON.parse(await readFile(new URL("../data.json", import.meta.url), "utf8"));
 
@@ -15,6 +16,11 @@ function defender(overrides) {
 
 function runSequence(defenderState, hits) {
   return simulateSequence({ unitStats: data.units, weaponData: data.weapons, defender: defenderState, hits });
+}
+
+function changes(overrides = {}) {
+  const base = emptyChanges();
+  return { ...base, ...overrides, paladins: { ...base.paladins, ...overrides.paladins } };
 }
 
 function runSingle(overrides) {
@@ -212,4 +218,68 @@ test("hits without healPercent heal nothing", () => {
   const steps = runSequence(defender({ units: { spear: 1000 } }), [{ attackerUnits: { axe: 2000 } }]);
   assert.equal(steps[0].healPercent, 0);
   assert.ok(Object.values(steps[0].attackerHealed).every((count) => count === 0));
+});
+
+test("changes before a hit apply to the carried defender before the fight", () => {
+  const steps = runSequence(defender({ units: { spear: 1000, sword: 1000 }, wall: 15 }), [
+    { attackerUnits: { axe: 2000, ram: 100 } },
+    {
+      attackerUnits: { axe: 2000 },
+      defenderChanges: changes({ units: { spear: 500, sword: -100000 }, wall: 18, paladins: { arriving: [HALBERD] } })
+    }
+  ]);
+  const [first, second] = steps;
+
+  assert.deepEqual(second.defenderCarried, first.defenderAfter);
+  assert.equal(second.defenderBefore.units.spear, first.defenderAfter.units.spear + 500);
+  assert.equal(second.defenderBefore.units.sword, 0);
+  assert.equal(second.defenderBefore.wall, 18);
+  assert.deepEqual(second.defenderBefore.paladins, [HALBERD]);
+  assert.deepEqual(second.result, runSingle({
+    attackerUnits: { axe: 2000 },
+    defenderUnits: { ...second.defenderBefore.units, knight: 1 },
+    defenderWeapons: [HALBERD],
+    wall: 18
+  }));
+});
+
+test("faith and night changes carry forward to later hits", () => {
+  const hit = { attackerUnits: { axe: 500 } };
+  const steps = runSequence(defender({ units: { spear: 5000 }, faith: 100 }), [
+    hit,
+    { ...hit, defenderChanges: changes({ faith: 50, night: true }) },
+    hit,
+    { ...hit, defenderChanges: changes({ night: false }) }
+  ]);
+
+  assert.deepEqual(steps.map((step) => step.defenderBefore.faith), [100, 50, 50, 50]);
+  assert.deepEqual(steps.map((step) => step.defenderBefore.night), [false, true, true, false]);
+  assert.deepEqual(steps[2].result, runSingle({
+    ...hit,
+    defenderUnits: { ...steps[2].defenderBefore.units, knight: 0 },
+    faithDefender: 50,
+    night: true
+  }));
+});
+
+test("a hit without changes fights the carried defender", () => {
+  const steps = runSequence(defender({ units: { spear: 1000 } }), [
+    { attackerUnits: { axe: 500 } },
+    { attackerUnits: { axe: 500 }, defenderChanges: emptyChanges() }
+  ]);
+  assert.deepEqual(steps[1].defenderBefore, steps[1].defenderCarried);
+});
+
+test("provision baselines grow only by what arrives", () => {
+  const hit = { attackerUnits: { axe: 100 } };
+  const steps = runSequence(defender({ units: { spear: 1000 } }), [
+    hit,
+    { ...hit, defenderChanges: changes({ units: { spear: 300, sword: -50 } }) },
+    { ...hit, defenderChanges: changes({ units: { spear: -200 } }) }
+  ]);
+  const start = defenderProvisions(steps[0].defenderBefore, data.units);
+  const arrived = defenderProvisions(steps[1].defenderBefore, data.units)
+    - defenderProvisions(steps[1].defenderCarried, data.units);
+
+  assert.deepEqual(provisionBaselines(steps, data.units), [start, start + arrived, start + arrived]);
 });
