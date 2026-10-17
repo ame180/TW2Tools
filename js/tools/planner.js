@@ -10,6 +10,7 @@ import {
 
 const KINDS = ["source", "target"];
 const FLASH_MS = 1600;
+const MAX_INPUT_ROWS = 6;
 
 const els = {};
 
@@ -55,11 +56,7 @@ function init(data) {
   els.attacks.addEventListener("input", handleAttacksInput);
   els.plan.addEventListener("change", handlePlanChange);
 
-  setInterval(() => {
-    if (!els.section.classList.contains("hidden")) {
-      refreshPlanStatus();
-    }
-  }, 1000);
+  scheduleStatusTick();
 
   renderAll();
 }
@@ -94,22 +91,30 @@ function element(tag, className = "", text = "") {
 function bindVillageInput(kind) {
   const input = els[kind].input;
 
+  const submit = () => {
+    input.value = addVillageLines(kind, input.value.split(/\r?\n/)).join("\n");
+    fitInputRows(input);
+  };
+
   input.addEventListener("keydown", (event) => {
-    if (event.key !== "Enter") {
+    if (event.key !== "Enter" || event.shiftKey) {
       return;
     }
     event.preventDefault();
-    input.value = addVillageLines(kind, [input.value]).join(" ");
+    submit();
   });
 
-  input.addEventListener("paste", (event) => {
-    const lines = (event.clipboardData?.getData("text") ?? "").split(/\r?\n/).filter((line) => line.trim());
-    if (!lines.length) {
+  input.addEventListener("input", (event) => {
+    if (event.inputType === "insertFromPaste" && input.value.includes("\n")) {
+      submit();
       return;
     }
-    event.preventDefault();
-    input.value = addVillageLines(kind, lines).join(" ");
+    fitInputRows(input);
   });
+}
+
+function fitInputRows(input) {
+  input.rows = Math.min(input.value.split("\n").length, MAX_INPUT_ROWS);
 }
 
 // Returns the lines that could not be parsed so they stay in the input for fixing.
@@ -486,7 +491,17 @@ function renderPlan() {
   refreshPlanStatus();
 }
 
-// Runs every second; only toggles classes so clicks on the plan rows are never lost to a re-render.
+// Ticks on wall-clock second boundaries: send times are whole seconds, so the countdown never lags.
+function scheduleStatusTick() {
+  setTimeout(() => {
+    if (!els.section.classList.contains("hidden")) {
+      refreshPlanStatus();
+    }
+    scheduleStatusTick();
+  }, 1000 - (Date.now() % 1000));
+}
+
+// Only toggles classes so clicks on the plan rows are never lost to a re-render.
 function refreshPlanStatus() {
   const now = Date.now();
   let next = null;
@@ -513,6 +528,6 @@ function refreshPlanStatus() {
   }
 
   els.countdown.textContent = "Next send in ";
-  els.countdown.appendChild(element("span", "font-semibold", formatDuration((next.sendMs - now) / 1000)));
+  els.countdown.appendChild(element("span", "font-semibold", formatDuration(Math.ceil((next.sendMs - now) / 1000))));
   els.countdown.append(` · ${next.label}`);
 }
