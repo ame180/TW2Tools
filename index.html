@@ -295,10 +295,30 @@
         <section id="view-planner" class="hidden rounded border border-slate-300 bg-white p-4">
         <h2 class="mb-4 text-lg font-semibold">Attack Planner</h2>
 
-        <label class="block text-sm md:w-80">
-          <span class="mb-1 block font-medium">Landing Time</span>
-          <input id="planner-landing" type="datetime-local" step="1" class="w-full rounded border border-slate-300 px-3 py-2" />
-        </label>
+        <div class="flex flex-wrap items-end gap-2">
+          <label class="block w-full text-sm md:w-80">
+            <span class="mb-1 block font-medium">Landing Time</span>
+            <input id="planner-landing" type="datetime-local" step="1" class="w-full rounded border border-slate-300 px-3 py-2" />
+          </label>
+          <div class="flex flex-wrap gap-2 text-sm">
+            <button id="planner-export" type="button" class="rounded border border-slate-400 bg-white px-3 py-2 font-medium hover:bg-slate-100">Export</button>
+            <button id="planner-import-open" type="button" class="rounded border border-slate-400 bg-white px-3 py-2 font-medium hover:bg-slate-100">Import</button>
+            <button id="planner-clear-attacks" type="button" class="rounded border border-slate-400 bg-white px-3 py-2 font-medium hover:bg-slate-100">Clear attacks</button>
+            <button id="planner-clear-plan" type="button" class="rounded border border-slate-400 bg-white px-3 py-2 font-medium hover:bg-slate-100">Clear plan</button>
+          </div>
+        </div>
+
+        <div id="planner-import" class="mt-3 hidden rounded border border-slate-200 bg-slate-50 p-3">
+          <label class="block text-sm">
+            <span class="mb-1 block font-medium">Paste exported plan</span>
+            <textarea id="planner-import-text" rows="4" class="w-full rounded border border-slate-300 px-3 py-2 font-mono text-xs"></textarea>
+          </label>
+          <p id="planner-import-error" class="mt-1 text-xs text-red-700"></p>
+          <div class="mt-2 flex gap-2 text-sm">
+            <button id="planner-import-replace" type="button" class="rounded border border-slate-400 bg-white px-3 py-1 font-medium hover:bg-slate-100">Replace plan</button>
+            <button id="planner-import-cancel" type="button" class="rounded px-3 py-1 text-slate-600 hover:bg-slate-100">Cancel</button>
+          </div>
+        </div>
 
         <div class="mt-4 grid gap-4 md:grid-cols-2">
           <div class="min-w-0">
@@ -324,7 +344,10 @@
 
         <div class="mt-6">
           <div class="flex flex-wrap items-baseline justify-between gap-2">
-            <h3 class="font-semibold">Send Plan</h3>
+            <div class="flex items-baseline gap-3">
+              <h3 class="font-semibold">Send Plan</h3>
+              <button id="planner-copy-text" type="button" class="rounded border border-slate-400 bg-white px-2 py-0.5 text-xs font-medium hover:bg-slate-100">Copy as text</button>
+            </div>
             <p id="planner-countdown" class="text-sm"></p>
           </div>
           <div class="mt-2 overflow-x-auto">

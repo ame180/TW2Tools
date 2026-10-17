@@ -5,7 +5,11 @@ import {
   minutesPerTileByClass,
   parseVillageLine,
   targetsByDistance,
-  buildSendPlan
+  buildSendPlan,
+  formatPlanText,
+  emptyPlan,
+  serializePlan,
+  parsePlan
 } from "../js/lib/attack-planner.js";
 
 test("parseVillageLine reads a game-style copy with name and coordinates", () => {
@@ -88,4 +92,84 @@ test("buildSendPlan orders by send time, slowest first, keeping several attacks 
 test("buildSendPlan skips attacks whose villages were removed", () => {
   const orphan = { ...attack(1, "axe"), targetKey: "999|999" };
   assert.deepEqual(buildSendPlan({ attacks: [orphan], sources: [source], targets: [target], landingMs, minutesPerTile }), []);
+});
+
+function samplePlan() {
+  return {
+    ...emptyPlan(),
+    landing: "2026-10-20T21:00:00",
+    sources: [{ key: "500|500", x: 500, y: 500, name: "Fort" }],
+    targets: [
+      { key: "520|505", x: 520, y: 505, name: "Wolf Den" },
+      { key: "515|490", x: 515, y: 490, name: "515|490" }
+    ],
+    attacks: [
+      { id: 4, sourceKey: "500|500", targetKey: "520|505", speedClassId: "noble", offsetSeconds: 1, note: "4 nobles", sent: false },
+      { id: 9, sourceKey: "500|500", targetKey: "515|490", speedClassId: "lc", offsetSeconds: 0, note: "", sent: true }
+    ],
+    activeSourceKey: "500|500",
+    lastSpeedClassId: "lc",
+    lastTargetKey: "515|490",
+    nextAttackId: 10
+  };
+}
+
+test("parsePlan restores a serialized plan with renumbered attack ids", () => {
+  const plan = parsePlan(JSON.stringify(serializePlan(samplePlan())));
+  const expected = samplePlan();
+  expected.attacks[0].id = 1;
+  expected.attacks[1].id = 2;
+  expected.nextAttackId = 3;
+  assert.deepEqual(plan, expected);
+});
+
+test("parsePlan rejects text that is not a plan", () => {
+  for (const text of ["", "not json", "null", "[]", "42", JSON.stringify({ version: 2 }), null]) {
+    assert.equal(parsePlan(text), null, String(text));
+  }
+});
+
+test("parsePlan drops invalid villages, duplicates and dangling attacks", () => {
+  const plan = parsePlan(JSON.stringify({
+    version: 1,
+    landing: "tomorrow",
+    sources: [{ name: "Fort", x: 500, y: 500 }, { name: "Copy", x: 500, y: 500 }, { x: 50, y: 500 }, { name: "  ", x: 501, y: 502 }],
+    targets: [{ name: "Wolf Den", x: 520, y: 505 }],
+    attacks: [
+      { sourceKey: "500|500", targetKey: "520|505", speedClassId: "ram", offsetSeconds: 2.7, note: 5, sent: "yes" },
+      { sourceKey: "500|500", targetKey: "999|999", speedClassId: "ram" },
+      { sourceKey: "500|500", targetKey: "520|505", speedClassId: "warp" },
+      null
+    ],
+    activeSourceKey: "123|123",
+    lastSpeedClassId: "warp",
+    lastTargetKey: "999|999"
+  }));
+
+  assert.equal(plan.landing, "");
+  assert.deepEqual(plan.sources.map((village) => [village.key, village.name]), [["500|500", "Fort"], ["501|502", "501|502"]]);
+  assert.deepEqual(plan.attacks, [
+    { id: 1, sourceKey: "500|500", targetKey: "520|505", speedClassId: "ram", offsetSeconds: 2, note: "", sent: false }
+  ]);
+  assert.equal(plan.activeSourceKey, "500|500");
+  assert.equal(plan.lastSpeedClassId, emptyPlan().lastSpeedClassId);
+  assert.equal(plan.lastTargetKey, null);
+});
+
+test("formatPlanText lists unsent attacks and dates sends before the landing day", () => {
+  const landingMs = new Date(2026, 9, 20, 21, 0, 0).getTime();
+  const plan = samplePlan();
+  const row = (attack, sendMs) => ({ attack, source: plan.sources[0], target: plan.targets.find((village) => village.key === attack.targetKey), sendMs });
+  const rows = [
+    row({ ...plan.attacks[0], offsetSeconds: 0, note: " " }, new Date(2026, 9, 19, 23, 40, 10).getTime()),
+    row(plan.attacks[1], new Date(2026, 9, 20, 18, 0, 0).getTime()),
+    row(plan.attacks[0], new Date(2026, 9, 20, 19, 5, 33).getTime())
+  ];
+
+  assert.equal(formatPlanText(rows, landingMs), [
+    "Landing: 20.10 21:00:00",
+    "",
+    "19.10 23:40:10  Fort (500|500) → Wolf Den (520|505)  Noble",
+    "19:05:33  Fort (500|500) → Wolf Den (520|505)  Noble +1s  4 nobles"
+  ].join("\n"));
 });

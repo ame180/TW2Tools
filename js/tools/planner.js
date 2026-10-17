@@ -5,25 +5,30 @@ import {
   minutesPerTileByClass,
   parseVillageLine,
   targetsByDistance,
-  buildSendPlan
+  buildSendPlan,
+  villageLabel,
+  formatPlanText,
+  emptyPlan,
+  serializePlan,
+  parsePlan,
+  loadPlan,
+  savePlan
 } from "../lib/attack-planner.js";
 
 const KINDS = ["source", "target"];
 const FLASH_MS = 1600;
 const MAX_INPUT_ROWS = 6;
+const CONFIRM_MS = 3000;
+const IDLE_CLASSES = ["border-slate-400", "bg-white", "hover:bg-slate-100"];
+const ARMED_CLASSES = ["border-red-600", "bg-red-600", "text-white", "hover:bg-red-700"];
 
 const els = {};
 
 const state = {
-  sources: [],
-  targets: [],
-  attacks: [],
-  activeSourceKey: null,
-  lastSpeedClassId: "axe",
-  lastTargetKey: null,
-  nextAttackId: 1,
+  ...emptyPlan(),
   minutesPerTile: {}
 };
+const confirmTimers = new Map();
 
 export const plannerTool = {
   id: "planner",
@@ -50,11 +55,16 @@ function init(data) {
     els[kind].list.addEventListener("click", (event) => handleVillageListClick(kind, event));
   }
 
-  els.landing.addEventListener("input", renderPlan);
+  els.landing.addEventListener("input", () => commit(renderPlan));
   els.attacks.addEventListener("click", handleAttacksClick);
   els.attacks.addEventListener("change", handleAttacksChange);
   els.attacks.addEventListener("input", handleAttacksInput);
   els.plan.addEventListener("change", handlePlanChange);
+  bindPlanActions();
+
+  const plan = loadPlan();
+  Object.assign(state, plan);
+  els.landing.value = plan.landing;
 
   scheduleStatusTick();
 
@@ -67,10 +77,6 @@ function villagesOf(kind) {
 
 function findVillage(list, key) {
   return list.find((village) => village.key === key);
-}
-
-function villageLabel(village) {
-  return village.name === village.key ? village.key : `${village.name} (${village.key})`;
 }
 
 function findAttack(id) {
@@ -154,7 +160,7 @@ function addVillageLines(kind, lines) {
     state.activeSourceKey = state.sources[0].key;
   }
 
-  renderAll();
+  commit();
   flashRows(kind, added);
   return rejected;
 }
@@ -185,7 +191,7 @@ function handleVillageListClick(kind, event) {
 
   if (kind === "source" && button.dataset.select) {
     state.activeSourceKey = button.dataset.select;
-    renderAll();
+    commit();
   }
 }
 
@@ -203,7 +209,7 @@ function removeVillage(kind, key) {
       state.lastTargetKey = null;
     }
   }
-  renderAll();
+  commit();
 }
 
 function addAttack() {
@@ -218,7 +224,7 @@ function addAttack() {
     sent: false
   });
   state.lastTargetKey = targetKey;
-  renderAll();
+  commit();
 }
 
 function handleAttacksClick(event) {
@@ -234,7 +240,7 @@ function handleAttacksClick(event) {
 
   if (button.dataset.deleteAttack) {
     state.attacks = state.attacks.filter((attack) => attack.id !== Number(button.dataset.deleteAttack));
-    renderAll();
+    commit();
   }
 }
 
@@ -244,14 +250,14 @@ function handleAttacksChange(event) {
   if (field.dataset.speed) {
     findAttack(field.dataset.speed).speedClassId = field.value;
     state.lastSpeedClassId = field.value;
-    renderAll();
+    commit();
     return;
   }
 
   if (field.dataset.target) {
     findAttack(field.dataset.target).targetKey = field.value;
     state.lastTargetKey = field.value;
-    renderAll();
+    commit();
   }
 }
 
@@ -260,13 +266,13 @@ function handleAttacksInput(event) {
 
   if (field.dataset.offset) {
     findAttack(field.dataset.offset).offsetSeconds = Math.trunc(Number(field.value)) || 0;
-    renderPlan();
+    commit(renderPlan);
     return;
   }
 
   if (field.dataset.note) {
     findAttack(field.dataset.note).note = field.value;
-    renderPlan();
+    commit(renderPlan);
   }
 }
 
@@ -276,7 +282,118 @@ function handlePlanChange(event) {
     return;
   }
   findAttack(checkbox.dataset.sent).sent = checkbox.checked;
-  renderPlan();
+  commit(renderPlan);
+}
+
+function commit(render = renderAll) {
+  render();
+  savePlan({ ...state, landing: els.landing.value });
+}
+
+function applyPlan(plan) {
+  Object.assign(state, plan);
+  els.landing.value = plan.landing;
+  for (const kind of KINDS) {
+    els[kind].error.textContent = "";
+  }
+  commit();
+}
+
+function bindPlanActions() {
+  els.importBox = document.getElementById("planner-import");
+  els.importText = document.getElementById("planner-import-text");
+  els.importError = document.getElementById("planner-import-error");
+
+  const exportButton = document.getElementById("planner-export");
+  exportButton.addEventListener("click", () =>
+    copyText(exportButton, JSON.stringify(serializePlan({ ...state, landing: els.landing.value })))
+  );
+
+  const copyButton = document.getElementById("planner-copy-text");
+  copyButton.addEventListener("click", () => {
+    const rows = currentSendPlan();
+    if (!rows) {
+      flashLabel(copyButton, "Nothing to copy");
+      return;
+    }
+    copyText(copyButton, formatPlanText(rows, landingMs()));
+  });
+
+  document.getElementById("planner-import-open").addEventListener("click", () => {
+    els.importBox.classList.remove("hidden");
+    els.importText.focus();
+  });
+  document.getElementById("planner-import-cancel").addEventListener("click", closeImport);
+
+  const replaceButton = document.getElementById("planner-import-replace");
+  replaceButton.addEventListener("click", () => {
+    const plan = parsePlan(els.importText.value);
+    if (!plan) {
+      els.importError.textContent = "Not an exported plan.";
+      return;
+    }
+    els.importError.textContent = "";
+    confirmClick(replaceButton, () => {
+      applyPlan(plan);
+      closeImport();
+    });
+  });
+
+  const clearAttacksButton = document.getElementById("planner-clear-attacks");
+  clearAttacksButton.addEventListener("click", () => confirmClick(clearAttacksButton, () => {
+    state.attacks = [];
+    state.nextAttackId = 1;
+    commit();
+  }));
+
+  const clearPlanButton = document.getElementById("planner-clear-plan");
+  clearPlanButton.addEventListener("click", () => confirmClick(clearPlanButton, () => applyPlan(emptyPlan())));
+}
+
+function closeImport() {
+  els.importBox.classList.add("hidden");
+  els.importText.value = "";
+  els.importError.textContent = "";
+}
+
+function copyText(button, text) {
+  navigator.clipboard.writeText(text).then(
+    () => flashLabel(button, "Copied"),
+    () => flashLabel(button, "Copy failed")
+  );
+}
+
+function flashLabel(button, text) {
+  button.dataset.label ??= button.textContent;
+  button.textContent = text;
+  clearTimeout(confirmTimers.get(button));
+  confirmTimers.set(button, setTimeout(() => {
+    button.textContent = button.dataset.label;
+    delete button.dataset.label;
+  }, FLASH_MS));
+}
+
+// Destructive actions run on the second click within CONFIRM_MS.
+function confirmClick(button, action) {
+  clearTimeout(confirmTimers.get(button));
+  if (button.dataset.armed) {
+    disarm(button);
+    action();
+    return;
+  }
+
+  button.dataset.armed = button.textContent;
+  button.textContent = "Click again to confirm";
+  button.classList.remove(...IDLE_CLASSES);
+  button.classList.add(...ARMED_CLASSES);
+  confirmTimers.set(button, setTimeout(() => disarm(button), CONFIRM_MS));
+}
+
+function disarm(button) {
+  button.textContent = button.dataset.armed;
+  button.classList.remove(...ARMED_CLASSES);
+  button.classList.add(...IDLE_CLASSES);
+  delete button.dataset.armed;
 }
 
 function renderAll() {
@@ -427,6 +544,20 @@ function landingMs() {
   return Number.isFinite(time) ? time : null;
 }
 
+function currentSendPlan() {
+  const landing = landingMs();
+  if (landing === null || !state.attacks.length) {
+    return null;
+  }
+  return buildSendPlan({
+    attacks: state.attacks,
+    sources: state.sources,
+    targets: state.targets,
+    landingMs: landing,
+    minutesPerTile: state.minutesPerTile
+  });
+}
+
 function renderPlan() {
   els.plan.innerHTML = "";
   const landing = landingMs();
@@ -441,13 +572,7 @@ function renderPlan() {
     return;
   }
 
-  const rows = buildSendPlan({
-    attacks: state.attacks,
-    sources: state.sources,
-    targets: state.targets,
-    landingMs: landing,
-    minutesPerTile: state.minutesPerTile
-  });
+  const rows = currentSendPlan();
   const speedLabels = Object.fromEntries(SPEED_CLASSES.map((speedClass) => [speedClass.id, speedClass.label]));
 
   for (const { attack, source, target, travelSeconds, landsMs, sendMs } of rows) {
