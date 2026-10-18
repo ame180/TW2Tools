@@ -15,6 +15,6 @@ export function limitChoice(limit, presets = []) {
 
 // An empty, zero or invalid custom value means no limit.
 export function readLimit(choice, customText) {
-  const value = choice === CUSTOM_LIMIT ? Number.parseInt(customText, 10) : Number(choice);
+  const value = Number(choice === CUSTOM_LIMIT ? customText : choice);
   return isProvisionLimit(value) ? value : null;
 }

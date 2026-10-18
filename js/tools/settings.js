@@ -37,10 +37,10 @@ function init(data) {
   els.grandmaster.checked = battle.grandmaster;
   els.medic.checked = battle.medic;
   els.medicus.checked = battle.medicus;
-  const limit = limitChoice(battle.provisionLimit, provisionLimits);
-  els.provisionLimit.value = limit;
-  els.provisionLimitCustom.hidden = limit !== CUSTOM_LIMIT;
-  els.provisionLimitCustom.value = limit === CUSTOM_LIMIT ? String(battle.provisionLimit) : "";
+  const choice = limitChoice(battle.provisionLimit, provisionLimits);
+  els.provisionLimit.value = choice;
+  els.provisionLimitCustom.hidden = choice !== CUSTOM_LIMIT;
+  els.provisionLimitCustom.value = choice === CUSTOM_LIMIT ? String(battle.provisionLimit) : "";
 
   // Runs before the section saves, so switching to Custom keeps the current limit.
   els.provisionLimit.addEventListener("change", () => {

@@ -23,10 +23,11 @@ test("reading the picker: presets ignore the custom field, custom parses it", ()
   assert.equal(readLimit("23200", "500"), 23200);
   assert.equal(readLimit(CUSTOM_LIMIT, "24000"), 24000);
   assert.equal(readLimit(CUSTOM_LIMIT, " 24000 "), 24000);
+  assert.equal(readLimit(CUSTOM_LIMIT, "1e5"), 100000);
 });
 
 test("empty, zero or invalid custom value means no limit", () => {
-  for (const text of ["", "0", "-100", "abc"]) {
+  for (const text of ["", "0", "-100", "12.5", "abc"]) {
     assert.equal(readLimit(CUSTOM_LIMIT, text), null);
   }
 });
