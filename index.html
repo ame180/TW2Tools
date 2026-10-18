@@ -429,6 +429,21 @@
         <div class="mt-6 grid gap-4 md:grid-cols-2">
           <fieldset class="min-w-0 rounded border border-slate-300 p-3">
             <legend class="px-1 font-semibold">Attacker</legend>
+            <div class="mb-3 space-y-1.5 text-sm">
+              <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+                <div class="flex min-w-0 flex-wrap items-center gap-1.5">
+                  <span class="text-xs font-medium text-slate-600">Provisions</span>
+                  <span id="battle-provisions-used" class="font-semibold tabular-nums">0</span>
+                  <span class="text-slate-400">/</span>
+                  <select id="battle-provision-limit" aria-label="Provisions limit" class="min-w-0 rounded border border-slate-300 px-1 py-1"></select>
+                  <input id="battle-provision-limit-custom" type="number" inputmode="numeric" min="1" aria-label="Custom provisions limit" class="w-28 rounded border border-slate-300 px-2 py-1" hidden />
+                </div>
+                <span id="battle-provisions-status" class="text-xs tabular-nums"></span>
+              </div>
+              <div id="battle-provisions-bar" class="h-1.5 overflow-hidden rounded-full bg-slate-200" hidden>
+                <div id="battle-provisions-fill" class="h-full rounded-full bg-slate-700"></div>
+              </div>
+            </div>
             <div id="battle-attacker-units" class="grid grid-cols-1 gap-y-1 text-sm"></div>
 
             <div class="mt-4 space-y-3 border-t border-slate-200 pt-3 text-sm">
@@ -567,6 +582,13 @@
               <input id="settings-medic" type="checkbox" />
               <span>Medic</span>
             </label>
+            <div class="min-w-0">
+              <label for="settings-provision-limit" class="mb-1 block text-xs font-medium text-slate-600">Provisions limit</label>
+              <div class="flex gap-1">
+                <select id="settings-provision-limit" class="min-w-0 flex-1 rounded border border-slate-300 px-2 py-1"></select>
+                <input id="settings-provision-limit-custom" type="number" inputmode="numeric" min="1" aria-label="Custom provisions limit" class="w-28 shrink-0 rounded border border-slate-300 px-2 py-1" hidden />
+              </div>
+            </div>
           </div>
         </section>
       </main>

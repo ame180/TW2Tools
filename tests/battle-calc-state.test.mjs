@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import {
   createInitialState, addHit, deleteHit, moveHit, selectHit, setActiveAttacker, setActiveDefenderChanges,
-  toSequenceInput, toFormPaladins, NO_PALADIN, NO_WEAPON
+  toSequenceInput, toFormPaladins, attackerProvisions, isOverProvisionLimit, NO_PALADIN, NO_WEAPON
 } from "../js/lib/battle-calc-state.js";
 import { emptyChanges } from "../js/lib/defender-changes.js";
 import { defenderProvisions } from "../js/lib/battle-sequence.js";
@@ -172,6 +172,27 @@ test("healing defaults to off", () => {
   assert.equal(attacker.medic, false);
   assert.equal(attacker.medicus, false);
   assert.equal(toSequenceInput(createInitialState(), data).hits[0].healPercent, 0);
+});
+
+test("provisions limit defaults to none and is copied to added hits", () => {
+  assert.equal(createInitialState().hits[0].attacker.provisionLimit, null);
+  const state = addHit(createInitialState({ provisionLimit: 25600 }));
+  assert.deepEqual(state.hits.map((hit) => hit.attacker.provisionLimit), [25600, 25600]);
+});
+
+test("attacker provisions count unit food and the paladin when one is sent", () => {
+  const { attacker } = withAxes(createInitialState(), 100).hits[0];
+  attacker.units.nobleman = 1;
+  const unitFood = 100 * data.units.axe.provisions + data.units.nobleman.provisions;
+  assert.equal(attackerProvisions(attacker, data.units), unitFood);
+  assert.equal(attackerProvisions({ ...attacker, paladinWeapon: NO_WEAPON }, data.units), unitFood + data.units.knight.provisions);
+});
+
+test("only a limit below the provisions used is over", () => {
+  const { attacker } = withAxes(createInitialState(), 100).hits[0];
+  assert.equal(isOverProvisionLimit(attacker, data.units), false);
+  assert.equal(isOverProvisionLimit({ ...attacker, provisionLimit: 100 }, data.units), false);
+  assert.equal(isOverProvisionLimit({ ...attacker, provisionLimit: 99 }, data.units), true);
 });
 
 const HALBERD = { uid: 1, weapon: "halberd_of_guan_yu", level: 2 };

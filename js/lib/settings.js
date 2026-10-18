@@ -1,6 +1,8 @@
 // Persistent user settings, stored as one versioned localStorage entry.
 // Invalid stored fields fall back to their defaults individually.
 
+import { isProvisionLimit } from "./provision-limit.js";
+
 export const SETTINGS_KEY = "tw2tools.settings.v1";
 
 export function defaultSettings() {
@@ -10,7 +12,8 @@ export function defaultSettings() {
       ironWallLevel: 0,
       grandmaster: false,
       medic: false,
-      medicus: false
+      medicus: false,
+      provisionLimit: null
     }
   };
 }
@@ -44,6 +47,9 @@ export function parseSettings(json, tribeSkills = {}) {
     if (typeof battle[flag] === "boolean") {
       settings.battle[flag] = battle[flag];
     }
+  }
+  if (isProvisionLimit(battle.provisionLimit)) {
+    settings.battle.provisionLimit = battle.provisionLimit;
   }
   return settings;
 }

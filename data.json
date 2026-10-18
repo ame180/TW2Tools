@@ -2565,5 +2565,10 @@
     "medic": 10,
     "medicus": 10,
     "excludedUnits": ["ram", "catapult", "trebuchet", "nobleman", "knight"]
-  }
+  },
+  "provisionLimits": [
+    { "name": "Base", "provisions": 23200 },
+    { "name": "BH", "provisions": 25600 },
+    { "name": "BS", "provisions": 28000 }
+  ]
 }
