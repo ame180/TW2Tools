@@ -6,8 +6,10 @@ import { recruitSummary } from "../lib/recruit.js";
 import { subtractUnits } from "../lib/healing.js";
 import {
   createInitialState, addHit, deleteHit, moveHit, selectHit, setActiveAttacker, setActiveDefenderChanges,
-  toSequenceInput, toFormPaladins, NO_PALADIN, NO_WEAPON, DEFAULT_FAITH, INPUT_UNIT_KEYS
+  toSequenceInput, toFormPaladins, attackerProvisions, isOverProvisionLimit, NO_PALADIN, NO_WEAPON, DEFAULT_FAITH,
+  INPUT_UNIT_KEYS
 } from "../lib/battle-calc-state.js";
+import { CUSTOM_LIMIT, limitChoice, readLimit } from "../lib/provision-limit.js";
 import { loadSettings } from "../lib/settings.js";
 
 const els = {};
@@ -27,6 +29,7 @@ let faithLevels = [];
 let tribeSkills = {};
 let recruitModifiers = {};
 let healing = {};
+let provisionLimits = [];
 let state = createInitialState();
 const attackerUnitInputs = new Map();
 const defenderUnitInputs = new Map();
@@ -49,6 +52,7 @@ function init(data) {
   tribeSkills = data.tribeSkills || {};
   recruitModifiers = data.recruitModifiers || {};
   healing = data.healing || {};
+  provisionLimits = data.provisionLimits || [];
 
   els.section = document.getElementById("view-battle");
   els.hits = document.getElementById("battle-hits");
@@ -72,6 +76,12 @@ function init(data) {
   els.attackerWeaponLevel = document.getElementById("battle-attacker-weapon-level");
   els.defenderPaladins = document.getElementById("battle-defender-paladins");
   els.addPaladin = document.getElementById("battle-add-paladin");
+  els.provisionsUsed = document.getElementById("battle-provisions-used");
+  els.provisionLimit = document.getElementById("battle-provision-limit");
+  els.provisionLimitCustom = document.getElementById("battle-provision-limit-custom");
+  els.provisionsStatus = document.getElementById("battle-provisions-status");
+  els.provisionsBar = document.getElementById("battle-provisions-bar");
+  els.provisionsFill = document.getElementById("battle-provisions-fill");
   els.attackerFaith = document.getElementById("battle-attacker-faith");
   els.defenderFaith = document.getElementById("battle-defender-faith");
   els.morale = document.getElementById("battle-morale");
@@ -100,6 +110,7 @@ function init(data) {
   renderResultTables();
   populateWeaponSelect(els.attackerWeapon, true);
   populateLevelSelect(els.attackerWeaponLevel);
+  populateLimitSelect(els.provisionLimit);
   populateFaithSelect(els.attackerFaith);
   populateFaithSelect(els.defenderFaith);
   populateSkillSelect(els.weaponMastery, tribeSkills.weaponMastery);
@@ -110,6 +121,15 @@ function init(data) {
   els.morale.addEventListener("change", normalizeNumberInputs);
   els.wall.addEventListener("change", normalizeNumberInputs);
   els.wallOverride.addEventListener("change", normalizeNumberInputs);
+  els.provisionLimitCustom.addEventListener("change", normalizeNumberInputs);
+  // On "input", which the section also reads the form on: this runs first, so switching to Custom keeps the limit.
+  els.provisionLimit.addEventListener("input", () => {
+    const isCustom = els.provisionLimit.value === CUSTOM_LIMIT;
+    els.provisionLimitCustom.hidden = !isCustom;
+    if (!isCustom) return;
+    els.provisionLimitCustom.value = String(state.hits[state.activeHit].attacker.provisionLimit ?? "");
+    els.provisionLimitCustom.focus();
+  });
   els.addPaladin.addEventListener("click", () => {
     const paladin = { uid: ++lastPaladinUid, weapon: NO_WEAPON, level: 1 };
     addDefenderPaladin({ kind: state.activeHit === 0 ? "start" : "arriving", paladin });
@@ -279,6 +299,14 @@ function populateLevelSelect(select) {
   for (const level of WEAPON_LEVELS) {
     select.appendChild(new Option(String(level), String(level)));
   }
+}
+
+function populateLimitSelect(select) {
+  select.appendChild(new Option("No limit", ""));
+  for (const { name, provisions } of provisionLimits) {
+    select.appendChild(new Option(`${name} - ${formatNumber(provisions)}`, String(provisions)));
+  }
+  select.appendChild(new Option("Custom…", CUSTOM_LIMIT));
 }
 
 function populateFaithSelect(select) {
@@ -553,7 +581,8 @@ function readForm(editedField) {
     weaponMasteryLevel: Number(els.weaponMastery.value),
     grandmaster: els.grandmaster.checked,
     medic: els.medic.checked,
-    medicus: els.medicus.checked
+    medicus: els.medicus.checked,
+    provisionLimit: readLimit(els.provisionLimit.value, els.provisionLimitCustom.value)
   });
 
   const defender = { ...state.defender, ironWallLevel: Number(els.ironWall.value) };
@@ -581,6 +610,10 @@ function writeForm() {
   els.grandmaster.checked = attacker.grandmaster;
   els.medic.checked = attacker.medic;
   els.medicus.checked = attacker.medicus;
+  const limit = limitChoice(attacker.provisionLimit, provisionLimits);
+  els.provisionLimit.value = limit;
+  els.provisionLimitCustom.hidden = limit !== CUSTOM_LIMIT;
+  els.provisionLimitCustom.value = limit === CUSTOM_LIMIT ? String(attacker.provisionLimit) : "";
 
   els.ironWall.value = String(state.defender.ironWallLevel);
 }
@@ -763,9 +796,10 @@ function createDefaultState() {
 }
 
 function render({ includeDefenderStart = false } = {}) {
-  const { luck, paladinWeapon } = state.hits[state.activeHit].attacker;
-  els.luckValue.textContent = `${luck > 0 ? "+" : ""}${luck}%`;
-  els.attackerWeaponLevel.disabled = !weapons[paladinWeapon];
+  const { attacker } = state.hits[state.activeHit];
+  els.luckValue.textContent = `${attacker.luck > 0 ? "+" : ""}${attacker.luck}%`;
+  els.attackerWeaponLevel.disabled = !weapons[attacker.paladinWeapon];
+  renderProvisions(attacker);
 
   const steps = simulateSequence(toSequenceInput(state, { units, weapons, tribeSkills, healing }));
   latestSteps = steps;
@@ -784,6 +818,25 @@ function render({ includeDefenderStart = false } = {}) {
   renderDefenderPanel(activeStep, includeDefenderStart);
   renderHitStrip(steps);
   renderLossCosts(steps, activeStep);
+}
+
+function renderProvisions(attacker) {
+  const used = attackerProvisions(attacker, units);
+  const limit = attacker.provisionLimit;
+  const over = limit !== null && used > limit;
+  els.provisionsUsed.textContent = formatNumber(used);
+  els.provisionsUsed.classList.toggle("text-red-700", over);
+  els.provisionsBar.hidden = limit === null;
+  els.provisionsStatus.hidden = limit === null;
+  if (limit === null) return;
+
+  els.provisionsFill.style.width = `${Math.min(100, used * 100 / limit)}%`;
+  els.provisionsFill.classList.toggle("bg-red-600", over);
+  els.provisionsFill.classList.toggle("bg-slate-700", !over);
+  els.provisionsStatus.textContent = over ? `${formatNumber(used - limit)} over` : `${formatNumber(limit - used)} free`;
+  els.provisionsStatus.classList.toggle("font-semibold", over);
+  els.provisionsStatus.classList.toggle("text-red-700", over);
+  els.provisionsStatus.classList.toggle("text-slate-500", !over);
 }
 
 function renderLossCosts(steps, activeStep) {
@@ -865,6 +918,15 @@ function renderHitStrip(steps) {
   steps.forEach((step, index) => {
     const chip = chips[index];
     chip.textContent = describeHit(step, index, baselines[index]);
+    if (isOverProvisionLimit(state.hits[index].attacker, units)) {
+      const dot = document.createElement("span");
+      dot.className = `mr-1.5 inline-block h-1.5 w-1.5 rounded-full align-middle ${
+        index === state.activeHit ? "bg-red-400" : "bg-red-600"}`;
+      dot.title = "Over provisions limit";
+      dot.setAttribute("role", "img");
+      dot.setAttribute("aria-label", "Over provisions limit");
+      chip.prepend(dot);
+    }
     if (hasChanges(state.defenderChanges[index])) {
       const badge = document.createElement("span");
       badge.className = "ml-1 rounded bg-amber-300 px-1 text-[10px] font-semibold text-amber-950";
@@ -924,5 +986,6 @@ function normalizeNumberInputs() {
   if (els.wallOverride.value !== "") {
     els.wallOverride.value = String(clamp(toNonNegativeInt(els.wallOverride.value, 0), 0, 20));
   }
+  els.provisionLimitCustom.value = String(readLimit(CUSTOM_LIMIT, els.provisionLimitCustom.value) ?? "");
   handleFormChange();
 }

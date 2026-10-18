@@ -12,14 +12,18 @@ test("missing or corrupt storage yields defaults", () => {
 });
 
 test("valid stored battle settings are kept", () => {
-  const stored = { battle: { weaponMasteryLevel: 5, ironWallLevel: 3, grandmaster: true, medic: true, medicus: false } };
+  const stored = {
+    battle: { weaponMasteryLevel: 5, ironWallLevel: 3, grandmaster: true, medic: true, medicus: false, provisionLimit: 25600 }
+  };
   assert.deepEqual(parseSettings(JSON.stringify(stored), tribeSkills), stored);
 });
 
 test("each invalid field falls back to its default, valid fields are kept", () => {
-  const stored = { battle: { weaponMasteryLevel: 6, ironWallLevel: 2, grandmaster: "yes", medic: 1, medicus: true } };
+  const stored = {
+    battle: { weaponMasteryLevel: 6, ironWallLevel: 2, grandmaster: "yes", medic: 1, medicus: true, provisionLimit: 0 }
+  };
   assert.deepEqual(parseSettings(JSON.stringify(stored), tribeSkills), {
-    battle: { weaponMasteryLevel: 0, ironWallLevel: 2, grandmaster: false, medic: false, medicus: true }
+    battle: { weaponMasteryLevel: 0, ironWallLevel: 2, grandmaster: false, medic: false, medicus: true, provisionLimit: null }
   });
 });
 
@@ -41,6 +45,15 @@ test("defaultSettings returns a fresh object each call", () => {
 test("settings saved before healing existed load with healing off", () => {
   const stored = { battle: { weaponMasteryLevel: 2, ironWallLevel: 1, grandmaster: true } };
   assert.deepEqual(parseSettings(JSON.stringify(stored), tribeSkills), {
-    battle: { ...stored.battle, medic: false, medicus: false }
+    battle: { ...stored.battle, medic: false, medicus: false, provisionLimit: null }
   });
+});
+
+test("provisions limit must be a positive integer, anything else means no limit", () => {
+  for (const limit of [-5, 1.5, "23200", true, null]) {
+    const { battle } = parseSettings(JSON.stringify({ battle: { provisionLimit: limit } }), tribeSkills);
+    assert.equal(battle.provisionLimit, null);
+  }
+  const { battle } = parseSettings(JSON.stringify({ battle: { provisionLimit: 19000 } }), tribeSkills);
+  assert.equal(battle.provisionLimit, 19000);
 });

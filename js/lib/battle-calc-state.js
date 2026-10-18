@@ -20,7 +20,7 @@ function emptyUnits() {
 }
 
 export function createInitialState({
-  weaponMasteryLevel = 0, ironWallLevel = 0, grandmaster = false, medic = false, medicus = false
+  weaponMasteryLevel = 0, ironWallLevel = 0, grandmaster = false, medic = false, medicus = false, provisionLimit = null
 } = {}) {
   return {
     defender: {
@@ -42,7 +42,8 @@ export function createInitialState({
         weaponMasteryLevel,
         grandmaster,
         medic,
-        medicus
+        medicus,
+        provisionLimit
       }
     }],
     defenderChanges: [emptyChanges()],
@@ -103,6 +104,16 @@ export function setActiveDefenderChanges(state, changes) {
   if (state.activeHit === 0) return state;
   const defenderChanges = state.defenderChanges.map((gap, index) => (index === state.activeHit ? changes : gap));
   return { ...state, defenderChanges };
+}
+
+export function attackerProvisions(attacker, unitStats) {
+  let total = attacker.paladinWeapon === NO_PALADIN ? 0 : unitStats.knight.provisions;
+  for (const unit of INPUT_UNIT_KEYS) total += (attacker.units[unit] || 0) * unitStats[unit].provisions;
+  return total;
+}
+
+export function isOverProvisionLimit(attacker, unitStats) {
+  return attacker.provisionLimit !== null && attackerProvisions(attacker, unitStats) > attacker.provisionLimit;
 }
 
 export function toFormPaladins(enginePaladins) {
