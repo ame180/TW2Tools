@@ -610,10 +610,10 @@ function writeForm() {
   els.grandmaster.checked = attacker.grandmaster;
   els.medic.checked = attacker.medic;
   els.medicus.checked = attacker.medicus;
-  const limit = limitChoice(attacker.provisionLimit, provisionLimits);
-  els.provisionLimit.value = limit;
-  els.provisionLimitCustom.hidden = limit !== CUSTOM_LIMIT;
-  els.provisionLimitCustom.value = limit === CUSTOM_LIMIT ? String(attacker.provisionLimit) : "";
+  const choice = limitChoice(attacker.provisionLimit, provisionLimits);
+  els.provisionLimit.value = choice;
+  els.provisionLimitCustom.hidden = choice !== CUSTOM_LIMIT;
+  els.provisionLimitCustom.value = choice === CUSTOM_LIMIT ? String(attacker.provisionLimit) : "";
 
   els.ironWall.value = String(state.defender.ironWallLevel);
 }
@@ -796,10 +796,10 @@ function createDefaultState() {
 }
 
 function render({ includeDefenderStart = false } = {}) {
-  const { attacker } = state.hits[state.activeHit];
-  els.luckValue.textContent = `${attacker.luck > 0 ? "+" : ""}${attacker.luck}%`;
-  els.attackerWeaponLevel.disabled = !weapons[attacker.paladinWeapon];
-  renderProvisions(attacker);
+  const { luck, paladinWeapon } = state.hits[state.activeHit].attacker;
+  els.luckValue.textContent = `${luck > 0 ? "+" : ""}${luck}%`;
+  els.attackerWeaponLevel.disabled = !weapons[paladinWeapon];
+  renderProvisions(state.hits[state.activeHit].attacker);
 
   const steps = simulateSequence(toSequenceInput(state, { units, weapons, tribeSkills, healing }));
   latestSteps = steps;
@@ -823,7 +823,7 @@ function render({ includeDefenderStart = false } = {}) {
 function renderProvisions(attacker) {
   const used = attackerProvisions(attacker, units);
   const limit = attacker.provisionLimit;
-  const over = limit !== null && used > limit;
+  const over = isOverProvisionLimit(attacker, units);
   els.provisionsUsed.textContent = formatNumber(used);
   els.provisionsUsed.classList.toggle("text-red-700", over);
   els.provisionsBar.hidden = limit === null;
