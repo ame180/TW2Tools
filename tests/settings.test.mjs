@@ -26,7 +26,7 @@ test("each invalid field falls back to its default, valid fields are kept", () =
   const stored = {
     battle: { weaponMasteryLevel: 6, ironWallLevel: 2, grandmaster: "yes", medic: 1, medicus: true, provisionLimit: 0 }
   };
-  assert.deepEqual(parseSettings(JSON.stringify(stored), tribeSkills), {
+  assert.deepEqual(parseSettings(JSON.stringify(stored), tribeSkills, faithLevels), {
     battle: {
       weaponMasteryLevel: 0, ironWallLevel: 2, grandmaster: false, medic: false, medicus: true, provisionLimit: null,
       attackerFaith: 100, defenderFaith: 100
@@ -51,7 +51,7 @@ test("defaultSettings returns a fresh object each call", () => {
 
 test("settings saved before healing existed load with healing off", () => {
   const stored = { battle: { weaponMasteryLevel: 2, ironWallLevel: 1, grandmaster: true } };
-  assert.deepEqual(parseSettings(JSON.stringify(stored), tribeSkills), {
+  assert.deepEqual(parseSettings(JSON.stringify(stored), tribeSkills, faithLevels), {
     battle: { ...stored.battle, medic: false, medicus: false, provisionLimit: null, attackerFaith: 100, defenderFaith: 100 }
   });
 });
@@ -76,4 +76,8 @@ test("faith must be one of the game's faith levels, anything else means 100%", (
   const { battle } = parseSettings(JSON.stringify(stored), tribeSkills, faithLevels);
   assert.equal(battle.attackerFaith, 105);
   assert.equal(battle.defenderFaith, 50);
+
+  const mixed = parseSettings(JSON.stringify({ battle: { attackerFaith: 105, defenderFaith: 75 } }), tribeSkills, faithLevels);
+  assert.equal(mixed.battle.attackerFaith, 105);
+  assert.equal(mixed.battle.defenderFaith, 100);
 });
