@@ -20,14 +20,15 @@ function emptyUnits() {
 }
 
 export function createInitialState({
-  weaponMasteryLevel = 0, ironWallLevel = 0, grandmaster = false, medic = false, medicus = false, provisionLimit = null
+  weaponMasteryLevel = 0, ironWallLevel = 0, grandmaster = false, medic = false, medicus = false, provisionLimit = null,
+  attackerFaith = DEFAULT_FAITH, defenderFaith = DEFAULT_FAITH
 } = {}) {
   return {
     defender: {
       units: emptyUnits(),
       paladins: [],
       wall: 0,
-      faith: DEFAULT_FAITH,
+      faith: defenderFaith,
       night: false,
       ironWallLevel
     },
@@ -36,7 +37,7 @@ export function createInitialState({
         units: emptyUnits(),
         paladinWeapon: NO_PALADIN,
         paladinLevel: 1,
-        faith: DEFAULT_FAITH,
+        faith: attackerFaith,
         morale: 100,
         luck: 0,
         weaponMasteryLevel,

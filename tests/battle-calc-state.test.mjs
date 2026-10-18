@@ -180,6 +180,16 @@ test("provisions limit defaults to none and is copied to added hits", () => {
   assert.deepEqual(state.hits.map((hit) => hit.attacker.provisionLimit), [25600, 25600]);
 });
 
+test("faith defaults set the first attacker and the defender, added hits copy the attacker's", () => {
+  const plain = createInitialState();
+  assert.equal(plain.hits[0].attacker.faith, 100);
+  assert.equal(plain.defender.faith, 100);
+
+  const state = addHit(createInitialState({ attackerFaith: 110, defenderFaith: 50 }));
+  assert.deepEqual(state.hits.map((hit) => hit.attacker.faith), [110, 110]);
+  assert.equal(state.defender.faith, 50);
+});
+
 test("attacker provisions count unit food and the paladin when one is sent", () => {
   const { attacker } = withAxes(createInitialState(), 100).hits[0];
   attacker.units.nobleman = 1;

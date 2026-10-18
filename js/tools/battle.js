@@ -791,7 +791,7 @@ function resetHits() {
 }
 
 function createDefaultState() {
-  return createInitialState(loadSettings(tribeSkills).battle);
+  return createInitialState(loadSettings(tribeSkills, faithLevels).battle);
 }
 
 function render({ includeDefenderStart = false } = {}) {
