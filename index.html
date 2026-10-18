@@ -430,18 +430,20 @@
           <fieldset class="min-w-0 rounded border border-slate-300 p-3">
             <legend class="px-1 font-semibold">Attacker</legend>
             <div class="mb-3 space-y-1.5 text-sm">
-              <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
-                <div class="flex min-w-0 flex-wrap items-center gap-1.5">
-                  <span class="text-xs font-medium text-slate-600">Provisions</span>
-                  <span id="battle-provisions-used" class="font-semibold tabular-nums">0</span>
-                  <span class="text-slate-400">/</span>
-                  <select id="battle-provision-limit" aria-label="Provisions limit" class="min-w-0 rounded border border-slate-300 px-1 py-1"></select>
-                  <input id="battle-provision-limit-custom" type="number" inputmode="numeric" min="1" aria-label="Custom provisions limit" class="w-28 rounded border border-slate-300 px-2 py-1" hidden />
-                </div>
-                <span id="battle-provisions-status" aria-live="polite" class="text-xs tabular-nums"></span>
+              <div class="flex min-w-0 flex-wrap items-center gap-1.5">
+                <span class="text-xs font-medium text-slate-600">Provisions</span>
+                <span id="battle-provisions-used" class="font-semibold tabular-nums">0</span>
+                <span class="text-slate-400">/</span>
+                <select id="battle-provision-limit" aria-label="Provisions limit" class="min-w-0 rounded border border-slate-300 px-1 py-1"></select>
+                <input id="battle-provision-limit-custom" type="number" inputmode="numeric" min="1" aria-label="Custom provisions limit" class="w-28 rounded border border-slate-300 px-2 py-1" hidden />
               </div>
-              <div id="battle-provisions-bar" class="h-1.5 overflow-hidden rounded-full bg-slate-200" hidden>
-                <div id="battle-provisions-fill" class="h-full rounded-full bg-slate-700"></div>
+              <div id="battle-provisions-bar" hidden>
+                <div class="flex items-center gap-2">
+                  <div class="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-slate-200">
+                    <div id="battle-provisions-fill" class="h-full rounded-full bg-slate-700"></div>
+                  </div>
+                  <span id="battle-provisions-status" aria-live="polite" class="min-w-[5rem] shrink-0 whitespace-nowrap text-right text-xs tabular-nums"></span>
+                </div>
               </div>
             </div>
             <div id="battle-attacker-units" class="grid grid-cols-1 gap-y-1 text-sm"></div>
