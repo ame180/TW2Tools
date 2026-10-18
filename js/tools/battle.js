@@ -128,7 +128,6 @@ function init(data) {
     els.provisionLimitCustom.hidden = !isCustom;
     if (!isCustom) return;
     els.provisionLimitCustom.value = String(state.hits[state.activeHit].attacker.provisionLimit ?? "");
-    els.provisionLimitCustom.focus();
   });
   els.addPaladin.addEventListener("click", () => {
     const paladin = { uid: ++lastPaladinUid, weapon: NO_WEAPON, level: 1 };
