@@ -48,7 +48,6 @@ function init(data) {
     els.provisionLimitCustom.hidden = !isCustom;
     if (!isCustom) return;
     els.provisionLimitCustom.value = String(loadSettings(tribeSkills).battle.provisionLimit ?? "");
-    els.provisionLimitCustom.focus();
   });
   els.provisionLimitCustom.addEventListener("change", () => {
     els.provisionLimitCustom.value = String(readLimit(CUSTOM_LIMIT, els.provisionLimitCustom.value) ?? "");
