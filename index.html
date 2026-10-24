@@ -445,6 +445,10 @@
                   <span id="battle-provisions-status" aria-live="polite" class="min-w-[5rem] shrink-0 whitespace-nowrap text-right text-xs tabular-nums"></span>
                 </div>
               </div>
+              <div id="battle-zerk-attacker" class="flex h-8 flex-col justify-center text-xs leading-tight">
+                <p data-zerk="title" class="truncate font-medium"></p>
+                <p class="truncate tabular-nums"><span data-zerk="detail"></span> <span data-zerk="hint" class="text-slate-400"></span></p>
+              </div>
             </div>
             <div id="battle-attacker-units" class="grid grid-cols-1 gap-y-1 text-sm"></div>
 
@@ -499,6 +503,16 @@
 
           <fieldset class="min-w-0 rounded border border-slate-300 p-3">
             <legend class="px-1 font-semibold">Defender<span id="battle-defender-source" class="font-normal text-slate-500"></span></legend>
+            <div class="mb-3 space-y-1.5 text-sm">
+              <div class="flex min-w-0 items-center gap-1.5 py-1">
+                <span class="text-xs font-medium text-slate-600">Provisions</span>
+                <span id="battle-defender-provisions" class="font-semibold tabular-nums">0</span>
+              </div>
+              <div id="battle-zerk-defender" class="flex h-8 flex-col justify-center text-xs leading-tight">
+                <p data-zerk="title" class="truncate font-medium"></p>
+                <p class="truncate tabular-nums"><span data-zerk="detail"></span> <span data-zerk="hint" class="text-slate-400"></span></p>
+              </div>
+            </div>
             <div id="battle-defender-units-header" class="hidden px-1 pb-1 text-[11px] font-medium text-slate-500">
               <span></span><span class="text-right">Carried</span><span class="text-right">Change</span><span class="text-right">Total</span>
             </div>

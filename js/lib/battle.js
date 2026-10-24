@@ -23,6 +23,7 @@
 //   attacker, defender — { quantity: {unit: n}, losses: {unit: n} }
 //   attackerModifier, defenderModifier — (%)
 //   wallBefore, wallAfterRams, wallAfter
+//   berserkerFood — { attacker, defender } provisions the berserker bonus compares
 
 export const UNIT_KEYS = [
   "spear", "sword", "axe", "archer",
@@ -337,5 +338,6 @@ export function simulate(input) {
     wallBefore:    wall,
     wallAfterRams,
     wallAfter:     wallAfterFight,
+    berserkerFood: { attacker: atkFoodTotal, defender: defFoodTotal },
   };
 }

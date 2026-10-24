@@ -11,6 +11,7 @@ import {
 } from "../lib/battle-calc-state.js";
 import { CUSTOM_LIMIT, limitChoice, readLimit } from "../lib/provision-limit.js";
 import { loadSettings } from "../lib/settings.js";
+import { zerkBonusStatus } from "../lib/zerk-bonus.js";
 
 const els = {};
 
@@ -22,6 +23,7 @@ const INACTIVE_HIT_CHIP_CLASSES = `${HIT_CHIP_CLASSES} border-slate-300 hover:bg
 const CHANGED_ROW_CLASS = "bg-amber-50";
 const DEFENDER_ROWS = [["Units", ""], ["Losses", "text-red-700"]];
 const ATTACKER_ROWS = [...DEFENDER_ROWS, ["Healed", "text-green-700"]];
+const ZERK_TITLE_CLASSES = { on: "text-amber-700", off: "text-slate-600", muted: "text-slate-400" };
 
 let units = {};
 let weapons = {};
@@ -30,6 +32,7 @@ let tribeSkills = {};
 let recruitModifiers = {};
 let healing = {};
 let provisionLimits = [];
+let maxAttackProvisions = 0;
 let state = createInitialState();
 const attackerUnitInputs = new Map();
 const defenderUnitInputs = new Map();
@@ -53,6 +56,7 @@ function init(data) {
   recruitModifiers = data.recruitModifiers || {};
   healing = data.healing || {};
   provisionLimits = data.provisionLimits || [];
+  maxAttackProvisions = data.maxAttackProvisions || 0;
 
   els.section = document.getElementById("view-battle");
   els.hits = document.getElementById("battle-hits");
@@ -82,6 +86,9 @@ function init(data) {
   els.provisionsStatus = document.getElementById("battle-provisions-status");
   els.provisionsBar = document.getElementById("battle-provisions-bar");
   els.provisionsFill = document.getElementById("battle-provisions-fill");
+  els.defenderProvisions = document.getElementById("battle-defender-provisions");
+  els.zerkAttacker = document.getElementById("battle-zerk-attacker");
+  els.zerkDefender = document.getElementById("battle-zerk-defender");
   els.attackerFaith = document.getElementById("battle-attacker-faith");
   els.defenderFaith = document.getElementById("battle-defender-faith");
   els.morale = document.getElementById("battle-morale");
@@ -254,6 +261,7 @@ function renderResultTables() {
     for (const unit of UNIT_KEYS) {
       const header = createCell("th", units[unit]?.alias || unit, "px-2 py-1 text-right text-xs font-medium text-slate-500");
       header.title = units[unit]?.name || unit;
+      header.dataset.unit = unit;
       headerRow.appendChild(header);
     }
 
@@ -815,6 +823,7 @@ function render({ includeDefenderStart = false } = {}) {
     `Wall: ${result.wallBefore} → ${result.wallAfterRams} → ${result.wallAfter}`;
 
   renderDefenderPanel(activeStep, includeDefenderStart);
+  renderZerkBonus(result);
   renderHitStrip(steps);
   renderLossCosts(steps, activeStep);
 }
@@ -836,6 +845,36 @@ function renderProvisions(attacker) {
   els.provisionsStatus.classList.toggle("font-semibold", over);
   els.provisionsStatus.classList.toggle("text-red-700", over);
   els.provisionsStatus.classList.toggle("text-slate-500", !over);
+}
+
+function renderZerkBonus(result) {
+  const { attacker, defender } = result.berserkerFood;
+  els.defenderProvisions.textContent = formatNumber(defender);
+  const status = zerkBonusStatus({
+    attackerFood: attacker,
+    defenderFood: defender,
+    berserkers: result.attacker.quantity.berserker,
+    maxAttackProvisions,
+    unitStats: units,
+  });
+  renderZerkCaption(els.zerkAttacker, status.attacker);
+  renderZerkCaption(els.zerkDefender, status.defender);
+
+  const zerkHeader = els.attackerResults.tHead.querySelector('[data-unit="berserker"]');
+  zerkHeader.classList.toggle("text-amber-700", status.boosted);
+  zerkHeader.classList.toggle("text-slate-500", !status.boosted);
+  zerkHeader.title = status.boosted ? `${units.berserker.name} · bonus on (+100% attack)` : units.berserker.name;
+}
+
+function renderZerkCaption(container, { tone, title, detail, hint = "" }) {
+  const titleEl = container.querySelector('[data-zerk="title"]');
+  titleEl.textContent = title;
+  titleEl.className = `truncate font-medium ${ZERK_TITLE_CLASSES[tone]}`;
+  const detailEl = container.querySelector('[data-zerk="detail"]');
+  detailEl.textContent = detail;
+  detailEl.className = tone === "muted" ? "text-slate-400" : "text-slate-600";
+  container.querySelector('[data-zerk="hint"]').textContent = hint;
+  container.title = [title, detail, hint].filter(Boolean).join(" · ");
 }
 
 function renderLossCosts(steps, activeStep) {
