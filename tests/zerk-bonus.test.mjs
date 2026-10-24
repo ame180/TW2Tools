@@ -6,9 +6,9 @@ import { simulate } from "../js/lib/battle.js";
 
 const data = JSON.parse(await readFile(new URL("../data.json", import.meta.url), "utf8"));
 
-function status(attackerFood, defenderFood, berserkers = 920) {
+function status(attackerFood, defenderFood, berserkers = 920, attackerEmpty = attackerFood === 0) {
   return zerkBonusStatus({
-    attackerFood, defenderFood, berserkers, maxAttackProvisions: data.maxAttackProvisions, unitStats: data.units,
+    attackerFood, defenderFood, berserkers, attackerEmpty, maxAttackProvisions: data.maxAttackProvisions, unitStats: data.units,
   });
 }
 
@@ -76,4 +76,19 @@ test("engine reports the food it compares, without rams cancelled by trebuchets"
     attackerUnits: { axe: 100, ram: 30, berserker: 10 }, defenderUnits: { spear: 500, trebuchet: 20 },
   });
   assert.deepEqual(result.berserkerFood, { attacker: 100 + 10 * 5 + 10 * 6, defender: 500 + 20 * 10 });
+});
+
+test("attack over the max size falls back to the real comparison", () => {
+  const { boosted, attacker } = status(30000, 58000);
+  assert.equal(boosted, false);
+  assert.equal(attacker.title, "Zerk bonus off");
+});
+
+test("rams all cancelled by trebuchets is not an empty attack", () => {
+  const { attacker } = status(0, 42000, 0, false);
+  assert.equal(attacker.detail, "No zerks in attack");
+});
+
+test("room smaller than one berserker drops the zerk hint", () => {
+  assert.equal(status(21000, 42005).attacker.hint, "");
 });

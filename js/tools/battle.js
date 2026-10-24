@@ -56,7 +56,7 @@ function init(data) {
   recruitModifiers = data.recruitModifiers || {};
   healing = data.healing || {};
   provisionLimits = data.provisionLimits || [];
-  maxAttackProvisions = data.maxAttackProvisions || 0;
+  maxAttackProvisions = data.maxAttackProvisions || Infinity;
 
   els.section = document.getElementById("view-battle");
   els.hits = document.getElementById("battle-hits");
@@ -823,7 +823,7 @@ function render({ includeDefenderStart = false } = {}) {
     `Wall: ${result.wallBefore} → ${result.wallAfterRams} → ${result.wallAfter}`;
 
   renderDefenderPanel(activeStep, includeDefenderStart);
-  renderZerkBonus(result);
+  renderZerkBonus(result, state.hits[state.activeHit].attacker);
   renderHitStrip(steps);
   renderLossCosts(steps, activeStep);
 }
@@ -847,13 +847,14 @@ function renderProvisions(attacker) {
   els.provisionsStatus.classList.toggle("text-slate-500", !over);
 }
 
-function renderZerkBonus(result) {
+function renderZerkBonus(result, attackerForm) {
   const { attacker, defender } = result.berserkerFood;
   els.defenderProvisions.textContent = formatNumber(defender);
   const status = zerkBonusStatus({
     attackerFood: attacker,
     defenderFood: defender,
     berserkers: result.attacker.quantity.berserker,
+    attackerEmpty: attackerProvisions(attackerForm, units) === 0,
     maxAttackProvisions,
     unitStats: units,
   });

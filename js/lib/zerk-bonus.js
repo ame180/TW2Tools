@@ -3,7 +3,7 @@
 
 import { formatNumber } from "./format.js";
 
-export function zerkBonusStatus({ attackerFood, defenderFood, berserkers, maxAttackProvisions, unitStats }) {
+export function zerkBonusStatus({ attackerFood, defenderFood, berserkers, attackerEmpty, maxAttackProvisions, unitStats }) {
   const zerkFood = unitStats.berserker.provisions;
   const swordFood = unitStats.sword.provisions;
   const threshold = 2 * attackerFood;
@@ -11,21 +11,21 @@ export function zerkBonusStatus({ attackerFood, defenderFood, berserkers, maxAtt
   const active = defenderFood > threshold;
   const boosted = active && berserkers > 0;
 
-  if (attackerFood === 0 && defenderFood === 0) {
+  if (attackerEmpty && defenderFood === 0) {
     const caption = { tone: "muted", title: "Zerk bonus", detail: "Add troops to see it" };
     return { boosted, attacker: caption, defender: caption };
   }
-  if (defenderFood > 2 * maxAttackProvisions) {
-    const tone = berserkers > 0 || attackerFood === 0 ? "on" : "muted";
+  if (defenderFood > 2 * maxAttackProvisions && attackerFood <= maxAttackProvisions) {
+    const tone = berserkers > 0 || attackerEmpty ? "on" : "muted";
     const caption = { tone, title: "Zerk bonus always on", detail: `Defender over 2 × ${formatNumber(maxAttackProvisions)} max attack` };
     return { boosted, attacker: caption, defender: caption };
   }
-  if (attackerFood === 0) {
+  if (attackerEmpty) {
     return {
       boosted,
       attacker: {
         tone: "on", title: "Zerk bonus on", detail: `Up to ${formatNumber(maxAttackerFood)} prov`,
-        hint: `≈ ${formatNumber(Math.floor(maxAttackerFood / zerkFood))} Zerk`,
+        hint: zerkHint(Math.floor(maxAttackerFood / zerkFood)),
       },
       defender: { tone: "on", title: "Zerk bonus on", detail: `vs attacks up to ${formatNumber(maxAttackerFood)} prov` },
     };
@@ -42,7 +42,7 @@ export function zerkBonusStatus({ attackerFood, defenderFood, berserkers, maxAtt
       boosted,
       attacker: {
         tone: "on", title: "Zerk bonus on", detail: `+${formatNumber(attackerRoom)} prov room`,
-        hint: attackerRoom === 0 ? "1 more loses it" : `≈ ${formatNumber(Math.floor(attackerRoom / zerkFood))} Zerk`,
+        hint: attackerRoom === 0 ? "1 more loses it" : zerkHint(Math.floor(attackerRoom / zerkFood)),
       },
       defender: {
         tone: "on", title: "Zerk bonus on", detail: `−${formatNumber(defenderCut)} prov to cancel`,
@@ -57,11 +57,15 @@ export function zerkBonusStatus({ attackerFood, defenderFood, berserkers, maxAtt
     boosted,
     attacker: {
       tone: "off", title: "Zerk bonus off", detail: `−${formatNumber(attackerCut)} prov to trigger`,
-      hint: `≈ ${formatNumber(Math.ceil(attackerCut / zerkFood))} Zerk`,
+      hint: zerkHint(Math.ceil(attackerCut / zerkFood)),
     },
     defender: {
       tone: "off", title: "Zerk bonus off", detail: `+${formatNumber(defenderRoom)} prov room`,
       hint: defenderRoom === 0 ? "1 more triggers it" : `≈ ${formatNumber(Math.floor(defenderRoom / swordFood))} Sw`,
     },
   };
+}
+
+function zerkHint(count) {
+  return count === 0 ? "" : `≈ ${formatNumber(count)} Zerk`;
 }
