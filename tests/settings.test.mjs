@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { defaultSettings, parseSettings } from "../js/lib/settings.js";
+import { createInitialState } from "../js/lib/battle-calc-state.js";
 
 const tribeSkills = { weaponMastery: [0, 2, 4, 6, 8, 10], ironWall: [0, 1, 2, 3, 4, 5] };
 const faithLevels = [50, 100, 105, 110];
@@ -80,4 +81,8 @@ test("faith must be one of the game's faith levels, anything else means 100%", (
   const mixed = parseSettings(JSON.stringify({ battle: { attackerFaith: 105, defenderFaith: 75 } }), tribeSkills, faithLevels);
   assert.equal(mixed.battle.attackerFaith, 105);
   assert.equal(mixed.battle.defenderFaith, 100);
+});
+
+test("a fresh calculator matches the built-in settings", () => {
+  assert.deepEqual(createInitialState(), createInitialState(defaultSettings().battle));
 });
