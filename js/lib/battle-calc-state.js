@@ -11,6 +11,7 @@ import { emptyChanges, applyChanges, mergeChanges } from "./defender-changes.js"
 export const NO_PALADIN = "";
 export const NO_WEAPON = "none";
 export const DEFAULT_FAITH = 100;
+export const WEAPON_LEVELS = [1, 2, 3];
 export const INPUT_UNIT_KEYS = UNIT_KEYS.filter((unit) => unit !== "knight");
 
 export function newPaladinUid() {

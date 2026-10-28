@@ -7,15 +7,15 @@ import { subtractUnits } from "../lib/healing.js";
 import {
   createInitialState, addHit, deleteHit, moveHit, selectHit, setActiveAttacker, setActiveDefenderChanges,
   toSequenceInput, toFormPaladins, attackerProvisions, isOverProvisionLimit, NO_PALADIN, NO_WEAPON, DEFAULT_FAITH,
-  INPUT_UNIT_KEYS, newPaladinUid
+  INPUT_UNIT_KEYS, WEAPON_LEVELS, newPaladinUid
 } from "../lib/battle-calc-state.js";
+import { serializeBattleState, parseBattleState } from "../lib/battle-calc-export.js";
 import { CUSTOM_LIMIT, limitChoice, readLimit } from "../lib/provision-limit.js";
 import { loadSettings } from "../lib/settings.js";
 import { zerkBonusStatus } from "../lib/zerk-bonus.js";
 
 const els = {};
 
-const WEAPON_LEVELS = [1, 2, 3];
 const DISABLED_INPUT_CLASSES = "disabled:bg-slate-100 disabled:text-slate-500";
 const HIT_CHIP_CLASSES = "whitespace-nowrap rounded border px-3 py-1 tabular-nums";
 const ACTIVE_HIT_CHIP_CLASSES = `${HIT_CHIP_CLASSES} border-slate-800 bg-slate-800 text-white`;
@@ -23,6 +23,7 @@ const INACTIVE_HIT_CHIP_CLASSES = `${HIT_CHIP_CLASSES} border-slate-300 hover:bg
 const CHANGED_ROW_CLASS = "bg-amber-50";
 const DEFENDER_ROWS = [["Units", ""], ["Losses", "text-red-700"]];
 const ATTACKER_ROWS = [...DEFENDER_ROWS, ["Healed", "text-green-700"]];
+const FLASH_MS = 1600;
 const ZERK_TITLE_CLASSES = { on: "text-amber-700", off: "text-slate-600", muted: "text-slate-400" };
 
 let units = {};
@@ -40,6 +41,7 @@ const defenderChangeRows = new Map();
 // Defender as carried into the active hit (form terms), before its changes; null on hit #1.
 let carriedDefender = null;
 let latestSteps = [];
+let flashTimer = null;
 
 export const battleTool = {
   id: "battle",
@@ -110,6 +112,10 @@ function init(data) {
   els.medicus = document.getElementById("battle-medicus");
   els.night = document.getElementById("battle-night");
   els.reset = document.getElementById("battle-reset");
+  els.exportButton = document.getElementById("battle-export");
+  els.importBox = document.getElementById("battle-import");
+  els.importText = document.getElementById("battle-import-text");
+  els.importError = document.getElementById("battle-import-error");
 
   renderUnitInputs(els.attackerUnits, attackerUnitInputs);
   renderDefenderUnitRows();
@@ -157,6 +163,7 @@ function init(data) {
   els.moveRight.addEventListener("click", () => updateState(moveHit(state, state.activeHit, 1)));
   els.deleteHit.addEventListener("click", () => updateState(deleteHit(state, state.activeHit)));
   els.reset.addEventListener("click", resetHits);
+  bindExportImport();
 
   state = createDefaultState();
   showActiveHit();
@@ -794,6 +801,58 @@ function resetHits() {
     return;
   }
   updateState(createDefaultState());
+}
+
+function bindExportImport() {
+  els.exportButton.addEventListener("click", exportBattle);
+  document.getElementById("battle-import-open").addEventListener("click", () => {
+    els.importBox.classList.remove("hidden");
+    els.importText.focus();
+  });
+  document.getElementById("battle-import-cancel").addEventListener("click", closeImport);
+  document.getElementById("battle-import-replace").addEventListener("click", importBattle);
+  // The pasted text is not a calculator field.
+  els.importText.addEventListener("input", (event) => {
+    event.stopPropagation();
+    els.importError.textContent = "";
+  });
+  els.importText.addEventListener("change", (event) => event.stopPropagation());
+}
+
+function exportBattle() {
+  const text = JSON.stringify(serializeBattleState(state));
+  const copied = navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject();
+  copied.then(() => flashLabel(els.exportButton, "Copied"), () => flashLabel(els.exportButton, "Copy failed"));
+}
+
+function importBattle() {
+  const imported = parseBattleState(els.importText.value, { weapons, tribeSkills, faithLevels });
+  if (!imported) {
+    els.importError.textContent = "Not an exported battle.";
+    return;
+  }
+  if (state.hits.length > 1 && !window.confirm("Replace the current battle with the imported one?")) {
+    return;
+  }
+  closeImport();
+  updateState(imported);
+  els.section.scrollIntoView({ block: "start" });
+}
+
+function closeImport() {
+  els.importBox.classList.add("hidden");
+  els.importText.value = "";
+  els.importError.textContent = "";
+}
+
+function flashLabel(button, text) {
+  button.dataset.label ??= button.textContent;
+  button.textContent = text;
+  clearTimeout(flashTimer);
+  flashTimer = setTimeout(() => {
+    button.textContent = button.dataset.label;
+    delete button.dataset.label;
+  }, FLASH_MS);
 }
 
 function createDefaultState() {
