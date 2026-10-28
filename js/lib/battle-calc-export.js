@@ -119,8 +119,8 @@ function parseNewPaladins(stored, usedUids, weapons) {
   return paladins;
 }
 
-function parseAttacker(stored, fallback, { weapons, tribeSkills, faithLevels }) {
-  if (!isObject(stored)) return structuredClone(fallback);
+function parseAttacker(storedAttacker, fallback, { weapons, tribeSkills, faithLevels }) {
+  const stored = isObject(storedAttacker) ? storedAttacker : {};
   const isPaladinWeapon = (weapon) => weapon === NO_PALADIN || weapon === NO_WEAPON || Object.hasOwn(weapons, weapon);
   const isFlag = (flag) => typeof flag === "boolean";
   return {

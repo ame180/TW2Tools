@@ -144,22 +144,22 @@ test("unknown paladin weapons and levels fall back to no weapon at level 1", () 
 });
 
 const SETTINGS_STATE = createInitialState({
-  weaponMasteryLevel: 4, ironWallLevel: 3, grandmaster: true, medic: true, provisionLimit: 28000,
+  weaponMasteryLevel: 4, ironWallLevel: 3, grandmaster: true, medic: true, medicus: true, provisionLimit: 28000,
   attackerFaith: 50, defenderFaith: 110
 });
 
 test("invalid fields fall back to the provided fallback state, built-ins plus Settings", () => {
   const exported = serializeBattleState(fullSetup());
   Object.assign(exported.hits[1].attacker, {
-    weaponMasteryLevel: 99, grandmaster: "yes", medic: null, provisionLimit: 0, faith: 7, morale: 0
+    weaponMasteryLevel: 99, grandmaster: "yes", medic: null, medicus: "x", provisionLimit: 0, faith: 7, morale: 0
   });
   Object.assign(exported.defender, { wall: 99, faith: 7, night: "no", ironWallLevel: 99 });
   const parsed = parseBattleState(JSON.stringify(exported), data, SETTINGS_STATE);
 
   const attacker = parsed.hits[1].attacker;
   assert.deepEqual(
-    [attacker.weaponMasteryLevel, attacker.grandmaster, attacker.medic, attacker.provisionLimit, attacker.faith, attacker.morale],
-    [4, true, true, 28000, 50, 100]
+    [attacker.weaponMasteryLevel, attacker.grandmaster, attacker.medic, attacker.medicus, attacker.provisionLimit, attacker.faith, attacker.morale],
+    [4, true, true, true, 28000, 50, 100]
   );
   const { wall, faith, night, ironWallLevel } = parsed.defender;
   assert.deepEqual([wall, faith, night, ironWallLevel], [0, 110, false, 3]);
@@ -167,17 +167,20 @@ test("invalid fields fall back to the provided fallback state, built-ins plus Se
 
 test("valid imported fields always beat the fallback state", () => {
   const state = fullSetup();
-  assert.deepEqual(parseBattleState(JSON.stringify(serializeBattleState(state)), data, SETTINGS_STATE), state);
+  const differentFallback = createInitialState({
+    weaponMasteryLevel: 1, ironWallLevel: 5, grandmaster: false, medic: false, medicus: true, provisionLimit: 23200,
+    attackerFaith: 105, defenderFaith: 50
+  });
+  assert.deepEqual(parseBattleState(JSON.stringify(serializeBattleState(state)), data, differentFallback), state);
 });
 
-test("a missing attacker is a copy of the fallback attacker, never the previous hit", () => {
+test("a missing attacker takes the fallback attacker's options, never the previous hit's", () => {
   const exported = serializeBattleState(fullSetup());
   exported.hits[1] = {};
   exported.hits[2].attacker = "x";
   const parsed = parseBattleState(JSON.stringify(exported), data, SETTINGS_STATE);
   assert.deepEqual(parsed.hits[1].attacker, SETTINGS_STATE.hits[0].attacker);
   assert.deepEqual(parsed.hits[2].attacker, SETTINGS_STATE.hits[0].attacker);
-  assert.notEqual(parsed.hits[1].attacker, SETTINGS_STATE.hits[0].attacker);
   assert.notEqual(parsed.hits[1].attacker.units, parsed.hits[2].attacker.units);
 });
 
@@ -190,8 +193,10 @@ test("units and paladins never come from the fallback state", () => {
   delete exported.defender.units;
   delete exported.defender.paladins;
   delete exported.hits[0].attacker.units;
+  exported.hits[1] = {};
   const parsed = parseBattleState(JSON.stringify(exported), data, fallback);
   assert.equal(parsed.defender.units.spear, 0);
   assert.deepEqual(parsed.defender.paladins, []);
   assert.equal(parsed.hits[0].attacker.units.axe, 0);
+  assert.equal(parsed.hits[1].attacker.units.axe, 0);
 });
