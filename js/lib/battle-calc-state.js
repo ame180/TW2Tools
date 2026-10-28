@@ -1,6 +1,6 @@
 // Battle calculator state, kept as form values (skill levels, weapon select values).
 // toSequenceInput / toFormPaladins convert to and from engine values; operations never mutate.
-// Defender paladins carry a uid that defender changes refer to.
+// Defender paladins carry a random hex uid that defender changes refer to.
 // defenderChanges[i] holds the defender changes before hit i. They belong to the position, not the hit: moving hits
 // leaves them in place. defenderChanges[0] stays empty, the first hit's defender is state.defender.
 
@@ -12,6 +12,11 @@ export const NO_PALADIN = "";
 export const NO_WEAPON = "none";
 export const DEFAULT_FAITH = 100;
 export const INPUT_UNIT_KEYS = UNIT_KEYS.filter((unit) => unit !== "knight");
+
+export function newPaladinUid() {
+  const bytes = crypto.getRandomValues(new Uint8Array(8));
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
 
 function emptyUnits() {
   const units = {};

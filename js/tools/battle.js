@@ -7,7 +7,7 @@ import { subtractUnits } from "../lib/healing.js";
 import {
   createInitialState, addHit, deleteHit, moveHit, selectHit, setActiveAttacker, setActiveDefenderChanges,
   toSequenceInput, toFormPaladins, attackerProvisions, isOverProvisionLimit, NO_PALADIN, NO_WEAPON, DEFAULT_FAITH,
-  INPUT_UNIT_KEYS
+  INPUT_UNIT_KEYS, newPaladinUid
 } from "../lib/battle-calc-state.js";
 import { CUSTOM_LIMIT, limitChoice, readLimit } from "../lib/provision-limit.js";
 import { loadSettings } from "../lib/settings.js";
@@ -40,7 +40,6 @@ const defenderChangeRows = new Map();
 // Defender as carried into the active hit (form terms), before its changes; null on hit #1.
 let carriedDefender = null;
 let latestSteps = [];
-let lastPaladinUid = 0;
 
 export const battleTool = {
   id: "battle",
@@ -137,7 +136,7 @@ function init(data) {
     els.provisionLimitCustom.value = String(state.hits[state.activeHit].attacker.provisionLimit ?? "");
   });
   els.addPaladin.addEventListener("click", () => {
-    const paladin = { uid: ++lastPaladinUid, weapon: NO_WEAPON, level: 1 };
+    const paladin = { uid: newPaladinUid(), weapon: NO_WEAPON, level: 1 };
     addDefenderPaladin({ kind: state.activeHit === 0 ? "start" : "arriving", paladin });
     handleFormChange();
   });
@@ -489,8 +488,7 @@ function renderChangedPaladins(changes) {
     if (findCarriedPaladin(uid)) continue;
     addOrphanPaladinChange(uid, `Remove ${describePaladin(findAnyPaladin(uid))}`);
   }
-  for (const [key, swap] of Object.entries(swaps)) {
-    const uid = Number(key);
+  for (const [uid, swap] of Object.entries(swaps)) {
     if (findCarriedPaladin(uid) || removed.includes(uid)) continue;
     addOrphanPaladinChange(uid, `${describePaladin(findAnyPaladin(uid))} → ${describePaladin(swap)}`);
   }
@@ -512,7 +510,7 @@ function writeUnitInputs(inputs, values) {
 
 function readPaladinRow(row) {
   return {
-    uid: Number(row.dataset.uid),
+    uid: row.dataset.uid,
     weapon: row.querySelector("[data-role=weapon]").value,
     level: Number(row.querySelector("[data-role=level]").value)
   };
@@ -528,7 +526,7 @@ function readPaladinChanges() {
   const swaps = {};
   const arriving = [];
   for (const row of els.defenderPaladins.children) {
-    const uid = Number(row.dataset.uid);
+    const uid = row.dataset.uid;
     if (row.dataset.kind === "orphan") {
       if (stored.removed.includes(uid)) removed.push(uid);
       if (stored.swaps[uid]) swaps[uid] = stored.swaps[uid];
@@ -755,7 +753,7 @@ function renderChangeMarkers(step) {
 
   for (const row of els.defenderPaladins.children) {
     if (row.dataset.kind !== "carried") continue;
-    const uid = Number(row.dataset.uid);
+    const uid = row.dataset.uid;
     const swapped = row.dataset.removed !== "true" && changes.paladins.swaps[uid] !== undefined;
     row.classList.toggle(CHANGED_ROW_CLASS, swapped);
     const hint = row.querySelector("[data-role=hint]");

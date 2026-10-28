@@ -54,7 +54,7 @@ export function mergeChanges(first, second) {
     delete swaps[uid];
   }
   for (const [uid, paladin] of Object.entries(second.paladins.swaps)) {
-    if (!isFirstArrival(Number(uid))) swaps[uid] = { ...paladin };
+    if (!isFirstArrival(uid)) swaps[uid] = { ...paladin };
   }
 
   const arriving = first.paladins.arriving

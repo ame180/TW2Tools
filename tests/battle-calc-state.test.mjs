@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import {
   createInitialState, addHit, deleteHit, moveHit, selectHit, setActiveAttacker, setActiveDefenderChanges,
-  toSequenceInput, toFormPaladins, attackerProvisions, isOverProvisionLimit, NO_PALADIN, NO_WEAPON
+  toSequenceInput, toFormPaladins, attackerProvisions, isOverProvisionLimit, newPaladinUid, NO_PALADIN, NO_WEAPON
 } from "../js/lib/battle-calc-state.js";
 import { emptyChanges } from "../js/lib/defender-changes.js";
 import { defenderProvisions } from "../js/lib/battle-sequence.js";
@@ -108,21 +108,21 @@ test("operations do not mutate the given state", () => {
 test("sequence input converts form values to engine terms", () => {
   const state = createInitialState();
   state.defender.ironWallLevel = 3;
-  state.defender.paladins = [{ uid: 1, weapon: "halberd_of_guan_yu", level: 2 }, { uid: 2, weapon: NO_WEAPON, level: 1 }];
+  state.defender.paladins = [{ uid: "1", weapon: "halberd_of_guan_yu", level: 2 }, { uid: "2", weapon: NO_WEAPON, level: 1 }];
   state.hits[0].attacker.weaponMasteryLevel = 4;
   state.hits[0].attacker.paladinWeapon = "thorgards_battle_axe";
   state.hits[0].attacker.paladinLevel = 3;
 
   const input = toSequenceInput(state, data);
   assert.equal(input.defender.ironWall, data.tribeSkills.ironWall[3]);
-  assert.deepEqual(input.defender.paladins, [{ uid: 1, id: "halberd_of_guan_yu", level: 2 }, { uid: 2, id: null, level: 1 }]);
+  assert.deepEqual(input.defender.paladins, [{ uid: "1", id: "halberd_of_guan_yu", level: 2 }, { uid: "2", id: null, level: 1 }]);
   assert.equal(input.hits[0].weaponMastery, data.tribeSkills.weaponMastery[4]);
   assert.equal(input.hits[0].attackerUnits.knight, 1);
   assert.deepEqual(input.hits[0].attackerWeapon, { id: "thorgards_battle_axe", level: 3 });
 });
 
 test("engine paladins convert back to form values", () => {
-  const formPaladins = [{ uid: 1, weapon: "halberd_of_guan_yu", level: 2 }, { uid: 2, weapon: NO_WEAPON, level: 1 }];
+  const formPaladins = [{ uid: "1", weapon: "halberd_of_guan_yu", level: 2 }, { uid: "2", weapon: NO_WEAPON, level: 1 }];
   const state = { ...createInitialState(), defender: { ...createInitialState().defender, paladins: formPaladins } };
   assert.deepEqual(toFormPaladins(toSequenceInput(state, data).defender.paladins), formPaladins);
 });
@@ -205,8 +205,8 @@ test("only a limit below the provisions used is over", () => {
   assert.equal(isOverProvisionLimit({ ...attacker, provisionLimit: 99 }, data.units), true);
 });
 
-const HALBERD = { uid: 1, weapon: "halberd_of_guan_yu", level: 2 };
-const BOW = { uid: 2, weapon: "nimrods_longbow", level: 3 };
+const HALBERD = { uid: "1", weapon: "halberd_of_guan_yu", level: 2 };
+const BOW = { uid: "2", weapon: "nimrods_longbow", level: 3 };
 
 function gap(overrides = {}) {
   const base = emptyChanges();
@@ -246,7 +246,7 @@ test("setting changes on the active hit only touches its slot", () => {
 test("deleting a middle hit merges the changes on both sides of it", () => {
   const state = withGaps(threeHits(0), [
     gap({ units: { spear: 100 }, wall: 10, paladins: { arriving: [BOW] } }),
-    gap({ units: { spear: 50 }, faith: 50, paladins: { removed: [2] } })
+    gap({ units: { spear: 50 }, faith: 50, paladins: { removed: ["2"] } })
   ]);
   const deleted = deleteHit(state, 1);
 
@@ -263,7 +263,7 @@ test("deleting the last hit drops the changes before it", () => {
 
 test("deleting the first hit folds the next changes into the starting defender", () => {
   let state = withGaps(threeHits(0), [
-    gap({ units: { spear: 100, sword: -5 }, wall: 15, paladins: { removed: [1], arriving: [BOW] } }),
+    gap({ units: { spear: 100, sword: -5 }, wall: 15, paladins: { removed: ["1"], arriving: [BOW] } }),
     gap({ units: { spear: 200 } })
   ]);
   state.defender = { ...state.defender, units: { ...state.defender.units, spear: 1000 }, wall: 12, paladins: [HALBERD] };
@@ -279,7 +279,7 @@ test("deleting the first hit folds the next changes into the starting defender",
 
 test("sequence input carries each hit's defender changes in engine terms", () => {
   const state = withGaps(addHit(createInitialState()), [
-    gap({ units: { spear: 5 }, night: true, paladins: { swaps: { 1: BOW }, arriving: [{ uid: 3, weapon: NO_WEAPON, level: 1 }] } })
+    gap({ units: { spear: 5 }, night: true, paladins: { swaps: { 1: BOW }, arriving: [{ uid: "3", weapon: NO_WEAPON, level: 1 }] } })
   ]);
   const input = toSequenceInput(state, data);
 
@@ -287,6 +287,12 @@ test("sequence input carries each hit's defender changes in engine terms", () =>
   assert.deepEqual(input.hits[1].defenderChanges, gap({
     units: { spear: 5 },
     night: true,
-    paladins: { swaps: { 1: { uid: 2, id: "nimrods_longbow", level: 3 } }, arriving: [{ uid: 3, id: null, level: 1 }] }
+    paladins: { swaps: { 1: { uid: "2", id: "nimrods_longbow", level: 3 } }, arriving: [{ uid: "3", id: null, level: 1 }] }
   }));
+});
+
+test("new paladin uids are 16 hex characters and do not repeat", () => {
+  const uids = Array.from({ length: 1000 }, () => newPaladinUid());
+  for (const uid of uids) assert.match(uid, /^[0-9a-f]{16}$/);
+  assert.equal(new Set(uids).size, uids.length);
 });

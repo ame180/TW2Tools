@@ -7,8 +7,8 @@ import { emptyChanges } from "../js/lib/defender-changes.js";
 
 const data = JSON.parse(await readFile(new URL("../data.json", import.meta.url), "utf8"));
 
-const HALBERD = { uid: 1, id: "halberd_of_guan_yu", level: 3 };
-const LONGSWORD = { uid: 2, id: "paracelsus_longsword", level: 3 };
+const HALBERD = { uid: "1", id: "halberd_of_guan_yu", level: 3 };
+const LONGSWORD = { uid: "2", id: "paracelsus_longsword", level: 3 };
 
 function defender(overrides) {
   return { units: {}, paladins: [], wall: 0, faith: 100, night: false, ironWall: 0, ...overrides };
@@ -271,5 +271,5 @@ test("paladin changes follow the paladin's uid and skip paladins that died earli
     { attackerUnits: { axe: 10 }, defenderChanges: changes({ paladins: { swaps: { 1: LONGSWORD, 2: HALBERD } } }) }
   ]);
   assert.deepEqual(steps[1].defenderCarried.paladins, [HALBERD]);
-  assert.deepEqual(steps[1].defenderBefore.paladins, [{ ...LONGSWORD, uid: 1 }]);
+  assert.deepEqual(steps[1].defenderBefore.paladins, [{ ...LONGSWORD, uid: "1" }]);
 });
