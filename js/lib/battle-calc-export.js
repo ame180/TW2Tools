@@ -1,8 +1,9 @@
 // Battle calculator setup as exported text: every hit, the starting defender and the defender changes between hits.
-// Parsing takes untrusted pasted text: a broken structure rejects the whole import, an invalid field falls back to
-// its default on its own. Paladin uids must be unique; a repeated one is dropped.
+// Parsing takes untrusted pasted text: a broken structure rejects the whole import, an invalid field falls back on its
+// own to the fallback state's value (the fresh calculator: built-in defaults plus Settings). Every hit falls back to
+// the fallback state's attacker, never the previous hit. Paladin uids must be unique; a repeated one is dropped.
 
-import { createInitialState, INPUT_UNIT_KEYS, NO_PALADIN, NO_WEAPON, DEFAULT_FAITH, WEAPON_LEVELS } from "./battle-calc-state.js";
+import { createInitialState, INPUT_UNIT_KEYS, NO_PALADIN, NO_WEAPON, WEAPON_LEVELS } from "./battle-calc-state.js";
 import { emptyChanges } from "./defender-changes.js";
 import { isProvisionLimit } from "./provision-limit.js";
 
@@ -124,16 +125,18 @@ function parseAttacker(stored, fallback, { weapons, tribeSkills, faithLevels }) 
   const isFlag = (flag) => typeof flag === "boolean";
   return {
     units: parseUnits(stored.units),
-    paladinWeapon: pick(stored.paladinWeapon, isPaladinWeapon, NO_PALADIN),
-    paladinLevel: pick(stored.paladinLevel, (level) => WEAPON_LEVELS.includes(level), 1),
-    faith: pick(stored.faith, (faith) => faithLevels.includes(faith), DEFAULT_FAITH),
-    morale: pick(stored.morale, (morale) => isIntegerIn(morale, MIN_MORALE, MAX_MORALE), MAX_MORALE),
-    luck: pick(stored.luck, (luck) => isIntegerIn(luck, -MAX_LUCK, MAX_LUCK), 0),
-    weaponMasteryLevel: pick(stored.weaponMasteryLevel, (level) => isSkillLevel(level, tribeSkills.weaponMastery), 0),
-    grandmaster: pick(stored.grandmaster, isFlag, false),
-    medic: pick(stored.medic, isFlag, false),
-    medicus: pick(stored.medicus, isFlag, false),
-    provisionLimit: pick(stored.provisionLimit, isProvisionLimit, null)
+    paladinWeapon: pick(stored.paladinWeapon, isPaladinWeapon, fallback.paladinWeapon),
+    paladinLevel: pick(stored.paladinLevel, (level) => WEAPON_LEVELS.includes(level), fallback.paladinLevel),
+    faith: pick(stored.faith, (faith) => faithLevels.includes(faith), fallback.faith),
+    morale: pick(stored.morale, (morale) => isIntegerIn(morale, MIN_MORALE, MAX_MORALE), fallback.morale),
+    luck: pick(stored.luck, (luck) => isIntegerIn(luck, -MAX_LUCK, MAX_LUCK), fallback.luck),
+    weaponMasteryLevel: pick(
+      stored.weaponMasteryLevel, (level) => isSkillLevel(level, tribeSkills.weaponMastery), fallback.weaponMasteryLevel
+    ),
+    grandmaster: pick(stored.grandmaster, isFlag, fallback.grandmaster),
+    medic: pick(stored.medic, isFlag, fallback.medic),
+    medicus: pick(stored.medicus, isFlag, fallback.medicus),
+    provisionLimit: pick(stored.provisionLimit, isProvisionLimit, fallback.provisionLimit)
   };
 }
 
@@ -158,7 +161,9 @@ function parseChanges(stored, usedUids, { weapons, faithLevels }) {
 }
 
 // Returns null for anything that is not an exported battle.
-export function parseBattleState(json, { weapons = {}, tribeSkills = {}, faithLevels = [] } = {}) {
+export function parseBattleState(
+  json, { weapons = {}, tribeSkills = {}, faithLevels = [] } = {}, fallbackState = createInitialState()
+) {
   let stored;
   try {
     stored = JSON.parse(json);
@@ -173,21 +178,23 @@ export function parseBattleState(json, { weapons = {}, tribeSkills = {}, faithLe
   }
 
   const data = { weapons, tribeSkills, faithLevels };
-  const initial = createInitialState();
   const usedUids = new Set();
   const storedDefender = stored.defender;
+  const fallbackDefender = fallbackState.defender;
   const defender = {
     units: parseUnits(storedDefender.units),
     paladins: parseNewPaladins(storedDefender.paladins, usedUids, weapons),
-    wall: pick(storedDefender.wall, (wall) => isIntegerIn(wall, 0, MAX_WALL), 0),
-    faith: pick(storedDefender.faith, (faith) => faithLevels.includes(faith), DEFAULT_FAITH),
-    night: pick(storedDefender.night, (night) => typeof night === "boolean", false),
-    ironWallLevel: pick(storedDefender.ironWallLevel, (level) => isSkillLevel(level, tribeSkills.ironWall), 0)
+    wall: pick(storedDefender.wall, (wall) => isIntegerIn(wall, 0, MAX_WALL), fallbackDefender.wall),
+    faith: pick(storedDefender.faith, (faith) => faithLevels.includes(faith), fallbackDefender.faith),
+    night: pick(storedDefender.night, (night) => typeof night === "boolean", fallbackDefender.night),
+    ironWallLevel: pick(
+      storedDefender.ironWallLevel, (level) => isSkillLevel(level, tribeSkills.ironWall), fallbackDefender.ironWallLevel
+    )
   };
 
   return {
     defender,
-    hits: hits.map((hit) => ({ attacker: parseAttacker(hit?.attacker, initial.hits[0].attacker, data) })),
+    hits: hits.map((hit) => ({ attacker: parseAttacker(hit?.attacker, fallbackState.hits[0].attacker, data) })),
     defenderChanges: defenderChanges.map((changes, index) =>
       (index === 0 ? emptyChanges() : parseChanges(changes, usedUids, data))),
     activeHit: pick(stored.activeHit, (index) => isIntegerIn(index, 0, hits.length - 1), 0)

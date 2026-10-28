@@ -826,7 +826,7 @@ function exportBattle() {
 }
 
 function importBattle() {
-  const imported = parseBattleState(els.importText.value, { weapons, tribeSkills, faithLevels });
+  const imported = parseBattleState(els.importText.value, { weapons, tribeSkills, faithLevels }, createDefaultState());
   if (!imported) {
     els.importError.textContent = "Not an exported battle.";
     return;
