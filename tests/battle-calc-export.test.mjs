@@ -134,6 +134,11 @@ test("a repeated paladin uid is dropped so changes stay unambiguous", () => {
 test("unknown paladin weapons and levels fall back to no weapon at level 1", () => {
   const exported = serializeBattleState(fullSetup());
   exported.defender.paladins[0] = { uid: HALBERD.uid, weapon: "excalibur", level: 9 };
+  exported.defender.paladins[1] = { uid: BOW.uid, weapon: "constructor", level: 1 };
+  exported.hits[0].attacker.paladinWeapon = "toString";
   const parsed = parseBattleState(JSON.stringify(exported), data);
-  assert.deepEqual(parsed.defender.paladins[0], { uid: HALBERD.uid, weapon: NO_WEAPON, level: 1 });
+  assert.deepEqual(parsed.defender.paladins, [
+    { uid: HALBERD.uid, weapon: NO_WEAPON, level: 1 }, { uid: BOW.uid, weapon: NO_WEAPON, level: 1 }
+  ]);
+  assert.equal(parsed.hits[0].attacker.paladinWeapon, NO_PALADIN);
 });

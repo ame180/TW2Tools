@@ -101,7 +101,7 @@ function parseUnitDeltas(stored) {
 function parsePaladin(stored, uid, weapons) {
   return {
     uid,
-    weapon: stored?.weapon === NO_WEAPON || weapons[stored?.weapon] ? stored.weapon : NO_WEAPON,
+    weapon: stored?.weapon === NO_WEAPON || Object.hasOwn(weapons, stored?.weapon) ? stored.weapon : NO_WEAPON,
     level: pick(stored?.level, (level) => WEAPON_LEVELS.includes(level), 1)
   };
 }
@@ -120,7 +120,7 @@ function parseNewPaladins(stored, usedUids, weapons) {
 
 function parseAttacker(stored, fallback, { weapons, tribeSkills, faithLevels }) {
   if (!isObject(stored)) return structuredClone(fallback);
-  const isPaladinWeapon = (weapon) => weapon === NO_PALADIN || weapon === NO_WEAPON || Boolean(weapons[weapon]);
+  const isPaladinWeapon = (weapon) => weapon === NO_PALADIN || weapon === NO_WEAPON || Object.hasOwn(weapons, weapon);
   const isFlag = (flag) => typeof flag === "boolean";
   return {
     units: parseUnits(stored.units),
