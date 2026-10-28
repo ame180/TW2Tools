@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { defaultSettings, parseSettings } from "../js/lib/settings.js";
+import { createInitialState, DEFAULT_BATTLE_OPTIONS } from "../js/lib/battle-calc-state.js";
 
 const tribeSkills = { weaponMastery: [0, 2, 4, 6, 8, 10], ironWall: [0, 1, 2, 3, 4, 5] };
 const faithLevels = [50, 100, 105, 110];
@@ -80,4 +81,23 @@ test("faith must be one of the game's faith levels, anything else means 100%", (
   const mixed = parseSettings(JSON.stringify({ battle: { attackerFaith: 105, defenderFaith: 75 } }), tribeSkills, faithLevels);
   assert.equal(mixed.battle.attackerFaith, 105);
   assert.equal(mixed.battle.defenderFaith, 100);
+});
+
+test("every battle option reaches the calculator state", () => {
+  const options = {
+    weaponMasteryLevel: 4, ironWallLevel: 3, grandmaster: true, medic: true, medicus: true, provisionLimit: 25600,
+    attackerFaith: 50, defenderFaith: 110
+  };
+  assert.deepEqual(Object.keys(DEFAULT_BATTLE_OPTIONS).sort(), Object.keys(options).sort());
+
+  const { defender, hits: [{ attacker }] } = createInitialState(options);
+  assert.deepEqual(
+    {
+      weaponMasteryLevel: attacker.weaponMasteryLevel, ironWallLevel: defender.ironWallLevel,
+      grandmaster: attacker.grandmaster, medic: attacker.medic, medicus: attacker.medicus,
+      provisionLimit: attacker.provisionLimit, attackerFaith: attacker.faith, defenderFaith: defender.faith
+    },
+    options
+  );
+  assert.deepEqual(createInitialState(), createInitialState(defaultSettings().battle));
 });

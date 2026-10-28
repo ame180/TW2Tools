@@ -2,23 +2,12 @@
 // Invalid stored fields fall back to their defaults individually.
 
 import { isProvisionLimit } from "./provision-limit.js";
-import { DEFAULT_FAITH } from "./battle-calc-state.js";
+import { DEFAULT_BATTLE_OPTIONS } from "./battle-calc-state.js";
 
 export const SETTINGS_KEY = "tw2tools.settings.v1";
 
 export function defaultSettings() {
-  return {
-    battle: {
-      weaponMasteryLevel: 0,
-      ironWallLevel: 0,
-      grandmaster: false,
-      medic: false,
-      medicus: false,
-      provisionLimit: null,
-      attackerFaith: DEFAULT_FAITH,
-      defenderFaith: DEFAULT_FAITH
-    }
-  };
+  return { battle: { ...DEFAULT_BATTLE_OPTIONS } };
 }
 
 function isSkillLevel(level, levels = []) {

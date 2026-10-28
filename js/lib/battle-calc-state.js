@@ -11,6 +11,7 @@ import { emptyChanges, applyChanges, mergeChanges } from "./defender-changes.js"
 export const NO_PALADIN = "";
 export const NO_WEAPON = "none";
 export const DEFAULT_FAITH = 100;
+export const WEAPON_LEVELS = [1, 2, 3];
 export const INPUT_UNIT_KEYS = UNIT_KEYS.filter((unit) => unit !== "knight");
 
 export function newPaladinUid() {
@@ -24,9 +25,27 @@ function emptyUnits() {
   return units;
 }
 
+// Built-in values for the options Settings can override; Settings falls back to these field by field.
+export const DEFAULT_BATTLE_OPTIONS = Object.freeze({
+  weaponMasteryLevel: 0,
+  ironWallLevel: 0,
+  grandmaster: false,
+  medic: false,
+  medicus: false,
+  provisionLimit: null,
+  attackerFaith: DEFAULT_FAITH,
+  defenderFaith: DEFAULT_FAITH
+});
+
 export function createInitialState({
-  weaponMasteryLevel = 0, ironWallLevel = 0, grandmaster = false, medic = false, medicus = false, provisionLimit = null,
-  attackerFaith = DEFAULT_FAITH, defenderFaith = DEFAULT_FAITH
+  weaponMasteryLevel = DEFAULT_BATTLE_OPTIONS.weaponMasteryLevel,
+  ironWallLevel = DEFAULT_BATTLE_OPTIONS.ironWallLevel,
+  grandmaster = DEFAULT_BATTLE_OPTIONS.grandmaster,
+  medic = DEFAULT_BATTLE_OPTIONS.medic,
+  medicus = DEFAULT_BATTLE_OPTIONS.medicus,
+  provisionLimit = DEFAULT_BATTLE_OPTIONS.provisionLimit,
+  attackerFaith = DEFAULT_BATTLE_OPTIONS.attackerFaith,
+  defenderFaith = DEFAULT_BATTLE_OPTIONS.defenderFaith
 } = {}) {
   return {
     defender: {
