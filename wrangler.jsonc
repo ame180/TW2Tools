@@ -1,0 +1,7 @@
+{
+  "name": "tw2tools",
+  "compatibility_date": "2026-10-01",
+  "assets": { "directory": "." },
+  "workers_dev": true,
+  "preview_urls": true
+}
