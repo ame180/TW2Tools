@@ -5,9 +5,10 @@ import { isProvisionLimit } from "./provision-limit.js";
 import { DEFAULT_BATTLE_OPTIONS } from "./battle-calc-state.js";
 
 export const SETTINGS_KEY = "tw2tools.settings.v1";
+export const THEMES = ["system", "light", "dark"];
 
 export function defaultSettings() {
-  return { battle: { ...DEFAULT_BATTLE_OPTIONS } };
+  return { appearance: { theme: "system" }, battle: { ...DEFAULT_BATTLE_OPTIONS } };
 }
 
 function isSkillLevel(level, levels = []) {
@@ -22,6 +23,10 @@ export function parseSettings(json, tribeSkills = {}, faithLevels = []) {
     stored = JSON.parse(json);
   } catch {
     return settings;
+  }
+
+  if (THEMES.includes(stored?.appearance?.theme)) {
+    settings.appearance.theme = stored.appearance.theme;
   }
 
   const battle = stored?.battle;

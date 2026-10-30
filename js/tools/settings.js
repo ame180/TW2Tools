@@ -1,6 +1,7 @@
 import { formatNumber } from "../lib/format.js";
 import { CUSTOM_LIMIT, limitChoice, readLimit } from "../lib/provision-limit.js";
 import { loadSettings, saveSettings } from "../lib/settings.js";
+import { applyTheme } from "../theme.js";
 
 const els = {};
 
@@ -30,6 +31,7 @@ function init(data) {
   els.medicus = document.getElementById("settings-medicus");
   els.provisionLimit = document.getElementById("settings-provision-limit");
   els.provisionLimitCustom = document.getElementById("settings-provision-limit-custom");
+  els.themeInputs = [...els.section.querySelectorAll('input[name="settings-theme"]')];
 
   populateSkillSelect(els.weaponMastery, tribeSkills.weaponMastery);
   populateSkillSelect(els.ironWall, tribeSkills.ironWall);
@@ -37,7 +39,11 @@ function init(data) {
   populateFaithSelect(els.attackerFaith);
   populateFaithSelect(els.defenderFaith);
 
-  const { battle } = loadSettings(tribeSkills, faithLevels);
+  const { appearance, battle } = loadSettings(tribeSkills, faithLevels);
+  for (const input of els.themeInputs) {
+    input.checked = input.value === appearance.theme;
+    input.addEventListener("change", () => applyTheme(input.value));
+  }
   els.attackerFaith.value = String(battle.attackerFaith);
   els.defenderFaith.value = String(battle.defenderFaith);
   els.weaponMastery.value = String(battle.weaponMasteryLevel);
@@ -85,6 +91,7 @@ function populateSkillSelect(select, values = []) {
 
 function save() {
   saveSettings({
+    appearance: { theme: els.themeInputs.find((input) => input.checked).value },
     battle: {
       weaponMasteryLevel: Number(els.weaponMastery.value),
       ironWallLevel: Number(els.ironWall.value),

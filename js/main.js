@@ -7,12 +7,16 @@ import { walktimeTool } from "./tools/walktime.js";
 import { plannerTool } from "./tools/planner.js";
 import { battleTool } from "./tools/battle.js";
 import { settingsTool } from "./tools/settings.js";
+import { loadSettings } from "./lib/settings.js";
+import { applyTheme } from "./theme.js";
 
 const tools = [buildingTool, crownsTool, wallbreakerTool, troopsTool, moraleTool, walktimeTool, plannerTool, battleTool, settingsTool];
 const DEFAULT_TOOL = tools[0].id;
 
 const els = {};
 const navButtons = new Map();
+
+applyTheme(loadSettings().appearance.theme);
 
 document.addEventListener("DOMContentLoaded", () => {
   els.dataStatus = document.getElementById("data-status");

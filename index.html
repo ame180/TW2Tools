@@ -4,8 +4,57 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TW2 Tools</title>
+    <script>
+      (() => {
+        let theme = "system";
+        try {
+          theme = JSON.parse(localStorage.getItem("tw2tools.settings.v1"))?.appearance?.theme ?? theme;
+        } catch {}
+        const isDark = theme === "dark" || (theme !== "light" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+        document.documentElement.classList.toggle("dark", isDark);
+      })();
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      const themeColor = (name) => `rgb(var(--${name}) / <alpha-value>)`;
+      const themeScale = (hue, shades) => Object.fromEntries(shades.map((shade) => [shade, themeColor(`${hue}-${shade}`)]));
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              white: themeColor("white"),
+              slate: themeScale("slate", [50, 100, 200, 300, 400, 500, 600, 700, 800, 900]),
+              red: themeScale("red", [50, 100, 400, 600, 700]),
+              amber: themeScale("amber", [50, 100, 300, 700, 950]),
+              green: themeScale("green", [100, 700, 800])
+            }
+          }
+        }
+      };
+    </script>
     <style>
+      :root {
+        --white: 255 255 255;
+        --slate-50: 248 250 252; --slate-100: 241 245 249; --slate-200: 226 232 240; --slate-300: 203 213 225;
+        --slate-400: 148 163 184; --slate-500: 100 116 139; --slate-600: 71 85 105; --slate-700: 51 65 85;
+        --slate-800: 30 41 59; --slate-900: 15 23 42;
+        --red-50: 254 242 242; --red-100: 254 226 226; --red-400: 248 113 113; --red-600: 220 38 38; --red-700: 185 28 28;
+        --amber-50: 255 251 235; --amber-100: 254 243 199; --amber-300: 252 211 77; --amber-700: 180 83 9; --amber-950: 69 26 3;
+        --green-100: 220 252 231; --green-700: 21 128 61; --green-800: 22 101 52;
+      }
+      /* Each shade is swapped for its counterpart. */
+      :root.dark {
+        color-scheme: dark;
+        --white: 36 36 39;
+        --slate-50: 31 31 34; --slate-100: 24 24 27; --slate-200: 54 54 60; --slate-300: 64 64 71;
+        --slate-400: 139 139 149; --slate-500: 166 166 175; --slate-600: 186 186 194; --slate-700: 212 212 216;
+        --slate-800: 228 228 231; --slate-900: 237 237 239;
+        --red-50: 58 34 37; --red-100: 82 37 42; --red-400: 220 38 38; --red-600: 248 113 113; --red-700: 252 165 165;
+        --amber-50: 54 48 31; --amber-100: 75 60 23; --amber-300: 245 200 74; --amber-700: 251 191 36; --amber-950: 58 29 4;
+        --green-100: 24 58 38; --green-700: 74 222 128; --green-800: 134 239 172;
+      }
+      :where(.dark) :where(select, textarea, input:not([type="checkbox"], [type="radio"])) { background-color: rgb(var(--white)); }
       .change-input { -moz-appearance: textfield; appearance: textfield; }
       .change-input::-webkit-inner-spin-button,
       .change-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
@@ -41,7 +90,7 @@
         <div id="sidebar-footer" class="mt-auto border-t border-slate-200 pt-3"></div>
       </aside>
 
-      <div id="sidebar-backdrop" class="fixed inset-0 z-10 hidden bg-slate-900/40 md:hidden"></div>
+      <div id="sidebar-backdrop" class="fixed inset-0 z-10 hidden bg-slate-900/40 dark:bg-black/60 md:hidden"></div>
 
       <main class="mx-auto w-full max-w-4xl flex-1 px-4 py-6">
         <section id="view-building" class="rounded border border-slate-300 bg-white p-4">
@@ -587,9 +636,29 @@
 
         <section id="view-settings" class="hidden rounded border border-slate-300 bg-white p-4">
           <h2 class="mb-1 text-lg font-semibold">Settings</h2>
-          <p class="mb-4 text-sm text-slate-600">Saved in this browser. Defaults apply when a calculator loads or is reset.</p>
+          <p class="mb-4 text-sm text-slate-600">Saved in this browser.</p>
 
-          <h3 class="mb-2 font-semibold">Battle Calculator</h3>
+          <h3 class="mb-2 font-semibold">Appearance</h3>
+          <fieldset class="mb-6 text-sm">
+            <legend class="mb-1 text-xs font-medium text-slate-600">Theme</legend>
+            <div class="inline-flex overflow-hidden rounded border border-slate-300">
+              <label>
+                <input type="radio" name="settings-theme" value="system" class="peer sr-only" />
+                <span class="block cursor-pointer px-3 py-1 font-medium hover:bg-slate-100 peer-checked:bg-slate-900 peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-inset peer-focus-visible:ring-slate-500">System</span>
+              </label>
+              <label class="border-l border-slate-300">
+                <input type="radio" name="settings-theme" value="light" class="peer sr-only" />
+                <span class="block cursor-pointer px-3 py-1 font-medium hover:bg-slate-100 peer-checked:bg-slate-900 peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-inset peer-focus-visible:ring-slate-500">Light</span>
+              </label>
+              <label class="border-l border-slate-300">
+                <input type="radio" name="settings-theme" value="dark" class="peer sr-only" />
+                <span class="block cursor-pointer px-3 py-1 font-medium hover:bg-slate-100 peer-checked:bg-slate-900 peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-inset peer-focus-visible:ring-slate-500">Dark</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <h3 class="mb-1 font-semibold">Battle Calculator</h3>
+          <p class="mb-2 text-xs text-slate-500">Defaults apply when the calculator loads or is reset.</p>
           <div class="grid gap-4 text-sm md:grid-cols-3">
             <label>
               <span class="mb-1 block text-xs font-medium text-slate-600">Attacker faith</span>

@@ -20,7 +20,7 @@ test("valid stored battle settings are kept", () => {
       attackerFaith: 110, defenderFaith: 50
     }
   };
-  assert.deepEqual(parseSettings(JSON.stringify(stored), tribeSkills, faithLevels), stored);
+  assert.deepEqual(parseSettings(JSON.stringify(stored), tribeSkills, faithLevels), { appearance: { theme: "system" }, ...stored });
 });
 
 test("each invalid field falls back to its default, valid fields are kept", () => {
@@ -28,6 +28,7 @@ test("each invalid field falls back to its default, valid fields are kept", () =
     battle: { weaponMasteryLevel: 6, ironWallLevel: 2, grandmaster: "yes", medic: 1, medicus: true, provisionLimit: 0 }
   };
   assert.deepEqual(parseSettings(JSON.stringify(stored), tribeSkills, faithLevels), {
+    appearance: { theme: "system" },
     battle: {
       weaponMasteryLevel: 0, ironWallLevel: 2, grandmaster: false, medic: false, medicus: true, provisionLimit: null,
       attackerFaith: 100, defenderFaith: 100
@@ -44,6 +45,22 @@ test("levels must be non-negative integers within the tribe skill table", () => 
   }
 });
 
+test("a stored theme is kept, anything else means system", () => {
+  for (const theme of ["light", "dark", "system"]) {
+    assert.equal(parseSettings(JSON.stringify({ appearance: { theme } }), tribeSkills).appearance.theme, theme);
+  }
+  for (const theme of ["Dark", "auto", 1, null]) {
+    assert.equal(parseSettings(JSON.stringify({ appearance: { theme } }), tribeSkills).appearance.theme, "system");
+  }
+  assert.equal(parseSettings('{"appearance":"dark"}', tribeSkills).appearance.theme, "system");
+});
+
+test("theme loads even when stored battle settings are missing or broken", () => {
+  const { appearance, battle } = parseSettings('{"appearance":{"theme":"dark"},"battle":"x"}', tribeSkills);
+  assert.equal(appearance.theme, "dark");
+  assert.deepEqual(battle, defaultSettings().battle);
+});
+
 test("defaultSettings returns a fresh object each call", () => {
   const settings = defaultSettings();
   settings.battle.grandmaster = true;
@@ -53,6 +70,7 @@ test("defaultSettings returns a fresh object each call", () => {
 test("settings saved before healing existed load with healing off", () => {
   const stored = { battle: { weaponMasteryLevel: 2, ironWallLevel: 1, grandmaster: true } };
   assert.deepEqual(parseSettings(JSON.stringify(stored), tribeSkills, faithLevels), {
+    appearance: { theme: "system" },
     battle: { ...stored.battle, medic: false, medicus: false, provisionLimit: null, attackerFaith: 100, defenderFaith: 100 }
   });
 });
