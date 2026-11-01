@@ -12,6 +12,7 @@ export const NO_PALADIN = "";
 export const NO_WEAPON = "none";
 export const DEFAULT_FAITH = 100;
 export const WEAPON_LEVELS = [1, 2, 3];
+export const MAX_HIT_NAME_LENGTH = 24;
 export const INPUT_UNIT_KEYS = UNIT_KEYS.filter((unit) => unit !== "knight");
 
 export function newPaladinUid() {
@@ -57,6 +58,7 @@ export function createInitialState({
       ironWallLevel
     },
     hits: [{
+      name: "",
       attacker: {
         units: emptyUnits(),
         paladinWeapon: NO_PALADIN,
@@ -76,9 +78,11 @@ export function createInitialState({
   };
 }
 
-// Usually only one attack carries the paladin, so the copy leaves it home.
+// Usually only one attack carries the paladin, so the copy leaves it home; the name
+// stays with the original hit.
 export function addHit(state) {
   const added = structuredClone(state.hits[state.hits.length - 1]);
+  added.name = "";
   added.attacker.paladinWeapon = NO_PALADIN;
   added.attacker.paladinLevel = 1;
   const hits = [...state.hits, added];
@@ -126,6 +130,26 @@ export function selectHit(state, index) {
 
 export function setActiveAttacker(state, attacker) {
   const hits = state.hits.map((hit, index) => (index === state.activeHit ? { ...hit, attacker } : hit));
+  return { ...state, hits };
+}
+
+const NAME_SPACES = /[\p{Cc}\s]+/gu;
+// Format characters (bidi overrides, zero-width spaces) except the joiner emoji sequences need.
+const FORMAT_CHARACTERS = /(?!\u200d)\p{Cf}/gu;
+const SURROGATE = /[\ud800-\udfff]/;
+
+// Control characters become spaces and invisible format characters go, so a name never reorders the chip's stats or
+// looks blank. Capped in UTF-16 units like the input's maxlength, never leaving half a surrogate pair.
+export function sanitizeHitName(name) {
+  const wellFormed = Array.from(String(name), (char) => (char.length === 1 && SURROGATE.test(char) ? "" : char)).join("");
+  const cleaned = wellFormed.replace(FORMAT_CHARACTERS, "").replace(NAME_SPACES, " ").trim();
+  let capped = cleaned.slice(0, MAX_HIT_NAME_LENGTH);
+  if (/[\ud800-\udbff]$/.test(capped)) capped = capped.slice(0, -1);
+  return capped.trim();
+}
+
+export function setActiveHitName(state, name) {
+  const hits = state.hits.map((hit, index) => (index === state.activeHit ? { ...hit, name: sanitizeHitName(name) } : hit));
   return { ...state, hits };
 }
 
