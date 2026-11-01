@@ -436,13 +436,13 @@
         <div class="mb-4">
           <div class="flex items-start gap-2 text-sm">
             <div id="battle-hits" class="flex min-w-0 gap-2 overflow-x-auto pb-1"></div>
-            <button id="battle-add-hit" type="button" class="shrink-0 whitespace-nowrap rounded border border-dashed border-slate-400 px-3 py-1 font-medium text-slate-600 hover:bg-slate-100">+ Add hit</button>
+            <button id="battle-add-hit" type="button" aria-label="Add hit" class="shrink-0 whitespace-nowrap rounded border border-dashed border-slate-400 px-3 py-1 font-medium text-slate-600 hover:bg-slate-100">+<span class="hidden sm:inline"> Add hit</span></button>
           </div>
-          <div class="mt-2 flex flex-wrap gap-2 text-sm">
-            <button id="battle-move-left" type="button" class="rounded border border-slate-300 px-2 py-1 hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-transparent">&larr; Move</button>
-            <button id="battle-move-right" type="button" class="rounded border border-slate-300 px-2 py-1 hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-transparent">Move &rarr;</button>
-            <input id="battle-hit-name" type="text" placeholder="Name this hit" aria-label="Hit name" autocomplete="off" class="w-44 min-w-0 rounded border border-slate-300 px-2 py-1" />
-            <button id="battle-delete-hit" type="button" class="rounded border border-slate-300 px-2 py-1 text-red-700 hover:bg-red-50">Delete hit</button>
+          <div class="mt-2 flex gap-2 text-sm">
+            <button id="battle-move-left" type="button" aria-label="Move hit left" title="Move hit left" class="shrink-0 rounded border border-slate-300 px-2.5 py-1 hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-transparent">&larr;<span class="hidden sm:inline"> Move</span></button>
+            <button id="battle-move-right" type="button" aria-label="Move hit right" title="Move hit right" class="shrink-0 rounded border border-slate-300 px-2.5 py-1 hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-transparent"><span class="hidden sm:inline">Move </span>&rarr;</button>
+            <input id="battle-hit-name" type="text" placeholder="Name this hit" aria-label="Hit name" autocomplete="off" class="min-w-0 flex-1 rounded border border-slate-300 px-2 py-1 sm:w-44 sm:flex-none" />
+            <button id="battle-delete-hit" type="button" aria-label="Delete hit" title="Delete hit" class="shrink-0 rounded border border-slate-300 px-2.5 py-1 text-red-700 hover:bg-red-50"><svg class="h-4 w-4 sm:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/></svg><span class="hidden sm:inline">Delete hit</span></button>
           </div>
         </div>
 
