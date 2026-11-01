@@ -438,9 +438,10 @@
             <div id="battle-hits" class="flex min-w-0 gap-2 overflow-x-auto pb-1"></div>
             <button id="battle-add-hit" type="button" class="shrink-0 whitespace-nowrap rounded border border-dashed border-slate-400 px-3 py-1 font-medium text-slate-600 hover:bg-slate-100">+ Add hit</button>
           </div>
-          <div id="battle-hit-toolbar" class="mt-2 hidden flex-wrap gap-2 text-sm">
+          <div class="mt-2 flex flex-wrap gap-2 text-sm">
             <button id="battle-move-left" type="button" class="rounded border border-slate-300 px-2 py-1 hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-transparent">&larr; Move</button>
             <button id="battle-move-right" type="button" class="rounded border border-slate-300 px-2 py-1 hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-transparent">Move &rarr;</button>
+            <input id="battle-hit-name" type="text" placeholder="Name this hit" aria-label="Hit name" autocomplete="off" class="w-44 min-w-0 rounded border border-slate-300 px-2 py-1" />
             <button id="battle-delete-hit" type="button" class="rounded border border-slate-300 px-2 py-1 text-red-700 hover:bg-red-50">Delete hit</button>
           </div>
         </div>

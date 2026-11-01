@@ -3,7 +3,8 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import {
   createInitialState, addHit, deleteHit, moveHit, selectHit, setActiveAttacker, setActiveDefenderChanges,
-  toSequenceInput, toFormPaladins, attackerProvisions, isOverProvisionLimit, newPaladinUid, NO_PALADIN, NO_WEAPON
+  setActiveHitName, sanitizeHitName, toSequenceInput, toFormPaladins, attackerProvisions, isOverProvisionLimit,
+  newPaladinUid, MAX_HIT_NAME_LENGTH, NO_PALADIN, NO_WEAPON
 } from "../js/lib/battle-calc-state.js";
 import { emptyChanges } from "../js/lib/defender-changes.js";
 import { defenderProvisions } from "../js/lib/battle-sequence.js";
@@ -88,6 +89,51 @@ test("moving a hit swaps it with its neighbour and the active hit follows", () =
 
   const unrelatedActive = moveHit(threeHits(2), 0, 1);
   assert.equal(unrelatedActive.activeHit, 2);
+});
+
+function namedHits() {
+  let state = threeHits(0);
+  for (const [index, name] of ["Nuke A", "Nuke B", "Noble"].entries()) {
+    state = setActiveHitName(selectHit(state, index), name);
+  }
+  return state;
+}
+
+function namesPerHit(state) {
+  return state.hits.map((hit) => hit.name);
+}
+
+test("hits start unnamed and naming changes only the active hit", () => {
+  assert.equal(createInitialState().hits[0].name, "");
+  const state = setActiveHitName(threeHits(1), "Nuke B");
+  assert.deepEqual(namesPerHit(state), ["", "Nuke B", ""]);
+});
+
+test("an added hit copies the army but not the name", () => {
+  const added = addHit(selectHit(namedHits(), 0));
+  assert.deepEqual(namesPerHit(added), ["Nuke A", "Nuke B", "Noble", ""]);
+  assert.deepEqual(added.hits[3].attacker, added.hits[2].attacker);
+});
+
+test("names move with their hit and leave with a deleted one", () => {
+  assert.deepEqual(namesPerHit(moveHit(namedHits(), 0, 1)), ["Nuke B", "Nuke A", "Noble"]);
+  assert.deepEqual(namesPerHit(deleteHit(namedHits(), 1)), ["Nuke A", "Noble"]);
+});
+
+test("hit names are trimmed, capped and stripped of control characters", () => {
+  assert.equal(sanitizeHitName("  Nuke\tA\n\nB\u0085 "), "Nuke A B");
+  assert.equal(sanitizeHitName("x".repeat(40)).length, MAX_HIT_NAME_LENGTH);
+  assert.equal(sanitizeHitName(`${"a".repeat(MAX_HIT_NAME_LENGTH - 1)} b`), "a".repeat(MAX_HIT_NAME_LENGTH - 1));
+  assert.equal(sanitizeHitName("   "), "");
+});
+
+test("hit names drop invisible format characters and never end in half a character", () => {
+  assert.equal(sanitizeHitName("Nuke \u202eA\u200b\u061c\ufeff"), "Nuke A");
+  assert.equal(sanitizeHitName("\u200b\u2060"), "");
+  assert.equal(sanitizeHitName("👨\u200d👩"), "👨\u200d👩");
+  assert.equal(sanitizeHitName("😀".repeat(20)), "😀".repeat(MAX_HIT_NAME_LENGTH / 2));
+  assert.equal(sanitizeHitName(`a${"😀".repeat(20)}`), `a${"😀".repeat(MAX_HIT_NAME_LENGTH / 2 - 1)}`);
+  assert.equal(sanitizeHitName("Nuke \ud83dA\udc00"), "Nuke A");
 });
 
 test("moving past either end is a no-op", () => {

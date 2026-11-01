@@ -3,7 +3,9 @@
 // own to the fallback state's value (the fresh calculator: built-in defaults plus Settings). Every hit falls back to
 // the fallback state's attacker, never the previous hit. Paladin uids must be unique; a repeated one is dropped.
 
-import { createInitialState, INPUT_UNIT_KEYS, NO_PALADIN, NO_WEAPON, WEAPON_LEVELS } from "./battle-calc-state.js";
+import {
+  createInitialState, sanitizeHitName, INPUT_UNIT_KEYS, NO_PALADIN, NO_WEAPON, WEAPON_LEVELS
+} from "./battle-calc-state.js";
 import { emptyChanges } from "./defender-changes.js";
 import { isProvisionLimit } from "./provision-limit.js";
 
@@ -31,7 +33,8 @@ export function serializeBattleState(state) {
       night: defender.night,
       ironWallLevel: defender.ironWallLevel
     },
-    hits: state.hits.map(({ attacker }) => ({
+    hits: state.hits.map(({ name, attacker }) => ({
+      name,
       attacker: {
         units: { ...attacker.units },
         paladinWeapon: attacker.paladinWeapon,
@@ -194,7 +197,10 @@ export function parseBattleState(
 
   return {
     defender,
-    hits: hits.map((hit) => ({ attacker: parseAttacker(hit?.attacker, fallbackState.hits[0].attacker, data) })),
+    hits: hits.map((hit) => ({
+      name: typeof hit?.name === "string" ? sanitizeHitName(hit.name) : "",
+      attacker: parseAttacker(hit?.attacker, fallbackState.hits[0].attacker, data)
+    })),
     defenderChanges: defenderChanges.map((changes, index) =>
       (index === 0 ? emptyChanges() : parseChanges(changes, usedUids, data))),
     activeHit: pick(stored.activeHit, (index) => isIntegerIn(index, 0, hits.length - 1), 0)

@@ -2,7 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import {
-  createInitialState, addHit, deleteHit, moveHit, setActiveAttacker, setActiveDefenderChanges, NO_PALADIN, NO_WEAPON
+  createInitialState, addHit, deleteHit, moveHit, setActiveAttacker, setActiveDefenderChanges, setActiveHitName,
+  MAX_HIT_NAME_LENGTH, NO_PALADIN, NO_WEAPON
 } from "../js/lib/battle-calc-state.js";
 import { emptyChanges } from "../js/lib/defender-changes.js";
 import { serializeBattleState, parseBattleState, BATTLE_EXPORT_VERSION } from "../js/lib/battle-calc-export.js";
@@ -38,6 +39,7 @@ function fullSetup() {
     luck: -7,
     grandmaster: true
   });
+  state = setActiveHitName(state, "Nuke A");
   state = addHit(state);
   state = setActiveDefenderChanges(state, changes({
     units: { spear: 500, archer: -20 }, wall: 12, faith: 50,
@@ -63,6 +65,22 @@ test("setups after moving and deleting hits survive export and import", () => {
 test("the fresh calculator survives export and import", () => {
   const state = createInitialState();
   assert.deepEqual(roundTrip(state), state);
+});
+
+test("hit names import sanitized, and a missing or invalid one leaves the hit unnamed", () => {
+  const exported = serializeBattleState(fullSetup());
+  exported.hits[0].name = ` Nuke\u0000 \ud83dA\u202e ${"x".repeat(40)}`;
+  exported.hits[1].name = 42;
+  delete exported.hits[2].name;
+  const parsed = parseBattleState(JSON.stringify(exported), data);
+  assert.equal(parsed.hits[0].name, `Nuke A ${"x".repeat(MAX_HIT_NAME_LENGTH - 7)}`);
+  assert.equal(parsed.hits[1].name, "");
+  assert.equal(parsed.hits[2].name, "");
+
+  exported.hits[1].name = null;
+  exported.hits[2].name = " \t ";
+  const blank = parseBattleState(JSON.stringify(exported), data);
+  assert.deepEqual(blank.hits.map((hit) => hit.name), [parsed.hits[0].name, "", ""]);
 });
 
 test("anything that is not an exported battle is rejected", () => {

@@ -6,8 +6,8 @@ import { recruitSummary } from "../lib/recruit.js";
 import { subtractUnits } from "../lib/healing.js";
 import {
   createInitialState, addHit, deleteHit, moveHit, selectHit, setActiveAttacker, setActiveDefenderChanges,
-  toSequenceInput, toFormPaladins, attackerProvisions, isOverProvisionLimit, NO_PALADIN, NO_WEAPON, DEFAULT_FAITH,
-  INPUT_UNIT_KEYS, WEAPON_LEVELS, newPaladinUid
+  setActiveHitName, toSequenceInput, toFormPaladins, attackerProvisions, isOverProvisionLimit, NO_PALADIN, NO_WEAPON,
+  DEFAULT_FAITH, INPUT_UNIT_KEYS, WEAPON_LEVELS, MAX_HIT_NAME_LENGTH, newPaladinUid
 } from "../lib/battle-calc-state.js";
 import { serializeBattleState, parseBattleState } from "../lib/battle-calc-export.js";
 import { CUSTOM_LIMIT, limitChoice, readLimit } from "../lib/provision-limit.js";
@@ -62,7 +62,7 @@ function init(data) {
   els.section = document.getElementById("view-battle");
   els.hits = document.getElementById("battle-hits");
   els.addHit = document.getElementById("battle-add-hit");
-  els.hitToolbar = document.getElementById("battle-hit-toolbar");
+  els.hitName = document.getElementById("battle-hit-name");
   els.moveLeft = document.getElementById("battle-move-left");
   els.moveRight = document.getElementById("battle-move-right");
   els.deleteHit = document.getElementById("battle-delete-hit");
@@ -157,6 +157,18 @@ function init(data) {
   els.nightReset.addEventListener("click", () => {
     els.night.checked = carriedDefender.night;
     handleFormChange({ target: els.night });
+  });
+  els.hitName.maxLength = MAX_HIT_NAME_LENGTH;
+  // The name is not a battle input: it only relabels the active chip, and the typed text is never rewritten.
+  els.hitName.addEventListener("input", (event) => {
+    event.stopPropagation();
+    state = setActiveHitName(state, els.hitName.value);
+    renderHitStrip(latestSteps);
+    scrollActiveChipIntoView();
+  });
+  els.hitName.addEventListener("change", (event) => {
+    event.stopPropagation();
+    els.hitName.value = state.hits[state.activeHit].name;
   });
   els.addHit.addEventListener("click", () => updateState(addHit(state)));
   els.moveLeft.addEventListener("click", () => updateState(moveHit(state, state.activeHit, -1)));
@@ -611,7 +623,9 @@ function readForm(editedField) {
 }
 
 function writeForm() {
-  const { attacker } = state.hits[state.activeHit];
+  const { name, attacker } = state.hits[state.activeHit];
+  els.hitName.value = name;
+  els.hitName.setAttribute("aria-label", `Name of hit #${state.activeHit + 1}`);
   writeUnitInputs(attackerUnitInputs, attacker.units);
   els.attackerWeapon.value = attacker.paladinWeapon;
   els.attackerWeaponLevel.value = String(attacker.paladinLevel);
@@ -1013,7 +1027,9 @@ function renderHitStrip(steps) {
   const chips = [...els.hits.children];
   steps.forEach((step, index) => {
     const chip = chips[index];
-    chip.textContent = describeHit(step, index, baselines[index]);
+    const { name } = state.hits[index];
+    chip.textContent = describeHit(step, index, baselines[index], name);
+    chip.title = name;
     if (isOverProvisionLimit(state.hits[index].attacker, units)) {
       const dot = document.createElement("span");
       dot.className = `mr-1.5 inline-block h-1.5 w-1.5 rounded-full align-middle ${
@@ -1037,14 +1053,13 @@ function renderHitStrip(steps) {
     chips[state.activeHit].focus();
   }
 
-  els.hitToolbar.classList.toggle("hidden", steps.length <= 1);
-  els.hitToolbar.classList.toggle("flex", steps.length > 1);
+  for (const button of [els.moveLeft, els.moveRight, els.deleteHit]) button.hidden = steps.length <= 1;
   els.moveLeft.disabled = state.activeHit === 0;
   els.moveRight.disabled = state.activeHit === steps.length - 1;
 }
 
-function describeHit(step, index, baseline) {
-  const details = [];
+function describeHit(step, index, baseline, name) {
+  const details = name ? [name] : [];
   if (step.result.wallBefore > 0) {
     details.push(`${step.result.wallBefore}→${step.result.wallAfter}`);
   }
