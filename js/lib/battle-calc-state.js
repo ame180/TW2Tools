@@ -76,8 +76,12 @@ export function createInitialState({
   };
 }
 
+// Usually only one attack carries the paladin, so the copy leaves it home.
 export function addHit(state) {
-  const hits = [...state.hits, structuredClone(state.hits[state.hits.length - 1])];
+  const added = structuredClone(state.hits[state.hits.length - 1]);
+  added.attacker.paladinWeapon = NO_PALADIN;
+  added.attacker.paladinLevel = 1;
+  const hits = [...state.hits, added];
   const defenderChanges = [...state.defenderChanges, emptyChanges()];
   return { ...state, hits, defenderChanges, activeHit: hits.length - 1 };
 }
