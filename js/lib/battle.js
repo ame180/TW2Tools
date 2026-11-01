@@ -235,7 +235,8 @@ export function simulate(input) {
     resolveWeaponBonuses(attackerWeapon, defenderWeapons, weaponData);
 
   // Berserkers double their attack when the defender fields more than twice the attacker's food.
-  const atkFoodTotal = totalFood(atkUnits, unitStats);
+  // Rams cancelled by trebuchets still count toward the attacker's food.
+  const atkFoodTotal = totalFood(originalAttacker, unitStats);
   const defFoodTotal = totalFood(defUnits, unitStats);
   if (defFoodTotal > 2 * atkFoodTotal) {
     attackBonuses.berserker = (attackBonuses.berserker || 0) + 100;
