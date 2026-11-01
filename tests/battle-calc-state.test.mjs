@@ -48,6 +48,17 @@ test("added hit copies the last hit without sharing references and becomes activ
   assert.notEqual(added.hits[3].attacker.units, state.hits[2].attacker.units);
 });
 
+test("added hit leaves the attacker paladin out of the copy", () => {
+  const state = threeHits(2);
+  const attacker = { ...structuredClone(state.hits[2].attacker), paladinWeapon: "axe-weapon", paladinLevel: 3 };
+  const added = addHit(setActiveAttacker(state, attacker));
+
+  assert.equal(added.hits[3].attacker.paladinWeapon, NO_PALADIN);
+  assert.equal(added.hits[3].attacker.paladinLevel, 1);
+  assert.equal(added.hits[3].attacker.units.axe, 300);
+  assert.equal(added.hits[2].attacker.paladinWeapon, "axe-weapon");
+});
+
 test("deleting a hit keeps the active hit, or selects the previous one when it was deleted", () => {
   assert.deepEqual(axesPerHit(deleteHit(threeHits(0), 1)), [100, 300]);
   assert.equal(deleteHit(threeHits(0), 1).activeHit, 0);
