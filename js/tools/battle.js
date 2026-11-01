@@ -17,7 +17,9 @@ import { zerkBonusStatus } from "../lib/zerk-bonus.js";
 const els = {};
 
 const DISABLED_INPUT_CLASSES = "disabled:bg-slate-100 disabled:text-slate-500";
-const HIT_CHIP_CLASSES = "whitespace-nowrap rounded border px-3 py-1 tabular-nums";
+// Children ignore the pointer: they are rebuilt on every render, and one replaced between mousedown and mouseup
+// (a typed value committing on blur) would swallow the click.
+const HIT_CHIP_CLASSES = "relative flex max-w-[11rem] [&>*]:pointer-events-none shrink-0 items-center gap-1 whitespace-nowrap rounded border px-2.5 py-1 tabular-nums";
 const ACTIVE_HIT_CHIP_CLASSES = `${HIT_CHIP_CLASSES} border-slate-800 bg-slate-800 text-white`;
 const INACTIVE_HIT_CHIP_CLASSES = `${HIT_CHIP_CLASSES} border-slate-300 hover:bg-slate-100`;
 const CHANGED_ROW_CLASS = "bg-amber-50";
@@ -1028,26 +1030,47 @@ function renderHitStrip(steps) {
   steps.forEach((step, index) => {
     const chip = chips[index];
     const { name } = state.hits[index];
-    chip.textContent = describeHit(step, index, baselines[index], name);
-    chip.title = name;
+    const isActive = index === state.activeHit;
+    chip.replaceChildren(`#${index + 1}`);
+    // Whitespace-only text between flex items is not rendered and the " · " separator is screen-reader only;
+    // both keep textContent and the accessible name readable.
+    if (name) {
+      const nameLabel = document.createElement("span");
+      nameLabel.className = "min-w-0 truncate";
+      nameLabel.textContent = name;
+      chip.append(" ", nameLabel);
+    }
+    const status = document.createElement("span");
+    status.className = `shrink-0 text-xs ${isActive ? "text-slate-300" : "text-slate-500"}`;
+    status.textContent = describeHitStatus(step, baselines[index]);
+    if (name) {
+      const separator = document.createElement("span");
+      separator.className = "sr-only";
+      separator.textContent = " · ";
+      chip.append(separator);
+    } else {
+      chip.append(" ");
+    }
+    chip.append(status);
+    const notes = [name];
     if (isOverProvisionLimit(state.hits[index].attacker, units)) {
       const dot = document.createElement("span");
-      dot.className = `mr-1.5 inline-block h-1.5 w-1.5 rounded-full align-middle ${
-        index === state.activeHit ? "bg-red-400" : "bg-red-600"}`;
-      dot.title = "Over provisions limit";
+      dot.className = `mr-0.5 inline-block h-1.5 w-1.5 shrink-0 rounded-full ${isActive ? "bg-red-400" : "bg-red-600"}`;
+      notes.push("Over provisions limit");
       dot.setAttribute("role", "img");
       dot.setAttribute("aria-label", "Over provisions limit");
       chip.prepend(dot);
     }
     if (hasChanges(state.defenderChanges[index])) {
       const badge = document.createElement("span");
-      badge.className = "ml-1 rounded bg-amber-300 px-1 text-[10px] font-semibold text-amber-950";
+      badge.className = "ml-0.5 shrink-0 rounded bg-amber-300 px-1 text-[10px] font-semibold text-amber-950";
       badge.textContent = "Δ";
-      badge.title = "Defender changes before this hit";
+      notes.push("Defender changes before this hit");
       chip.appendChild(badge);
     }
-    chip.className = index === state.activeHit ? ACTIVE_HIT_CHIP_CLASSES : INACTIVE_HIT_CHIP_CLASSES;
-    chip.setAttribute("aria-pressed", String(index === state.activeHit));
+    chip.title = notes.filter(Boolean).join("\n");
+    chip.className = isActive ? ACTIVE_HIT_CHIP_CLASSES : INACTIVE_HIT_CHIP_CLASSES;
+    chip.setAttribute("aria-pressed", String(isActive));
   });
   if (stripHadFocus) {
     chips[state.activeHit].focus();
@@ -1058,13 +1081,13 @@ function renderHitStrip(steps) {
   els.moveRight.disabled = state.activeHit === steps.length - 1;
 }
 
-function describeHit(step, index, baseline, name) {
-  const details = name ? [name] : [];
+function describeHitStatus(step, baseline) {
+  const details = [];
   if (step.result.wallBefore > 0) {
     details.push(`${step.result.wallBefore}→${step.result.wallAfter}`);
   }
   details.push(describeDefenderLeft(step, baseline));
-  return `#${index + 1} ${details.join(" · ")}`;
+  return details.join(" · ");
 }
 
 // baseline: starting provisions plus everything that arrived so far, so support never pushes it past 100%.
