@@ -1,5 +1,6 @@
 import { actualDistance, travelTimeSeconds } from "./distance.js";
 import { formatDateTime } from "./format.js";
+import { SERVER_TIME_ZONE, utcOffsetLabel, wallClockParts, zonedTimeToMs } from "./time-zone.js";
 
 // Attacks walk at the slowest unit's speed, so units sharing a speed are grouped under one class.
 export const SPEED_CLASSES = [
@@ -73,18 +74,44 @@ export function villageLabel(village) {
   return village.name === village.key ? village.key : `${village.name} (${village.key})`;
 }
 
+// Each time column shows server time or the browser's own clock.
+export const TIME_ZONES = ["local", "server"];
+
+// The plan's landing is a `datetime-local` value read as server time.
+export function landingMsOf(landing) {
+  return zonedTimeToMs(landing, SERVER_TIME_ZONE);
+}
+
+export function timeZoneOf(zone) {
+  return zone === "server" ? SERVER_TIME_ZONE : undefined;
+}
+
+// "ST", or "local (UTC+1)" so readers in another zone can convert.
+export function zoneLabel(zone, ms) {
+  return zone === "server" ? "ST" : `local (${utcOffsetLabel(ms)})`;
+}
+
+function sameDay(aMs, bMs, timeZone) {
+  const a = wallClockParts(new Date(aMs), timeZone);
+  const b = wallClockParts(new Date(bMs), timeZone);
+  return a.year === b.year && a.month === b.month && a.day === b.day;
+}
+
 // One line per unsent attack, sorted by send time. Send times on the landing day drop the date.
-export function formatPlanText(rows, landingMs) {
-  const landingDay = new Date(landingMs).toDateString();
-  const lines = [`Landing: ${formatDateTime(new Date(landingMs))}`, ""];
+export function formatPlanText(rows, landingMs, { sendZone, landsZone }) {
+  const sendTimeZone = timeZoneOf(sendZone);
+  const lines = [
+    `Landing: ${formatDateTime(new Date(landingMs), timeZoneOf(landsZone))} ${zoneLabel(landsZone, landingMs)}`,
+    `Send times: ${zoneLabel(sendZone, landingMs)}`,
+    ""
+  ];
 
   for (const { attack, source, target, sendMs } of rows) {
     if (attack.sent) {
       continue;
     }
-    const sendDate = new Date(sendMs);
-    const sendText = formatDateTime(sendDate);
-    const sendTime = sendDate.toDateString() === landingDay ? sendText.split(" ")[1] : sendText;
+    const sendText = formatDateTime(new Date(sendMs), sendTimeZone);
+    const sendTime = sameDay(sendMs, landingMs, sendTimeZone) ? sendText.split(" ")[1] : sendText;
     const offset = attack.offsetSeconds ? ` ${attack.offsetSeconds > 0 ? "+" : ""}${attack.offsetSeconds}s` : "";
     const parts = [sendTime, `${villageLabel(source)} → ${villageLabel(target)}`, `${SPEED_LABELS[attack.speedClassId]}${offset}`];
     if (attack.note.trim()) {
@@ -99,7 +126,6 @@ export function formatPlanText(rows, landingMs) {
 export const PLAN_KEY = "tw2tools.planner.v1";
 const PLAN_VERSION = 1;
 const DEFAULT_SPEED_CLASS_ID = "axe";
-const LANDING_VALUE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?$/;
 
 export function emptyPlan() {
   return {
@@ -110,7 +136,9 @@ export function emptyPlan() {
     activeSourceKey: null,
     lastSpeedClassId: DEFAULT_SPEED_CLASS_ID,
     lastTargetKey: null,
-    nextAttackId: 1
+    nextAttackId: 1,
+    sendZone: "local",
+    landsZone: "server"
   };
 }
 
@@ -125,7 +153,9 @@ export function serializePlan(plan) {
       ({ sourceKey, targetKey, speedClassId, offsetSeconds, note, sent })),
     activeSourceKey: plan.activeSourceKey,
     lastSpeedClassId: plan.lastSpeedClassId,
-    lastTargetKey: plan.lastTargetKey
+    lastTargetKey: plan.lastTargetKey,
+    sendZone: plan.sendZone,
+    landsZone: plan.landsZone
   };
 }
 
@@ -163,7 +193,7 @@ export function parsePlan(json) {
 
   const plan = emptyPlan();
   const speedClassIds = SPEED_CLASSES.map((speedClass) => speedClass.id);
-  plan.landing = typeof stored.landing === "string" && LANDING_VALUE.test(stored.landing) ? stored.landing : "";
+  plan.landing = landingMsOf(stored.landing) === null ? "" : stored.landing;
   plan.sources = parseVillages(stored.sources);
   plan.targets = parseVillages(stored.targets);
   const hasSource = (key) => plan.sources.some((village) => village.key === key);
@@ -188,6 +218,12 @@ export function parsePlan(json) {
   plan.lastTargetKey = hasTarget(stored.lastTargetKey) ? stored.lastTargetKey : null;
   if (speedClassIds.includes(stored.lastSpeedClassId)) {
     plan.lastSpeedClassId = stored.lastSpeedClassId;
+  }
+  if (TIME_ZONES.includes(stored.sendZone)) {
+    plan.sendZone = stored.sendZone;
+  }
+  if (TIME_ZONES.includes(stored.landsZone)) {
+    plan.landsZone = stored.landsZone;
   }
   return plan;
 }

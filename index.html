@@ -357,7 +357,10 @@
 
         <div class="flex flex-wrap items-end gap-2">
           <label class="block w-full text-sm md:w-80">
-            <span class="mb-1 block font-medium">Landing Time</span>
+            <span class="mb-1 flex items-baseline gap-2 font-medium">
+              <span>Landing Time <span class="font-normal text-slate-500">(ST)</span></span>
+              <span id="planner-landing-local" class="text-xs font-normal text-slate-500"></span>
+            </span>
             <input id="planner-landing" type="datetime-local" step="1" class="w-full rounded border border-slate-300 px-3 py-2" />
           </label>
           <div class="flex flex-wrap gap-2 text-sm">
@@ -412,14 +415,28 @@
           </div>
           <div class="mt-2 overflow-x-auto">
             <table class="w-full text-sm">
-              <thead>
+              <thead id="planner-plan-head">
                 <tr class="border-b border-slate-300 text-left text-xs text-slate-500">
-                  <th class="py-1 pr-3 font-medium">Send At</th>
+                  <th class="py-1 pr-3 font-medium">
+                    <span class="inline-flex items-center gap-1.5 whitespace-nowrap">Send At
+                      <span class="inline-flex overflow-hidden rounded border border-slate-300 text-[11px] font-medium" role="group" aria-label="Send At time zone">
+                        <button type="button" data-zone-column="send" data-zone="local" class="px-2.5 py-0.5">Local</button>
+                        <button type="button" data-zone-column="send" data-zone="server" class="px-2.5 py-0.5" title="Server time (UK)">ST</button>
+                      </span>
+                    </span>
+                  </th>
                   <th class="py-1 pr-3 font-medium">From</th>
                   <th class="py-1 pr-3 font-medium">To</th>
                   <th class="py-1 pr-3 font-medium">Speed</th>
                   <th class="py-1 pr-3 font-medium">Travel</th>
-                  <th class="py-1 pr-3 font-medium">Lands</th>
+                  <th class="py-1 pr-3 font-medium">
+                    <span class="inline-flex items-center gap-1.5 whitespace-nowrap">Lands
+                      <span class="inline-flex overflow-hidden rounded border border-slate-300 text-[11px] font-medium" role="group" aria-label="Lands time zone">
+                        <button type="button" data-zone-column="lands" data-zone="local" class="px-2.5 py-0.5">Local</button>
+                        <button type="button" data-zone-column="lands" data-zone="server" class="px-2.5 py-0.5" title="Server time (UK)">ST</button>
+                      </span>
+                    </span>
+                  </th>
                   <th class="py-1 pr-3 font-medium">Note</th>
                   <th class="py-1 font-medium">Sent</th>
                 </tr>
