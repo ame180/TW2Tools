@@ -9,12 +9,15 @@ import {
   buildSendPlan,
   villageLabel,
   formatPlanText,
+  landingMsOf,
+  timeZoneOf,
   emptyPlan,
   serializePlan,
   parsePlan,
   loadPlan,
   savePlan
 } from "../lib/attack-planner.js";
+import { utcOffsetLabel } from "../lib/time-zone.js";
 
 const KINDS = ["source", "target"];
 const FLASH_MS = 1600;
@@ -22,6 +25,8 @@ const MAX_INPUT_ROWS = 6;
 const CONFIRM_MS = 3000;
 const IDLE_CLASSES = ["border-slate-400", "bg-white", "hover:bg-slate-100"];
 const ARMED_CLASSES = ["border-red-600", "bg-red-600", "text-white", "hover:bg-red-700"];
+const ZONE_ON_CLASSES = ["bg-slate-900", "text-white"];
+const ZONE_OFF_CLASSES = ["bg-white", "text-slate-600", "hover:bg-slate-100"];
 
 const els = {};
 
@@ -42,6 +47,8 @@ function init(data) {
 
   els.section = document.getElementById("view-planner");
   els.landing = document.getElementById("planner-landing");
+  els.landingLocal = document.getElementById("planner-landing-local");
+  els.zoneButtons = [...els.section.querySelectorAll("[data-zone-column]")];
   els.attacks = document.getElementById("planner-attacks");
   els.plan = document.getElementById("planner-plan");
   els.countdown = document.getElementById("planner-countdown");
@@ -64,6 +71,7 @@ function init(data) {
   els.attacks.addEventListener("change", handleAttacksChange);
   els.attacks.addEventListener("input", handleAttacksInput);
   els.plan.addEventListener("change", handlePlanChange);
+  document.getElementById("planner-plan-head").addEventListener("click", handleZoneClick);
   bindPlanActions();
 
   const plan = loadPlan();
@@ -290,6 +298,15 @@ function handlePlanChange(event) {
   commit(renderPlan);
 }
 
+function handleZoneClick(event) {
+  const button = event.target.closest("[data-zone-column]");
+  if (!button) {
+    return;
+  }
+  state[`${button.dataset.zoneColumn}Zone`] = button.dataset.zone;
+  commit(renderPlan);
+}
+
 function commit(render = renderAll) {
   render();
   savePlan(state);
@@ -321,7 +338,7 @@ function bindPlanActions() {
       flashLabel(copyButton, "Nothing to copy");
       return;
     }
-    copyText(copyButton, formatPlanText(rows, landingMs()));
+    copyText(copyButton, formatPlanText(rows, landingMs(), state));
   });
 
   document.getElementById("planner-import-open").addEventListener("click", () => {
@@ -542,11 +559,7 @@ function renderAttacks() {
 }
 
 function landingMs() {
-  if (!state.landing) {
-    return null;
-  }
-  const time = new Date(state.landing).getTime();
-  return Number.isFinite(time) ? time : null;
+  return landingMsOf(state.landing);
 }
 
 function currentSendPlan() {
@@ -563,9 +576,26 @@ function currentSendPlan() {
   });
 }
 
+function renderZoneControls(landing) {
+  const localTitle = `Your time, ${utcOffsetLabel(landing ?? Date.now())}`;
+  els.landingLocal.textContent = landing === null ? "" : `= ${formatDateTime(new Date(landing))} local`;
+  els.landingLocal.title = localTitle;
+
+  for (const button of els.zoneButtons) {
+    const isOn = state[`${button.dataset.zoneColumn}Zone`] === button.dataset.zone;
+    button.classList.remove(...(isOn ? ZONE_OFF_CLASSES : ZONE_ON_CLASSES));
+    button.classList.add(...(isOn ? ZONE_ON_CLASSES : ZONE_OFF_CLASSES));
+    button.setAttribute("aria-pressed", String(isOn));
+    if (button.dataset.zone === "local") {
+      button.title = localTitle;
+    }
+  }
+}
+
 function renderPlan() {
   els.plan.innerHTML = "";
   const landing = landingMs();
+  renderZoneControls(landing);
 
   if (landing === null || !state.attacks.length) {
     const row = element("tr");
@@ -584,12 +614,12 @@ function renderPlan() {
     row.dataset.sent = attack.sent ? "1" : "";
     row.dataset.label = `${source.name} → ${target.name}`;
 
-    const sendCell = element("td", "py-1 pr-3 whitespace-nowrap font-semibold", formatDateTime(new Date(sendMs)));
+    const sendCell = element("td", "py-1 pr-3 whitespace-nowrap font-semibold", formatDateTime(new Date(sendMs), timeZoneOf(state.sendZone)));
     const missedBadge = element("span", "ml-1 rounded bg-red-100 px-1 text-xs font-medium", "missed");
     missedBadge.dataset.missed = "";
     sendCell.appendChild(missedBadge);
 
-    const landsCell = element("td", "py-1 pr-3 whitespace-nowrap", formatDateTime(new Date(landsMs)));
+    const landsCell = element("td", "py-1 pr-3 whitespace-nowrap", formatDateTime(new Date(landsMs), timeZoneOf(state.landsZone)));
     if (attack.offsetSeconds) {
       const sign = attack.offsetSeconds > 0 ? "+" : "";
       landsCell.appendChild(element("span", "ml-1 text-xs text-slate-500", `(${sign}${attack.offsetSeconds}s)`));

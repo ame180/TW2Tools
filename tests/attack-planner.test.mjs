@@ -1,4 +1,5 @@
 import test from "node:test";
+import { utcOffsetLabel } from "../js/lib/time-zone.js";
 import assert from "node:assert/strict";
 import {
   SPEED_CLASSES,
@@ -7,6 +8,7 @@ import {
   targetsByDistance,
   buildSendPlan,
   formatPlanText,
+  landingMsOf,
   emptyPlan,
   serializePlan,
   parsePlan
@@ -161,20 +163,49 @@ test("parsePlan drops invalid villages, duplicates and dangling attacks", () => 
   assert.equal(plan.lastTargetKey, null);
 });
 
-test("formatPlanText lists unsent attacks and dates sends before the landing day", () => {
-  const landingMs = new Date(2026, 9, 20, 21, 0, 0).getTime();
+function planTextRows() {
   const plan = samplePlan();
   const row = (attack, sendMs) => ({ attack, source: plan.sources[0], target: plan.targets.find((village) => village.key === attack.targetKey), sendMs });
-  const rows = [
-    row({ ...plan.attacks[0], offsetSeconds: 0, note: " " }, new Date(2026, 9, 19, 23, 40, 10).getTime()),
-    row(plan.attacks[1], new Date(2026, 9, 20, 18, 0, 0).getTime()),
-    row(plan.attacks[0], new Date(2026, 9, 20, 19, 5, 33).getTime())
+  return [
+    row({ ...plan.attacks[0], offsetSeconds: 0, note: " " }, Date.UTC(2026, 9, 19, 22, 40, 10)),
+    row(plan.attacks[1], Date.UTC(2026, 9, 20, 17, 0, 0)),
+    row(plan.attacks[0], Date.UTC(2026, 9, 20, 18, 5, 33))
   ];
+}
 
-  assert.equal(formatPlanText(rows, landingMs), [
-    "Landing: 20.10 21:00:00",
+test("formatPlanText lists unsent attacks in server time and dates sends before the landing day", () => {
+  const landingMs = Date.UTC(2026, 9, 20, 20, 0, 0); // 21:00 BST
+
+  assert.equal(formatPlanText(planTextRows(), landingMs, { sendZone: "server", landsZone: "server" }), [
+    "Landing: 20.10 21:00:00 ST",
+    "Send times: ST",
     "",
     "19.10 23:40:10  Fort (500|500) → Wolf Den (520|505)  Noble",
     "19:05:33  Fort (500|500) → Wolf Den (520|505)  Noble +1s  4 nobles"
   ].join("\n"));
+});
+
+test("formatPlanText names the local offset when a column shows local time", () => {
+  const landingMs = Date.UTC(2026, 9, 20, 20, 0, 0);
+  const lines = formatPlanText(planTextRows(), landingMs, { sendZone: "local", landsZone: "server" }).split("\n");
+
+  assert.equal(lines[0], "Landing: 20.10 21:00:00 ST");
+  assert.equal(lines[1], `Send times: local (${utcOffsetLabel(landingMs)})`);
+  assert.ok(lines.slice(3).every((line) => /^\d\d\.\d\d /.test(line)), "every send keeps its date when zones differ");
+});
+
+test("landingMsOf reads the landing as server time", () => {
+  assert.equal(landingMsOf("2026-10-20T21:00:00"), Date.UTC(2026, 9, 20, 20, 0, 0));
+  assert.equal(landingMsOf(""), null);
+});
+
+test("parsePlan keeps valid column zones and falls back to local send / server lands", () => {
+  const stored = serializePlan({ ...samplePlan(), sendZone: "server", landsZone: "local" });
+  assert.deepEqual(
+    [parsePlan(JSON.stringify(stored)).sendZone, parsePlan(JSON.stringify(stored)).landsZone],
+    ["server", "local"]
+  );
+
+  const invalid = parsePlan(JSON.stringify({ ...stored, sendZone: "utc", landsZone: undefined }));
+  assert.deepEqual([invalid.sendZone, invalid.landsZone], ["local", "server"]);
 });
