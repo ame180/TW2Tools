@@ -40,7 +40,7 @@ export function zonedTimeToMs(value, timeZone) {
   if (!match) {
     return null;
   }
-  const [year, month, day, hour, minute, second = 0] = match.slice(1).map((part) => Number(part ?? 0));
+  const [year, month, day, hour, minute, second] = match.slice(1).map((part) => Number(part ?? 0));
   const wallAsUtc = Date.UTC(year, month - 1, day, hour, minute, second);
   if (!Number.isFinite(wallAsUtc)) {
     return null;
