@@ -191,6 +191,7 @@ test("formatPlanText names the local offset when a column shows local time", () 
 
   assert.equal(lines[0], "Landing: 20.10 21:00:00 ST");
   assert.equal(lines[1], `Send times: local (${utcOffsetLabel(landingMs)})`);
+  assert.ok(lines.slice(3).every((line) => /^\d\d\.\d\d /.test(line)), "every send keeps its date when zones differ");
 });
 
 test("landingMsOf reads the landing as server time", () => {

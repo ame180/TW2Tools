@@ -97,7 +97,8 @@ function sameDay(aMs, bMs, timeZone) {
   return a.year === b.year && a.month === b.month && a.day === b.day;
 }
 
-// One line per unsent attack, sorted by send time. Send times on the landing day drop the date.
+// One line per unsent attack, sorted by send time. A send on the landing day drops its date, but only when both
+// lines use the same zone: otherwise the reader would match the time against the date of the other zone.
 export function formatPlanText(rows, landingMs, { sendZone, landsZone }) {
   const sendTimeZone = timeZoneOf(sendZone);
   const lines = [
@@ -111,7 +112,8 @@ export function formatPlanText(rows, landingMs, { sendZone, landsZone }) {
       continue;
     }
     const sendText = formatDateTime(new Date(sendMs), sendTimeZone);
-    const sendTime = sameDay(sendMs, landingMs, sendTimeZone) ? sendText.split(" ")[1] : sendText;
+    const dropDate = sendZone === landsZone && sameDay(sendMs, landingMs, sendTimeZone);
+    const sendTime = dropDate ? sendText.split(" ")[1] : sendText;
     const offset = attack.offsetSeconds ? ` ${attack.offsetSeconds > 0 ? "+" : ""}${attack.offsetSeconds}s` : "";
     const parts = [sendTime, `${villageLabel(source)} → ${villageLabel(target)}`, `${SPEED_LABELS[attack.speedClassId]}${offset}`];
     if (attack.note.trim()) {
