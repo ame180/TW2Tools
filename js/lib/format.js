@@ -1,3 +1,5 @@
+import { wallClockParts } from "./time-zone.js";
+
 export function formatNumber(value) {
   return Math.round(value).toLocaleString("en-US");
 }
@@ -31,8 +33,9 @@ export function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
 
-export function formatDateTime(date) {
+// DD.MM HH:MM:SS as the wall clock in `timeZone`; `undefined` = the browser's own zone.
+export function formatDateTime(date, timeZone) {
+  const parts = wallClockParts(date, timeZone);
   const pad = (part) => String(part).padStart(2, "0");
-  const day = `${pad(date.getDate())}.${pad(date.getMonth() + 1)}`;
-  return `${day} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+  return `${pad(parts.day)}.${pad(parts.month)} ${pad(parts.hour)}:${pad(parts.minute)}:${pad(parts.second)}`;
 }
